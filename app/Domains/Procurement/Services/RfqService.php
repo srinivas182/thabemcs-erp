@@ -91,7 +91,7 @@ final class RfqService
      */
     public function inCompanyOf(RfqInvitation $invitation, callable $callback): mixed
     {
-        $company = Company::query()->findOrFail($invitation->getAttribute('company_id'));
+        $company = Company::query()->whereKey((int) $invitation->getAttribute('company_id'))->firstOrFail();
 
         return $this->context->runFor($company, $callback);
     }
