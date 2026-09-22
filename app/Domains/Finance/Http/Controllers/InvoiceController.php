@@ -83,7 +83,7 @@ final class InvoiceController
         ]);
 
         $order = isset($data['purchase_order']) ? PurchaseOrder::query()->where('ulid', $data['purchase_order'])->first() : null;
-        $projectId = $order?->project_id ?? Project::query()->where('ulid', $data['project'])->value('id');
+        $projectId = $order !== null ? $order->project_id : Project::query()->where('ulid', $data['project'])->value('id');
 
         /** @var User $user */
         $user = $request->user();
@@ -94,7 +94,7 @@ final class InvoiceController
 
         $invoice = SupplierInvoice::query()->create([
             'project_id' => $projectId, 'supplier_id' => $supplier?->id, 'purchase_order_id' => $order?->id,
-            'budget_line_id' => $order?->budget_line_id ?? (isset($data['budget_line_id']) ? (int) $data['budget_line_id'] : null),
+            'budget_line_id' => $order !== null ? $order->budget_line_id : (isset($data['budget_line_id']) ? (int) $data['budget_line_id'] : null),
             'invoice_number' => $data['invoice_number'], 'invoice_date' => $data['invoice_date'], 'due_date' => $data['due_date'],
             'subtotal' => $data['subtotal'], 'vat' => $data['vat'], 'total' => $data['total'], 'document_id' => $documentId, 'captured_by' => $user->id,
         ]);

@@ -129,6 +129,9 @@ final class PaymentRunService
         }
 
         $out = fopen('php://temp', 'r+');
+        if ($out === false) {
+            throw new FinanceException('Could not build the payment schedule.');
+        }
         foreach ($rows as $row) {
             fputcsv($out, $row);
         }
