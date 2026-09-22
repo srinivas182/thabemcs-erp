@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.14.0] — Commercial and compliance completion (Sprint 14)
+
+### Added
+- Requests for quotation by email: suppliers get a private link to view the items (never the estimates), submit or revise their quote with a document until closing, or decline; buyers see who has opened, quoted or declined, and are notified when quotes arrive.
+- Contract form defaults for JBCC PBA and MWA, NEC4 ECC, GCC 2015, FIDIC and own forms (retention, payment days, defects period), editable per contract.
+- Project Performance page: earned value (SPI, CPI, forecast final cost, variance at completion) with a planned-value S-curve and weekly history; profitability against the approved feasibility, with cost codes already over budget.
+- Programme calendar skips the December building shutdown.
+- Workforce allowances (per day worked, per month, once-off) included in the payroll inputs export; private employment documents with expiry dates.
+- POPIA page: register of personal information, retention rules with a monthly clean-up (and a run-now button), data subject requests with due dates and an export of what is held.
+
 ## [0.13.0] — Programme and site completion (Sprint 13)
 
 ### Added

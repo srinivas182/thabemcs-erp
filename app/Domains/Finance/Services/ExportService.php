@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Domains\Finance\Services;
 
 use App\Domains\Finance\Models\SupplierInvoice;
+use App\Domains\Workforce\Models\CrewAttendance;
+use App\Domains\Workforce\Models\Employee;
+use App\Domains\Workforce\Models\EmployeeAllowance;
 use App\Domains\Workforce\Models\LeaveRequest;
 use App\Domains\Workforce\Models\OvertimeEntry;
 use Illuminate\Support\Carbon;
@@ -62,6 +65,27 @@ final class ExportService
             ->whereBetween('from_date', [$from->toDateString(), $to->toDateString()])->orderBy('from_date')->get()
             ->each(function (LeaveRequest $l) use (&$rows): void {
                 $rows[] = [$l->employee->employee_number, $l->employee->name(), ucfirst($l->type).' leave days', $l->from_date->format('d/m/Y'), (string) (float) $l->days, '', ''];
+            });
+
+        // Allowances: daily ones count the days the worker was present on the crew register.
+        EmployeeAllowance::query()
+            ->whereDate('from_date', '<=', $to->toDateString())
+            ->where(fn ($q) => $q->whereNull('to_date')->orWhereDate('to_date', '>=', $from->toDateString()))
+            ->get()
+            ->each(function (EmployeeAllowance $a) use (&$rows, $from, $to): void {
+                $employee = Employee::query()->find($a->employee_id);
+                if ($employee === null) {
+                    return;
+                }
+                $quantity = match ($a->frequency) {
+                    'day' => (float) CrewAttendance::query()->where('employee_id', $a->employee_id)->where('status', 'present')
+                        ->whereBetween('worked_on', [$from->toDateString(), $to->toDateString()])->count(),
+                    'month' => 1.0,
+                    default => $a->from_date->between($from, $to) ? 1.0 : 0.0,
+                };
+                if ($quantity > 0) {
+                    $rows[] = [$employee->employee_number, $employee->name(), ucfirst($a->type).' allowance (R'.number_format((float) $a->amount, 2, '.', '').' per '.($a->frequency === 'once' ? 'payment' : $a->frequency).')', $from->format('d/m/Y'), (string) $quantity, '', ''];
+                }
             });
 
         return $this->csv($rows);

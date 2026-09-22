@@ -28,6 +28,8 @@ use Illuminate\Support\Carbon;
  * @property string $retention_percent
  * @property string|null $retention_cap_percent
  * @property string $release_at_practical_percent
+ * @property int|null $payment_terms_days
+ * @property int|null $defects_period_months
  * @property Carbon|null $practical_completion_on
  * @property Carbon|null $final_completion_on
  * @property string $status
@@ -39,7 +41,7 @@ class Contract extends Model
 {
     use BelongsToCompany, HasPublicUlid;
 
-    protected $fillable = ['project_id', 'supplier_id', 'budget_line_id', 'reference', 'contract_form', 'contract_sum', 'retention_percent', 'retention_cap_percent', 'release_at_practical_percent', 'practical_completion_on', 'final_completion_on', 'status'];
+    protected $fillable = ['project_id', 'supplier_id', 'budget_line_id', 'reference', 'contract_form', 'contract_sum', 'retention_percent', 'retention_cap_percent', 'release_at_practical_percent', 'payment_terms_days', 'defects_period_months', 'practical_completion_on', 'final_completion_on', 'status'];
 
     protected function casts(): array
     {

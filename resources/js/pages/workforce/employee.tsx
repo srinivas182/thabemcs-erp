@@ -13,11 +13,13 @@ interface Props {
     overtime: { id: number; date: string; hours: number; multiplier: number; project: string | null; reason: string | null }[];
     projects: Option[];
     leaveTypes: Option[];
+    allowances: { id: number; type: string; amount: number; frequency: string; from: string; to: string | null; notes: string | null }[];
+    documents: { id: number; type: string; expires: string | null; expired: boolean; download: string | null }[];
 }
 
 const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' }).format(new Date());
 
-export default function EmployeePage({ employee: e, balances, allocations, leave, overtime, projects, leaveTypes }: Props) {
+export default function EmployeePage({ employee: e, balances, allocations, leave, overtime, projects, leaveTypes, allowances, documents }: Props) {
     const alloc = useForm({ project: '', from_date: today(), role_on_site: '' });
     const lv = useForm({ type: 'annual', from_date: '', to_date: '', notes: '' });
     const ot = useForm({ worked_on: today(), hours: '', project: '', reason: '' });
@@ -84,6 +86,11 @@ export default function EmployeePage({ employee: e, balances, allocations, leave
                     </section>
                 </div>
 
+                <div className="grid gap-8 lg:grid-cols-2">
+                    <Allowances employeeId={e.id} allowances={allowances} />
+                    <Documents employeeId={e.id} documents={documents} />
+                </div>
+
                 <section className="grid gap-3 border-t-2 border-ink pt-4">
                     <h2 className="font-bold">Site allocation</h2>
                     <ul className="text-sm">{allocations.map((a) => <li key={a.id}>{a.project}{a.role && ` as ${a.role}`}, from {formatDate(a.from)}{a.to ? ` to ${formatDate(a.to)}` : ' (current)'}</li>)}</ul>
@@ -96,6 +103,63 @@ export default function EmployeePage({ employee: e, balances, allocations, leave
                 </section>
             </div>
         </>
+    );
+}
+
+const ALLOWANCES = ['travel', 'site', 'tool', 'meal', 'housing', 'cellphone', 'other'].map((k) => ({ key: k, label: k[0]!.toUpperCase() + k.slice(1) }));
+const DOC_TYPES = [
+    { key: 'contract', label: 'Employment contract' }, { key: 'id_copy', label: 'ID copy' }, { key: 'qualification', label: 'Qualification or certificate' },
+    { key: 'medical', label: 'Medical certificate of fitness' }, { key: 'induction', label: 'Induction record' }, { key: 'warning', label: 'Disciplinary record' }, { key: 'other', label: 'Other' },
+];
+
+function Allowances({ employeeId, allowances }: { employeeId: string; allowances: Props['allowances'] }) {
+    const form = useForm({ type: 'travel', amount: '', frequency: 'day', from_date: today(), notes: '' });
+    return (
+        <section className="grid content-start gap-3">
+            <h2 className="text-lg font-bold">Allowances</h2>
+            <ul className="text-sm">
+                {allowances.map((a) => (
+                    <li key={a.id} className="flex justify-between gap-2">
+                        <span>{ALLOWANCES.find((t) => t.key === a.type)?.label}: R{a.amount.toFixed(2)} per {a.frequency === 'once' ? 'payment' : a.frequency}, from {formatDate(a.from)}{a.to && ` to ${formatDate(a.to)}`}</span>
+                        {!a.to && <button className="text-xs text-brick hover:underline" onClick={() => router.post(`/allowances/${a.id}/end`, {}, { preserveScroll: true })}>End</button>}
+                    </li>
+                ))}
+                {allowances.length === 0 && <li className="text-ink-soft">No allowances.</li>}
+            </ul>
+            <form onSubmit={(ev) => { ev.preventDefault(); form.post(`/workforce/${employeeId}/allowances`, { preserveScroll: true, onSuccess: () => form.reset('amount', 'notes') }); }} className="grid items-end gap-2 sm:grid-cols-4">
+                <SelectField label="Type" name="type" value={form.data.type} onChange={(v) => form.setData('type', v)} options={ALLOWANCES} />
+                <Field label="Amount (R)" name="amount" type="number" value={form.data.amount} onChange={(ev) => form.setData('amount', ev.target.value)} error={form.errors.amount} />
+                <SelectField label="Per" name="frequency" value={form.data.frequency} onChange={(v) => form.setData('frequency', v)} options={[{ key: 'day', label: 'Day worked' }, { key: 'month', label: 'Month' }, { key: 'once', label: 'Once-off' }]} />
+                <Button type="submit" disabled={form.processing}>Add</Button>
+            </form>
+            <p className="text-xs text-ink-soft">Daily allowances are counted from the crew register and included in the payroll inputs export.</p>
+        </section>
+    );
+}
+
+function Documents({ employeeId, documents }: { employeeId: string; documents: Props['documents'] }) {
+    const form = useForm<{ type: string; expires_on: string; file: File | null }>({ type: 'contract', expires_on: '', file: null });
+    return (
+        <section className="grid content-start gap-3">
+            <h2 className="text-lg font-bold">Employment documents</h2>
+            <ul className="text-sm">
+                {documents.map((d) => (
+                    <li key={d.id} className="flex justify-between gap-2">
+                        <span>{DOC_TYPES.find((t) => t.key === d.type)?.label}{d.expires && <span className={cn(d.expired ? 'font-semibold text-brick' : 'text-ink-soft')}>, {d.expired ? 'expired' : 'valid to'} {formatDate(d.expires)}</span>}</span>
+                        {d.download && <a href={d.download} className="text-line hover:underline">Open</a>}
+                    </li>
+                ))}
+                {documents.length === 0 && <li className="text-ink-soft">No documents.</li>}
+            </ul>
+            <form onSubmit={(ev) => { ev.preventDefault(); form.transform((d) => ({ ...d, expires_on: d.expires_on || null })); form.post(`/workforce/${employeeId}/documents`, { preserveScroll: true, forceFormData: true, onSuccess: () => form.reset() }); }} className="grid items-end gap-2 sm:grid-cols-[1fr_150px]">
+                <SelectField label="Document" name="type" value={form.data.type} onChange={(v) => form.setData('type', v)} options={DOC_TYPES} />
+                <Field label="Expires" name="expires_on" type="date" value={form.data.expires_on} onChange={(ev) => form.setData('expires_on', ev.target.value)} />
+                <input type="file" accept=".pdf,.jpg,.jpeg,.png,.docx" onChange={(ev) => form.setData('file', ev.target.files?.[0] ?? null)} className="text-sm" aria-label="File" />
+                <Button type="submit" disabled={!form.data.file || form.processing}>Upload</Button>
+            </form>
+            {form.errors.file && <p className="text-sm text-brick">{form.errors.file}</p>}
+            <p className="text-xs text-ink-soft">Employment documents are private: only Company Admins and Directors can open them.</p>
+        </section>
     );
 }
 

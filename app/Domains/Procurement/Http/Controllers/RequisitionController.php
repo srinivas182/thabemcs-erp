@@ -123,6 +123,7 @@ final class RequisitionController
                 ? PurchaseOrder::query()->where('requisition_id', $requisition->id)->value('ulid') : null,
             'suppliers' => Supplier::query()->where('status', 'active')->orderBy('name')->get(['ulid', 'name'])->map(static fn (Supplier $s): array => ['key' => $s->ulid, 'label' => $s->name])->values(),
             'threshold' => (float) config('delegation_of_authority.three_quote_threshold'),
+            'invitations' => RfqController::invitationsFor($requisition),
             'can' => [
                 'submit' => $requisition->status === 'draft' && $request->user()?->id === $requisition->requested_by,
                 'procure' => $request->user()?->can('manage-procurement') ?? false,

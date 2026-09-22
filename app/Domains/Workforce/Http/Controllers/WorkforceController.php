@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domains\Workforce\Http\Controllers;
 
+use App\Domains\Documents\Enums\DocumentCategory;
+use App\Domains\Documents\Services\DocumentService;
+use App\Domains\Platform\Enums\Role;
 use App\Domains\Projects\Models\Project;
 use App\Domains\Workforce\Models\Employee;
 use App\Domains\Workforce\Models\EmployeeAllocation;
+use App\Domains\Workforce\Models\EmployeeAllowance;
+use App\Domains\Workforce\Models\EmployeeDocument;
 use App\Domains\Workforce\Models\LeaveRequest;
 use App\Domains\Workforce\Models\OvertimeEntry;
 use App\Domains\Workforce\Services\WorkforceService;
@@ -81,6 +86,13 @@ final class WorkforceController
             'leave' => $employee->leave->map(static fn (LeaveRequest $l): array => ['id' => $l->id, 'type' => $l->type, 'from' => $l->from_date->toDateString(), 'to' => $l->to_date->toDateString(), 'days' => (float) $l->days, 'status' => $l->status, 'notes' => $l->notes]),
             'overtime' => $employee->overtime->take(30)->map(static fn (OvertimeEntry $o): array => ['id' => $o->id, 'date' => $o->worked_on->toDateString(), 'hours' => (float) $o->hours, 'multiplier' => (float) $o->rate_multiplier, 'project' => $o->project?->name, 'reason' => $o->reason])->values(),
             'projects' => Project::query()->where('status', 'active')->orderBy('name')->get(['ulid', 'name'])->map(static fn (Project $p): array => ['key' => $p->ulid, 'label' => $p->name])->values(),
+            'allowances' => EmployeeAllowance::query()->where('employee_id', $employee->id)->orderByDesc('from_date')->get()
+                ->map(static fn ($a): array => ['id' => $a->id, 'type' => $a->type, 'amount' => (float) $a->amount, 'frequency' => $a->frequency, 'from' => $a->from_date->toDateString(), 'to' => $a->to_date?->toDateString(), 'notes' => $a->notes])->values(),
+            'documents' => EmployeeDocument::query()->with(['document' => fn ($q) => $q->with('latestVersion')])->where('employee_id', $employee->id)->latest('id')->get()
+                ->map(static fn ($d): array => [
+                    'id' => $d->id, 'type' => $d->type, 'expires' => $d->expires_on?->toDateString(), 'expired' => $d->expires_on !== null && $d->expires_on->isPast(),
+                    'download' => $d->document && $d->document->latestVersion ? "/documents/{$d->document->ulid}/versions/{$d->document->latestVersion->id}/download" : null,
+                ])->values(),
             'leaveTypes' => collect((array) config('workforce.leave'))->map(static fn (array $r, string $k): array => ['key' => $k, 'label' => (string) $r['label']])->values(),
         ]);
     }
@@ -143,5 +155,46 @@ final class WorkforceController
         );
 
         return back()->with('success', "{$entry->hours} hours overtime at {$entry->rate_multiplier}x recorded.");
+    }
+
+    public function allowance(Request $request, Employee $employee): RedirectResponse
+    {
+        Gate::authorize('manage-workforce');
+        $data = $request->validate([
+            'type' => ['required', 'in:travel,site,tool,meal,housing,cellphone,other'], 'amount' => ['required', 'numeric', 'gt:0', 'max:100000'],
+            'frequency' => ['required', 'in:day,month,once'], 'from_date' => ['required', 'date'], 'to_date' => ['nullable', 'date', 'after_or_equal:from_date'],
+            'notes' => ['nullable', 'string', 'max:255'],
+        ]);
+        EmployeeAllowance::query()->create([...$data, 'employee_id' => $employee->id]);
+
+        return back()->with('success', 'Allowance added. It is included in the payroll inputs export.');
+    }
+
+    public function endAllowance(EmployeeAllowance $allowance): RedirectResponse
+    {
+        Gate::authorize('manage-workforce');
+        $allowance->update(['to_date' => now()->toDateString()]);
+
+        return back()->with('success', 'Allowance ended today.');
+    }
+
+    public function document(Request $request, Employee $employee, DocumentService $documents): RedirectResponse
+    {
+        Gate::authorize('manage-workforce');
+        $data = $request->validate([
+            'type' => ['required', 'in:contract,id_copy,qualification,medical,induction,warning,other'],
+            'expires_on' => ['nullable', 'date'], 'file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png,docx', 'max:10240'],
+        ]);
+        /** @var User $user */
+        $user = $request->user();
+
+        // Employment records are restricted: only Company Admins and Directors can open them.
+        $document = $documents->upload($request->file('file'), [
+            'folder' => "HR/{$employee->employee_number}", 'title' => ucfirst(str_replace('_', ' ', (string) $data['type'])).": {$employee->name()}",
+            'category' => DocumentCategory::Other, 'restricted_to_roles' => [Role::CompanyAdmin->value],
+        ], $user);
+        EmployeeDocument::query()->create(['employee_id' => $employee->id, 'type' => $data['type'], 'document_id' => $document->id, 'expires_on' => $data['expires_on'] ?? null]);
+
+        return back()->with('success', 'Document saved to the employee file.');
     }
 }

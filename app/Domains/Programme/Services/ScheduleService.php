@@ -12,7 +12,8 @@ use Illuminate\Support\Carbon;
 use InvalidArgumentException;
 
 /**
- * Critical path method on working days (Monday to Friday, excluding SA public holidays).
+ * Critical path method on working days (Monday to Friday, excluding SA public holidays and the
+ * building industry's December shutdown, see config/programme.php).
  *
  * Each activity starts no earlier than its planned start and no earlier than its predecessors
  * finish (plus lag). The backward pass gives total float; activities with zero float are critical.
@@ -163,7 +164,7 @@ final class ScheduleService
         $holidays = [];
         for ($d = $from->copy(), $n = 0; count($dates) < max(1, $days); $d->addDay(), $n++) {
             $holidays[$d->year] ??= array_flip($this->holidays->forYear($d->year));
-            if ($d->isWeekday() && ! isset($holidays[$d->year][$d->toDateString()])) {
+            if ($this->isWorkingDay($d, $holidays[$d->year])) {
                 $index[$d->toDateString()] = count($dates);
                 $dates[] = $d->toDateString();
             }
@@ -176,6 +177,45 @@ final class ScheduleService
     }
 
     /**
+     * Working days from $from up to and including $to (0 if $to is before $from).
+     */
+    public function workingDaysBetween(Carbon $from, Carbon $to): int
+    {
+        $count = 0;
+        $holidays = [];
+        for ($d = $from->copy()->startOfDay(); $d->lessThanOrEqualTo($to) && $count < 5000; $d->addDay()) {
+            $holidays[$d->year] ??= array_flip($this->holidays->forYear($d->year));
+            if ($this->isWorkingDay($d, $holidays[$d->year])) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+
+    /**
+     * Monday to Friday, not a public holiday, and not in the building industry's December shutdown.
+     *
+     * @param  array<string, int>  $holidays
+     */
+    private function isWorkingDay(Carbon $d, array $holidays): bool
+    {
+        if (! $d->isWeekday() || isset($holidays[$d->toDateString()])) {
+            return false;
+        }
+
+        $from = config('programme.shutdown.from');
+        $to = config('programme.shutdown.to');
+        if (! is_string($from) || $from === '' || ! is_string($to) || $to === '') {
+            return true;
+        }
+        $md = $d->format('m-d');
+
+        // The shutdown straddles the new year (e.g. 16 Dec to 9 Jan).
+        return $from <= $to ? ! ($md >= $from && $md <= $to) : ! ($md >= $from || $md <= $to);
+    }
+
+    /**
      * Index of a date in the calendar; non-working days move to the next working day.
      *
      * @param  array<string, int>  $index
@@ -183,7 +223,7 @@ final class ScheduleService
      */
     private function indexOf(array $index, array $calendar, Carbon $date): int
     {
-        for ($d = $date->copy(), $i = 0; $i < 15; $d->addDay(), $i++) {
+        for ($d = $date->copy(), $i = 0; $i < 40; $d->addDay(), $i++) {
             if (isset($index[$d->toDateString()])) {
                 return $index[$d->toDateString()];
             }

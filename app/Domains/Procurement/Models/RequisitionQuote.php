@@ -22,17 +22,18 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $valid_until
  * @property int|null $document_id
  * @property string|null $notes
+ * @property bool $submitted_by_supplier
  * @property-read Supplier $supplier
  */
 class RequisitionQuote extends Model
 {
     use BelongsToCompany;
 
-    protected $fillable = ['requisition_id', 'supplier_id', 'reference', 'amount', 'lead_time_days', 'valid_until', 'document_id', 'notes'];
+    protected $fillable = ['requisition_id', 'supplier_id', 'reference', 'amount', 'lead_time_days', 'valid_until', 'document_id', 'notes', 'submitted_by_supplier'];
 
     protected function casts(): array
     {
-        return ['amount' => 'decimal:2', 'valid_until' => 'date', 'lead_time_days' => 'integer'];
+        return ['submitted_by_supplier' => 'boolean', 'amount' => 'decimal:2', 'valid_until' => 'date', 'lead_time_days' => 'integer'];
     }
 
     /**

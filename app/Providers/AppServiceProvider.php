@@ -123,6 +123,11 @@ class AppServiceProvider extends ServiceProvider
             Role::CompanyAdmin->value, Role::Finance->value, Role::QuantitySurveyor->value,
         ]));
 
+        // POPIA: information officer tasks (register, retention, data subject requests).
+        Gate::define('manage-popia', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value,
+        ]));
+
         // Reports and dashboards.
         Gate::define('view-financial-reports', static fn (User $user): bool => $user->hasAnyRole([
             Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::Finance->value,

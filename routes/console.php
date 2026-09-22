@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Domains\Compliance\Services\RetentionService;
 use App\Domains\Platform\Models\Company;
+use App\Domains\Programme\Services\EarnedValueService;
+use App\Domains\Projects\Models\Project;
 use App\Domains\Projects\Services\TaskEscalation;
 use App\Domains\Reporting\Services\ScheduledReportSender;
 use App\Domains\Suppliers\Services\ComplianceAlerts;
@@ -47,3 +50,25 @@ Artisan::command('tasks:escalate', function (TaskEscalation $escalation): void {
 })->purpose('Escalate overdue tasks to project managers');
 
 Schedule::command('tasks:escalate')->weekdays()->at('07:30')->timezone('Africa/Johannesburg');
+
+// Weekly earned-value reading for each live project (history on the S-curve).
+Artisan::command('programme:snapshot', function (EarnedValueService $evm, CurrentCompany $context): void {
+    $n = 0;
+    Company::query()->where('status', 'active')->each(function (Company $company) use ($evm, $context, &$n): void {
+        $context->runFor($company, function () use ($evm, &$n): void {
+            Project::query()->where('status', 'active')->each(function (Project $p) use ($evm, &$n): void {
+                $n += $evm->snapshot($p) !== null ? 1 : 0;
+            });
+        });
+    });
+    $this->info("Recorded {$n} progress snapshots.");
+})->purpose('Record weekly earned-value snapshots');
+
+Schedule::command('programme:snapshot')->weeklyOn(1, '06:30')->timezone('Africa/Johannesburg');
+
+// Monthly POPIA clean-up of personal records past their retention period.
+Artisan::command('popia:retention', function (RetentionService $retention): void {
+    $this->info('Retention clean-up run for '.$retention->runAll().' companies.');
+})->purpose('Apply POPIA retention rules');
+
+Schedule::command('popia:retention')->monthlyOn(1, '02:00')->timezone('Africa/Johannesburg');

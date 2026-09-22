@@ -148,6 +148,21 @@ Everything marked **configurable** can be changed in settings without code chang
 | HS4 | Legal appointment types and references follow the OHS Act and Construction Regulations 2014; confirm the list with the client's registered H&S practitioner | Yes |
 | HS5 | Safety file checklist has 16 standard items; confirm with the client's H&S practitioner | Yes |
 
+## RFQs, contracts, performance, workforce and POPIA (Sprint 14)
+| # | Assumption | Configurable |
+|---|---|---|
+| RQ1 | RFQs go by email with a private link (48-character random token, only its hash stored); suppliers see items and quantities but never the company's estimates; they can revise until the closing date | No |
+| RQ2 | Quote documents uploaded by suppliers are stored as if uploaded by the buyer who sent the RFQ; the audit log records the supplier link | No |
+| CT1 | Contract form defaults (retention, payment days, defects period) for JBCC PBA/MWA, NEC4, GCC 2015 and FIDIC are typical starting values only; the signed contract data governs. Confirm with the client's QS | Yes |
+| PG4 | Programme excludes the building industry's December shutdown (16 December to 9 January by default) | Yes |
+| EV1 | Earned value: budget at completion = revised project budget, spread over activities by entered activity budgets or else by duration; actual cost = approved supplier invoices excl. VAT; a reading is saved every Monday | No |
+| PF1 | Forecast cost per cost code = the larger of revised budget and committed-plus-direct spend; revenue from the approved feasibility until the Sales module exists | No |
+| WF5 | Allowances: daily allowances count days present on the crew register; monthly once per month; once-off in the month paid. Employment documents are visible only to Company Admins and Directors | Yes |
+| PO1 | Record of processing (register) lists six categories of personal information with purpose, lawful basis and access; confirm with the client's Information Officer | Yes |
+| PO2 | Retention defaults: selfies 12 months, crew register 36 months (BCEA minimum), former employees anonymised after 36 months, read notifications 12 months, RFQ links 12 months; clean-up on the 1st of each month | Yes |
+| PO3 | Data subject requests are due 30 days after receipt; exports cover employees and system users | Yes |
+| PO4 | The Information Officer's name and email are set per deployment (POPIA_INFORMATION_OFFICER) | Yes |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.

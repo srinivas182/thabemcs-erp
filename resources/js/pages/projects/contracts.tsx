@@ -9,19 +9,27 @@ type Option = { key: string; label: string };
 interface Certificate { id: string; reference: string; date: string; gross: number; held: number; released: number; previous: number; due: number; vat: number; status: string }
 interface Contract {
     id: string; reference: string; form: string; contractor: string; sum: number; retention: number; cap: number | null; release: number;
-    practical: string | null; final: string | null; position: { certified: number; retentionHeld: number; retentionReleased: number; remaining: number };
+    practical: string | null; final: string | null; paymentDays: number | null; defectsMonths: number | null; position: { certified: number; retentionHeld: number; retentionReleased: number; remaining: number };
     blockers: string[]; certificates: Certificate[];
 }
-interface Props { project: { id: string; name: string; code: string }; contracts: Contract[]; contractors: Option[]; budgetLines: Option[]; forms: Option[]; canManage: boolean }
+interface FormDefault { label: string; retention_percent: number; retention_cap_percent: number | null; release_at_practical_percent: number; payment_terms_days: number; defects_period_months: number; notes: string }
+interface Props { project: { id: string; name: string; code: string }; contracts: Contract[]; contractors: Option[]; budgetLines: Option[]; forms: Option[]; formDefaults: Record<string, FormDefault>; canManage: boolean }
 
 const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' }).format(new Date());
 
-export default function Contracts({ project, contracts, contractors, budgetLines, forms, canManage }: Props) {
+export default function Contracts({ project, contracts, contractors, budgetLines, forms, formDefaults, canManage }: Props) {
     const [adding, setAdding] = useState(false);
-    const form = useForm({ supplier: '', reference: '', contract_form: 'jbcc_pba', contract_sum: '', retention_percent: '10', retention_cap_percent: '5', release_at_practical_percent: '50', budget_line_id: '' });
+    const form = useForm({ supplier: '', reference: '', contract_form: 'jbcc_pba', contract_sum: '', retention_percent: '10', retention_cap_percent: '5', release_at_practical_percent: '50', payment_terms_days: '7', defects_period_months: '3', budget_line_id: '' });
+    function chooseForm(key: string) {
+        const d = formDefaults[key];
+        form.setData((f) => ({
+            ...f, contract_form: key,
+            ...(d ? { retention_percent: String(d.retention_percent), retention_cap_percent: d.retention_cap_percent === null ? '' : String(d.retention_cap_percent), release_at_practical_percent: String(d.release_at_practical_percent), payment_terms_days: String(d.payment_terms_days), defects_period_months: String(d.defects_period_months) } : {}),
+        }));
+    }
     function submit(e: FormEvent) {
         e.preventDefault();
-        form.transform((d) => ({ ...d, retention_cap_percent: d.retention_cap_percent || null, budget_line_id: d.budget_line_id || null }));
+        form.transform((d) => ({ ...d, retention_cap_percent: d.retention_cap_percent || null, budget_line_id: d.budget_line_id || null, payment_terms_days: d.payment_terms_days || null, defects_period_months: d.defects_period_months || null }));
         form.post(`/projects/${project.id}/contracts`, { preserveScroll: true, onSuccess: () => { form.reset(); setAdding(false); } });
     }
 
@@ -43,14 +51,19 @@ export default function Contracts({ project, contracts, contractors, budgetLines
                         <div className="grid gap-4 sm:grid-cols-3">
                             <SelectField label="Contractor" name="supplier" value={form.data.supplier} onChange={(v) => form.setData('supplier', v)} options={contractors} placeholder="Choose" error={form.errors.supplier} />
                             <Field label="Contract reference" name="reference" value={form.data.reference} onChange={(e) => form.setData('reference', e.target.value)} error={form.errors.reference} placeholder="e.g. BH-MAIN-01" />
-                            <SelectField label="Form of contract" name="contract_form" value={form.data.contract_form} onChange={(v) => form.setData('contract_form', v)} options={forms} />
+                            <SelectField label="Form of contract" name="contract_form" value={form.data.contract_form} onChange={chooseForm} options={forms} />
                         </div>
+                        {formDefaults[form.data.contract_form] && <p className="-mt-2 text-sm text-ink-soft">{formDefaults[form.data.contract_form]?.notes} Typical values are filled in below; use the figures in the signed contract data.</p>}
                         <div className="grid gap-4 sm:grid-cols-5">
                             <Field label="Contract sum excl. VAT (R)" name="contract_sum" type="number" value={form.data.contract_sum} onChange={(e) => form.setData('contract_sum', e.target.value)} error={form.errors.contract_sum} />
                             <Field label="Retention %" name="retention_percent" type="number" value={form.data.retention_percent} onChange={(e) => form.setData('retention_percent', e.target.value)} />
                             <Field label="Retention limit, % of sum" name="retention_cap_percent" type="number" value={form.data.retention_cap_percent} onChange={(e) => form.setData('retention_cap_percent', e.target.value)} hint="Blank = no limit" />
                             <Field label="Released at practical completion %" name="release_at_practical_percent" type="number" value={form.data.release_at_practical_percent} onChange={(e) => form.setData('release_at_practical_percent', e.target.value)} />
                             <SelectField label="Cost code" name="budget_line_id" value={form.data.budget_line_id} onChange={(v) => form.setData('budget_line_id', v)} options={budgetLines} placeholder="Choose" />
+                        </div>
+                        <div className="grid gap-4 sm:grid-cols-5">
+                            <Field label="Payment due (days after certificate)" name="payment_terms_days" type="number" value={form.data.payment_terms_days} onChange={(e) => form.setData('payment_terms_days', e.target.value)} />
+                            <Field label="Defects period (months)" name="defects_period_months" type="number" value={form.data.defects_period_months} onChange={(e) => form.setData('defects_period_months', e.target.value)} />
                         </div>
                         <div className="flex gap-3"><Button type="submit" disabled={form.processing}>Save contract</Button><Button type="button" variant="secondary" onClick={() => setAdding(false)}>Cancel</Button></div>
                     </form>
@@ -73,7 +86,7 @@ function ContractCard({ contract: c, canManage }: { contract: Contract; canManag
             <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                     <h2 className="text-lg font-bold">{c.contractor} <span className="font-normal text-ink-soft">{c.reference}</span></h2>
-                    <p className="text-sm text-ink-soft">{c.form}; retention {c.retention}%{c.cap !== null && ` up to ${c.cap}% of the sum`}, {c.release}% released at practical completion</p>
+                    <p className="text-sm text-ink-soft">{c.form}; retention {c.retention}%{c.cap !== null && ` up to ${c.cap}% of the sum`}, {c.release}% released at practical completion{c.paymentDays !== null && `; payment ${c.paymentDays} days after certificate`}{c.defectsMonths !== null && `; ${c.defectsMonths}-month defects period`}</p>
                     {c.blockers.length > 0 && <p className="text-sm font-semibold text-brick first-letter:uppercase">Compliance: {c.blockers.join('; ')}</p>}
                 </div>
                 <div className="text-right">

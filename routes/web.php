@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domains\Approvals\Http\Controllers\ApprovalController;
+use App\Domains\Compliance\Http\Controllers\PopiaController;
 use App\Domains\Contracts\Http\Controllers\ContractController;
 use App\Domains\Documents\Http\Controllers\DocumentController;
 use App\Domains\Feasibility\Http\Controllers\FeasibilityController;
@@ -26,6 +27,8 @@ use App\Domains\Platform\Http\Controllers\Settings\CompanyUserController;
 use App\Domains\Platform\Http\Controllers\Settings\ProfileController;
 use App\Domains\Procurement\Http\Controllers\PurchaseOrderController;
 use App\Domains\Procurement\Http\Controllers\RequisitionController;
+use App\Domains\Procurement\Http\Controllers\RfqController;
+use App\Domains\Programme\Http\Controllers\PerformanceController;
 use App\Domains\Programme\Http\Controllers\ProgrammeController;
 use App\Domains\Projects\Http\Controllers\MilestoneController;
 use App\Domains\Projects\Http\Controllers\ProjectController;
@@ -207,6 +210,14 @@ Route::middleware(['auth'])->group(function (): void {
     Route::post('settings/master-data/units', [MasterDataController::class, 'storeUnit'])->name('master-data.units.store');
     Route::delete('settings/master-data/units/{unit}', [MasterDataController::class, 'destroyUnit'])->name('master-data.units.destroy');
 
+    // POPIA: register, retention clean-up, data subject requests.
+    Route::get('settings/popia', [PopiaController::class, 'index'])->name('popia.index');
+    Route::patch('settings/popia/retention/{record}', [PopiaController::class, 'updateRule'])->name('popia.retention.update');
+    Route::post('settings/popia/retention/run', [PopiaController::class, 'runCleanup'])->name('popia.retention.run');
+    Route::post('settings/popia/requests', [PopiaController::class, 'storeRequest'])->name('popia.requests.store');
+    Route::patch('settings/popia/requests/{dataRequest}', [PopiaController::class, 'updateRequest'])->name('popia.requests.update');
+    Route::get('settings/popia/requests/{dataRequest}/export', [PopiaController::class, 'export'])->name('popia.requests.export');
+
     // Approvals inbox and delegation while away.
     Route::get('inbox', [InboxController::class, 'index'])->name('inbox');
     Route::post('inbox/{approval}', [InboxController::class, 'decide'])->name('inbox.decide');
@@ -221,6 +232,7 @@ Route::middleware(['auth'])->group(function (): void {
         Route::post('requisitions/{requisition}/submit', [RequisitionController::class, 'submit'])->name('requisitions.submit');
         Route::post('requisitions/{requisition}/quotes', [RequisitionController::class, 'storeQuote'])->name('requisitions.quotes.store');
         Route::post('requisitions/{requisition}/award', [RequisitionController::class, 'award'])->name('requisitions.award');
+        Route::post('requisitions/{requisition}/rfq', [RfqController::class, 'invite'])->name('requisitions.rfq');
 
         Route::get('purchase-orders', [PurchaseOrderController::class, 'index'])->name('purchase-orders.index');
         Route::get('purchase-orders/{order}', [PurchaseOrderController::class, 'show'])->name('purchase-orders.show');
@@ -259,6 +271,7 @@ Route::middleware(['auth'])->group(function (): void {
         Route::post('payment-certificates/{certificate}/submit', [ContractController::class, 'submit'])->name('payment-certificates.submit');
 
         Route::get('projects/{project}/cashflow', [ReportsExportController::class, 'cashflow'])->name('projects.cashflow');
+        Route::get('projects/{project}/performance', [PerformanceController::class, 'show'])->name('projects.performance');
         Route::get('exports', [ReportsExportController::class, 'index'])->name('exports.index');
         Route::get('exports/{type}', [ReportsExportController::class, 'download'])->name('exports.download');
     });
@@ -272,6 +285,9 @@ Route::middleware(['auth'])->group(function (): void {
         Route::post('workforce/{employee}/leave', [WorkforceController::class, 'requestLeave'])->name('workforce.leave');
         Route::post('workforce/{employee}/overtime', [WorkforceController::class, 'overtime'])->name('workforce.overtime');
         Route::patch('leave/{leave}', [WorkforceController::class, 'decideLeave'])->name('leave.decide');
+        Route::post('workforce/{employee}/allowances', [WorkforceController::class, 'allowance'])->name('workforce.allowances.store');
+        Route::post('allowances/{allowance}/end', [WorkforceController::class, 'endAllowance'])->name('allowances.end');
+        Route::post('workforce/{employee}/documents', [WorkforceController::class, 'document'])->name('workforce.documents.store');
     });
 
     // Plant and equipment.
@@ -289,6 +305,16 @@ Route::middleware(['auth'])->group(function (): void {
         Route::post('users', [CompanyUserController::class, 'store'])->name('users.store');
         Route::patch('users/{user:ulid}', [CompanyUserController::class, 'update'])->name('users.update');
     });
+});
+
+/*
+| Supplier quote link from a request for quotation email. No sign-in: the random token is the key,
+| requests are rate-limited, and the page is not indexed.
+*/
+Route::middleware('throttle:30,1')->group(function (): void {
+    Route::get('/quote/{token}', [RfqController::class, 'show'])->where('token', '[A-Za-z0-9]{48}')->name('rfq.respond');
+    Route::post('/quote/{token}', [RfqController::class, 'submit'])->where('token', '[A-Za-z0-9]{48}')->name('rfq.submit');
+    Route::post('/quote/{token}/decline', [RfqController::class, 'decline'])->where('token', '[A-Za-z0-9]{48}')->name('rfq.decline');
 });
 
 /*

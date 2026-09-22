@@ -14,10 +14,11 @@ interface Props {
     purchaseOrder: string | null;
     suppliers: { key: string; label: string }[];
     threshold: number;
+    invitations: { supplier: string; email: string; sentAt: string; closesOn: string; status: string }[];
     can: { submit: boolean; procure: boolean };
 }
 
-export default function RequisitionShow({ requisition: r, lines, quotes, approval, purchaseOrder, suppliers, threshold, can }: Props) {
+export default function RequisitionShow({ requisition: r, lines, quotes, approval, purchaseOrder, suppliers, threshold, invitations, can }: Props) {
     const [choice, setChoice] = useState<number | null>(null);
     const [reason, setReason] = useState('');
     const [singleSource, setSingleSource] = useState('');
@@ -90,6 +91,8 @@ export default function RequisitionShow({ requisition: r, lines, quotes, approva
                             </div>
                         )}
 
+                        {r.status === 'approved' && can.procure && <InviteSuppliers requisitionId={r.id} suppliers={suppliers} invitations={invitations} />}
+
                         {r.status === 'approved' && can.procure && (
                             <form onSubmit={addQuote} className="grid items-end gap-3 rounded-[var(--radius-panel)] border border-dashed border-concrete p-4 sm:grid-cols-[1.4fr_1fr_1fr_110px_150px]">
                                 <SelectField label="Supplier" name="supplier" value={quote.data.supplier} onChange={(v) => quote.setData('supplier', v)} options={suppliers} placeholder="Choose" error={quote.errors.supplier} />
@@ -107,6 +110,40 @@ export default function RequisitionShow({ requisition: r, lines, quotes, approva
                 )}
             </div>
         </>
+    );
+}
+
+const INVITE_STATUS: Record<string, string> = { sent: 'Sent', opened: 'Opened', quoted: 'Quoted', declined: 'Declined' };
+
+function InviteSuppliers({ requisitionId, suppliers, invitations }: { requisitionId: string; suppliers: { key: string; label: string }[]; invitations: Props['invitations'] }) {
+    const inAWeek = new Date(Date.now() + 7 * 86_400_000).toLocaleDateString('en-CA');
+    const form = useForm<{ suppliers: string[]; closes_on: string; message: string }>({ suppliers: [], closes_on: inAWeek, message: '' });
+    const invited = new Set(invitations.map((i) => i.supplier));
+    return (
+        <div className="grid gap-3 rounded-[var(--radius-panel)] border border-concrete bg-surface p-4">
+            <p className="font-semibold">Request quotes by email</p>
+            {invitations.length > 0 && (
+                <ul className="text-sm">
+                    {invitations.map((i) => <li key={i.supplier}>{i.supplier} <span className="text-ink-soft">({i.email}), closes {formatDate(i.closesOn)}:</span> <span className={cn('font-medium', i.status === 'quoted' && 'text-line-deep', i.status === 'declined' && 'text-brick')}>{INVITE_STATUS[i.status]}</span></li>)}
+                </ul>
+            )}
+            <form onSubmit={(e) => { e.preventDefault(); form.post(`/requisitions/${requisitionId}/rfq`, { preserveScroll: true, onSuccess: () => form.reset('suppliers', 'message') }); }} className="grid gap-3">
+                <div className="flex flex-wrap gap-2">
+                    {suppliers.filter((s) => !invited.has(s.label)).map((s) => (
+                        <label key={s.key} className="flex items-center gap-1.5 rounded-full border border-concrete px-2.5 py-1 text-sm">
+                            <input type="checkbox" className="accent-line" checked={form.data.suppliers.includes(s.key)} onChange={(e) => form.setData('suppliers', e.target.checked ? [...form.data.suppliers, s.key] : form.data.suppliers.filter((x) => x !== s.key))} />
+                            {s.label}
+                        </label>
+                    ))}
+                </div>
+                <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
+                    <Field label="Quotes close on" name="closes_on" type="date" value={form.data.closes_on} onChange={(e) => form.setData('closes_on', e.target.value)} error={form.errors.closes_on} />
+                    <Field label="Message to suppliers (optional)" name="message" value={form.data.message} onChange={(e) => form.setData('message', e.target.value)} placeholder="e.g. Delivery to site in Ballito; prices to include transport" />
+                </div>
+                <p className="text-xs text-ink-soft">Each supplier gets a private link to see the items (not your estimates) and submit a quote with their document. Quotes appear here as they arrive.</p>
+                <div><Button type="submit" variant="secondary" disabled={form.processing || form.data.suppliers.length === 0}>Send request for quotation</Button></div>
+            </form>
+        </div>
     );
 }
 

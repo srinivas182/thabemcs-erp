@@ -1,6 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { cn } from '@thabekhulu/ui';
-import { Bell, Building2, CalendarCheck, Gauge, History, Inbox, ListTree, LogOut, Menu, Search, Users, X } from 'lucide-react';
+import { Bell, Building2, CalendarCheck, Gauge, History, Inbox, ListTree, LogOut, Menu, Search, ShieldCheck, Users, X } from 'lucide-react';
 import CommandPalette from '@/components/command-palette';
 import { type ReactNode, useEffect, useState } from 'react';
 import { MODULE_ROUTES, NAV_GROUPS } from '@/components/navigation';
@@ -43,6 +43,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 {company && can.manageMasterData && (
                     <NavLink href="/settings/master-data" active={url.startsWith('/settings/master-data')} icon={<ListTree className="size-4" aria-hidden />}>
                         Master data
+                    </NavLink>
+                )}
+                {company && can.managePopia && (
+                    <NavLink href="/settings/popia" active={url.startsWith('/settings/popia')} icon={<ShieldCheck className="size-4" aria-hidden />}>
+                        POPIA
                     </NavLink>
                 )}
                 {company && (

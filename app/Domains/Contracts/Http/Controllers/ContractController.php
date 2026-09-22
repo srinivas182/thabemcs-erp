@@ -47,6 +47,7 @@ final class ContractController
                 'contractor' => $c->supplier->name, 'sum' => (float) $c->contract_sum, 'retention' => (float) $c->retention_percent,
                 'cap' => $c->retention_cap_percent === null ? null : (float) $c->retention_cap_percent, 'release' => (float) $c->release_at_practical_percent,
                 'practical' => $c->practical_completion_on?->toDateString(), 'final' => $c->final_completion_on?->toDateString(),
+                'paymentDays' => $c->payment_terms_days, 'defectsMonths' => $c->defects_period_months,
                 'position' => $this->certificates->position($c), 'blockers' => $this->compliance->blockers($c->supplier, (float) $c->contract_sum * 1.15),
                 'certificates' => $c->certificates->map(static fn (PaymentCertificate $p): array => [
                     'id' => $p->ulid, 'reference' => $p->reference(), 'date' => $p->valuation_date->toDateString(), 'gross' => (float) $p->gross_value,
@@ -59,6 +60,7 @@ final class ContractController
             'budgetLines' => BudgetLine::query()->where('project_id', $project->id)->orderBy('code')->get(['id', 'code', 'description'])
                 ->map(static fn (BudgetLine $l): array => ['key' => (string) $l->id, 'label' => "{$l->code} {$l->description}"])->values(),
             'forms' => collect(self::FORMS)->map(static fn (string $label, string $key): array => ['key' => $key, 'label' => $label])->values(),
+            'formDefaults' => config('contract_forms'),
             'canManage' => $request->user()?->can('manage-contracts') ?? false,
         ]);
     }
@@ -74,6 +76,8 @@ final class ContractController
             'retention_percent' => ['required', 'numeric', 'between:0,20'],
             'retention_cap_percent' => ['nullable', 'numeric', 'between:0,20'],
             'release_at_practical_percent' => ['required', 'numeric', 'between:0,100'],
+            'payment_terms_days' => ['nullable', 'integer', 'between:0,120'],
+            'defects_period_months' => ['nullable', 'integer', 'between:0,60'],
             'budget_line_id' => ['nullable', 'integer', Rule::exists('budget_lines', 'id')->where('project_id', $project->id)],
         ]);
 
