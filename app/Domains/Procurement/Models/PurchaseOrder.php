@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domains\Procurement\Models;
 
+use App\Domains\Finance\Models\BudgetLine;
+use App\Domains\Finance\Services\BudgetService;
 use App\Domains\Projects\Models\Project;
 use App\Domains\Suppliers\Models\Supplier;
 use App\Domains\Workflow\Contracts\Approvable;
@@ -28,6 +30,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property int $project_id
  * @property int $supplier_id
  * @property int|null $requisition_id
+ * @property int|null $budget_line_id
  * @property int $number
  * @property string $status
  * @property bool $vat_applies
@@ -50,7 +53,7 @@ class PurchaseOrder extends Model implements Approvable
 {
     use BelongsToCompany, HasPublicUlid, LogsActivity;
 
-    protected $fillable = ['project_id', 'supplier_id', 'requisition_id', 'number', 'status', 'vat_applies', 'expected_delivery', 'delivery_instructions', 'created_by'];
+    protected $fillable = ['project_id', 'supplier_id', 'requisition_id', 'budget_line_id', 'number', 'status', 'vat_applies', 'expected_delivery', 'delivery_instructions', 'created_by'];
 
     protected function casts(): array
     {
@@ -139,6 +142,11 @@ class PurchaseOrder extends Model implements Approvable
     public function onApprovalGranted(ApprovalRequest $request): void
     {
         $this->forceFill(['status' => 'approved', 'approved_at' => now()])->save();
+
+        // Approved orders are committed spend: warn when the cost code nears its budget.
+        if ($this->budget_line_id !== null && ($line = BudgetLine::query()->find($this->budget_line_id))) {
+            app(BudgetService::class)->checkThresholds($line);
+        }
     }
 
     public function onApprovalRejected(ApprovalRequest $request, ?string $comment): void

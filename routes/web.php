@@ -5,6 +5,9 @@ declare(strict_types=1);
 use App\Domains\Approvals\Http\Controllers\ApprovalController;
 use App\Domains\Documents\Http\Controllers\DocumentController;
 use App\Domains\Feasibility\Http\Controllers\FeasibilityController;
+use App\Domains\Finance\Http\Controllers\BudgetController;
+use App\Domains\Finance\Http\Controllers\InvoiceController;
+use App\Domains\Finance\Http\Controllers\PaymentRunController;
 use App\Domains\Funding\Http\Controllers\FundingController;
 use App\Domains\Funding\Http\Controllers\InvestorController;
 use App\Domains\Land\Http\Controllers\LandController;
@@ -179,6 +182,28 @@ Route::middleware(['auth'])->group(function (): void {
         Route::post('purchase-orders/{order}/issue', [PurchaseOrderController::class, 'issue'])->name('purchase-orders.issue');
         Route::post('purchase-orders/{order}/receive', [PurchaseOrderController::class, 'receive'])->name('purchase-orders.receive');
         Route::post('purchase-orders/{order}/cancel', [PurchaseOrderController::class, 'cancel'])->name('purchase-orders.cancel');
+    });
+
+    // Finance: budgets and variations per project, supplier invoices, payment runs.
+    Route::middleware(['module:finance', 'module:projects'])->group(function (): void {
+        Route::get('projects/{project}/budget', [BudgetController::class, 'show'])->name('projects.budget');
+        Route::post('projects/{project}/budget/from-feasibility', [BudgetController::class, 'fromFeasibility'])->name('projects.budget.from-feasibility');
+        Route::post('projects/{project}/budget/import', [BudgetController::class, 'import'])->name('projects.budget.import');
+        Route::post('projects/{project}/budget/lines', [BudgetController::class, 'storeLine'])->name('projects.budget.lines.store');
+        Route::post('projects/{project}/variations', [BudgetController::class, 'raiseVariation'])->name('projects.variations.store');
+
+        Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+        Route::post('invoices', [InvoiceController::class, 'store'])->name('invoices.store');
+        Route::post('invoices/{invoice}/approve', [InvoiceController::class, 'approve'])->name('invoices.approve');
+        Route::post('invoices/{invoice}/reject', [InvoiceController::class, 'reject'])->name('invoices.reject');
+        Route::post('invoices/{invoice}/rematch', [InvoiceController::class, 'rematch'])->name('invoices.rematch');
+
+        Route::get('payment-runs', [PaymentRunController::class, 'index'])->name('payment-runs.index');
+        Route::post('payment-runs', [PaymentRunController::class, 'store'])->name('payment-runs.store');
+        Route::get('payment-runs/{run}', [PaymentRunController::class, 'show'])->name('payment-runs.show');
+        Route::post('payment-runs/{run}/submit', [PaymentRunController::class, 'submit'])->name('payment-runs.submit');
+        Route::post('payment-runs/{run}/paid', [PaymentRunController::class, 'paid'])->name('payment-runs.paid');
+        Route::get('payment-runs/{run}/export', [PaymentRunController::class, 'export'])->name('payment-runs.export');
     });
 
     // Company settings (Company Admin).

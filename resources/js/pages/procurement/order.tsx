@@ -8,16 +8,17 @@ import AppLayout from '@/layouts/app-layout';
 
 type Line = { id?: number; description: string; quantity: number | string; unit: string; unit_price: number | string; received?: number; outstanding?: number };
 interface Props {
-    order: { id: string; reference: string; status: string; project: { id: string; name: string }; supplier: { id: string; name: string; vat: string | null }; requisition: { id: string; reference: string } | null; subtotal: number; vat: number; total: number; vatApplies: boolean; expectedDelivery: string | null; instructions: string | null; approvedAt: string | null; issuedAt: string | null };
+    order: { id: string; reference: string; status: string; project: { id: string; name: string }; supplier: { id: string; name: string; vat: string | null }; requisition: { id: string; reference: string } | null; subtotal: number; vat: number; total: number; vatApplies: boolean; expectedDelivery: string | null; instructions: string | null; approvedAt: string | null; issuedAt: string | null; budgetLineId: number | null };
     lines: Required<Line>[];
     receipts: { id: string; reference: string; on: string; by: string; notes: string | null }[];
     approval: ApprovalTrailData | null;
     blockers: string[];
     deliveries: { key: string; label: string }[];
+    budgetLines: { key: string; label: string }[];
     can: { procure: boolean; receive: boolean };
 }
 
-export default function OrderShow({ order: o, lines, receipts, approval, blockers, deliveries, can }: Props) {
+export default function OrderShow({ order: o, lines, receipts, approval, blockers, deliveries, budgetLines, can }: Props) {
     const draft = o.status === 'draft' && can.procure;
     return (
         <>
@@ -44,7 +45,7 @@ export default function OrderShow({ order: o, lines, receipts, approval, blocker
                 )}
 
                 <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-                    {draft ? <LinesEditor order={o} lines={lines} /> : <LinesView order={o} lines={lines} />}
+                    {draft ? <LinesEditor order={o} lines={lines} budgetLines={budgetLines} /> : <LinesView order={o} lines={lines} />}
                     {approval && <ApprovalTrail approval={approval} />}
                 </div>
 
@@ -83,15 +84,15 @@ function LinesView({ order, lines }: { order: Props['order']; lines: Props['line
     );
 }
 
-function LinesEditor({ order, lines }: { order: Props['order']; lines: Props['lines'] }) {
-    const form = useForm<{ expected_delivery: string; delivery_instructions: string; lines: Line[] }>({
-        expected_delivery: order.expectedDelivery ?? '', delivery_instructions: order.instructions ?? '',
+function LinesEditor({ order, lines, budgetLines }: { order: Props['order']; lines: Props['lines']; budgetLines: Props['budgetLines'] }) {
+    const form = useForm<{ expected_delivery: string; delivery_instructions: string; budget_line_id: string; lines: Line[] }>({
+        expected_delivery: order.expectedDelivery ?? '', delivery_instructions: order.instructions ?? '', budget_line_id: order.budgetLineId ? String(order.budgetLineId) : '',
         lines: lines.map(({ description, quantity, unit, unit_price }) => ({ description, quantity, unit, unit_price })),
     });
     const setLine = (i: number, patch: Partial<Line>) => form.setData('lines', form.data.lines.map((l, j) => (j === i ? { ...l, ...patch } : l)));
     function save(e: FormEvent) {
         e.preventDefault();
-        form.transform((d) => ({ ...d, expected_delivery: d.expected_delivery || null }));
+        form.transform((d) => ({ ...d, expected_delivery: d.expected_delivery || null, budget_line_id: d.budget_line_id || null }));
         form.put(`/purchase-orders/${order.id}`, { preserveScroll: true });
     }
     return (
@@ -107,6 +108,7 @@ function LinesEditor({ order, lines }: { order: Props['order']; lines: Props['li
                 </div>
             ))}
             <Button type="button" variant="ghost" size="sm" className="justify-self-start" onClick={() => form.setData('lines', [...form.data.lines, { description: '', quantity: 1, unit: 'each', unit_price: 0 }])}><Plus className="size-4" /> Add line</Button>
+            <SelectField label="Cost code" name="budget_line_id" value={form.data.budget_line_id} onChange={(v) => form.setData('budget_line_id', v)} options={budgetLines} placeholder={budgetLines.length ? 'Choose the budget line this order is charged to' : 'This project has no budget yet'} />
             <div className="grid gap-3 sm:grid-cols-2">
                 <Field label="Expected delivery" name="expected_delivery" type="date" value={form.data.expected_delivery} onChange={(e) => form.setData('expected_delivery', e.target.value)} />
                 <Field label="Delivery instructions" name="delivery_instructions" value={form.data.delivery_instructions} onChange={(e) => form.setData('delivery_instructions', e.target.value)} />

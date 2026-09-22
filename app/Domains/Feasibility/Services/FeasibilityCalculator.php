@@ -107,6 +107,30 @@ final class FeasibilityCalculator
     }
 
     /**
+     * The rand value of each line after percentages are applied (same order as the input).
+     *
+     * @param  list<array{category: LineCategory, basis: LineBasis, amount: float|null, rate: float|null, start_month: int, end_month: int}>  $lines
+     * @return list<float>
+     */
+    public function lineValues(array $lines): array
+    {
+        $construction = 0.0;
+        $revenue = 0.0;
+        foreach ($lines as $line) {
+            if ($line['basis'] === LineBasis::Amount) {
+                $construction += $line['category'] === LineCategory::Construction ? (float) $line['amount'] : 0.0;
+                $revenue += $line['category'] === LineCategory::Revenue ? (float) $line['amount'] : 0.0;
+            }
+        }
+
+        return array_map(static fn (array $line): float => round(match ($line['basis']) {
+            LineBasis::Amount => (float) ($line['amount'] ?? 0),
+            LineBasis::PercentOfConstruction => $construction * (float) ($line['rate'] ?? 0) / 100,
+            LineBasis::PercentOfRevenue => $revenue * (float) ($line['rate'] ?? 0) / 100,
+        }, 2), $lines);
+    }
+
+    /**
      * Monthly internal rate of return by bisection. Null when cash flows never change sign.
      *
      * @param  list<float>  $flows

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Procurement\Http\Controllers;
 
+use App\Domains\Finance\Services\BudgetService;
 use App\Domains\Platform\Enums\Role;
 use App\Domains\Procurement\Exceptions\ProcurementException;
 use App\Domains\Procurement\Models\GoodsReceipt;
@@ -20,6 +21,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -57,7 +59,11 @@ final class PurchaseOrderController
                 'subtotal' => (float) $order->subtotal, 'vat' => (float) $order->vat, 'total' => (float) $order->total, 'vatApplies' => $order->vat_applies,
                 'expectedDelivery' => $order->expected_delivery?->toDateString(), 'instructions' => $order->delivery_instructions,
                 'approvedAt' => $order->approved_at?->toIso8601String(), 'issuedAt' => $order->issued_at?->toIso8601String(),
+                'budgetLineId' => $order->budget_line_id,
             ],
+            'budgetLines' => array_map(static fn (array $l): array => [
+                'key' => (string) $l['id'], 'label' => "{$l['code']} {$l['description']} (R".number_format($l['available'], 0, '.', ' ').' available)',
+            ], app(BudgetService::class)->summary($order->project)),
             'lines' => $order->lines->map(static fn (PurchaseOrderLine $l): array => [
                 'id' => $l->id, 'description' => $l->description, 'quantity' => (float) $l->quantity, 'unit' => $l->unit,
                 'unit_price' => (float) $l->unit_price, 'received' => (float) $l->received_quantity, 'outstanding' => $l->outstanding(),
@@ -95,6 +101,7 @@ final class PurchaseOrderController
         $data = $request->validate([
             'expected_delivery' => ['nullable', 'date'],
             'delivery_instructions' => ['nullable', 'string', 'max:2000'],
+            'budget_line_id' => ['nullable', 'integer', Rule::exists('budget_lines', 'id')->where('project_id', $order->project_id)],
             'lines' => ['required', 'array', 'min:1', 'max:200'],
             'lines.*.description' => ['required', 'string', 'max:255'],
             'lines.*.quantity' => ['required', 'numeric', 'gt:0'],
@@ -103,7 +110,10 @@ final class PurchaseOrderController
         ]);
 
         DB::transaction(function () use ($order, $data): void {
-            $order->update(['expected_delivery' => $data['expected_delivery'] ?? null, 'delivery_instructions' => $data['delivery_instructions'] ?? null]);
+            $order->update([
+                'expected_delivery' => $data['expected_delivery'] ?? null, 'delivery_instructions' => $data['delivery_instructions'] ?? null,
+                'budget_line_id' => isset($data['budget_line_id']) ? (int) $data['budget_line_id'] : null,
+            ]);
             $order->lines()->delete();
             foreach (array_values($data['lines']) as $i => $line) {
                 PurchaseOrderLine::query()->create([...$line, 'purchase_order_id' => $order->id, 'sort' => $i]);

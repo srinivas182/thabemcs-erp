@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.10.0] — Finance: budgets, invoices, payments, variations (Sprint 10)
+
+### Added
+- Project budget by cost code: created from the approved feasibility or imported from a CSV bill of quantities (SA number formats understood); add codes manually.
+- Budget view: original, variations, revised, committed (approved POs), direct invoices, available and percentage used.
+- Purchase orders are charged to a cost code; approval of a PO checks the budget and sends warnings at 80%, 90% and 100%.
+- Variation orders (VO-001 ...) with reason, amount (or saving), time impact and link to a site instruction, approved through the approval engine; approved variations revise the budget.
+- Supplier invoices: capture with copy, duplicate detection, three-way match (order, goods received, invoice) and VAT checks.
+- Invoice approval with segregation of duties; Director override with reason for match failures; rejection with reason.
+- Payment runs: batch approved invoices due by a date, leave out non-compliant suppliers, Director approval, payment schedule CSV, mark paid with a final compliance check.
+
 ## [0.9.0] — Approval engine and procurement (Sprint 9)
 
 ### Added

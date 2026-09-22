@@ -26,7 +26,26 @@ return [
             ['up_to' => null, 'steps' => ['project-manager', 'finance', 'director', 'director']],
         ],
 
+        // Variation orders (absolute value of the change).
+        'variation' => [
+            ['up_to' => 100_000, 'steps' => ['quantity-surveyor', 'project-manager']],
+            ['up_to' => 1_000_000, 'steps' => ['quantity-surveyor', 'project-manager', 'development-manager']],
+            ['up_to' => null, 'steps' => ['quantity-surveyor', 'project-manager', 'development-manager', 'director']],
+        ],
+
+        // Supplier payment runs, prepared by Finance.
+        'payment_run' => [
+            ['up_to' => 1_000_000, 'steps' => ['director']],
+            ['up_to' => null, 'steps' => ['director', 'director']],
+        ],
+
     ],
+
+    // Three-way match tolerance: invoice may exceed the value received by this amount (ZAR) for rounding.
+    'match_tolerance' => 5.00,
+
+    // Budget warnings are sent when committed spend reaches these percentages of the revised budget.
+    'budget_alerts' => [80, 90, 100],
 
     // A step waiting longer than this is escalated to Directors and Company Admins.
     'escalate_after_hours' => 48,

@@ -90,6 +90,20 @@ class AppServiceProvider extends ServiceProvider
             Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::Procurement->value,
         ]));
 
+        // Finance: budgets, variations, invoices and payments.
+        Gate::define('manage-budget', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::QuantitySurveyor->value, Role::Finance->value,
+        ]));
+        Gate::define('raise-variations', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::DevelopmentManager->value, Role::ProjectManager->value, Role::QuantitySurveyor->value,
+        ]));
+        Gate::define('manage-finance', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::Finance->value,
+        ]));
+        Gate::define('override-invoice-match', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value,
+        ]));
+
         // Company Admins and Directors can read their company's audit trail.
         Gate::define('view-audit-log', static fn (User $user): bool => $user->hasAnyRole([Role::CompanyAdmin->value, Role::Director->value]));
 

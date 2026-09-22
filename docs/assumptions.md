@@ -96,6 +96,20 @@ Everything marked **configurable** can be changed in settings without code chang
 | PR5 | PO line prices are spread from the awarded quote in proportion to the requisition estimate; buyers adjust them to the quotation | No |
 | PR6 | Goods cannot be received beyond the ordered quantity; partial receipts are allowed | No |
 
+## Finance (Sprint 10)
+| # | Assumption | Configurable |
+|---|---|---|
+| FI1 | Budgets are excl. VAT, by cost code; codes from the feasibility use headings 01 Land to 09 Other | No |
+| FI2 | Committed spend = purchase orders approved or later; plus approved invoices without an order | No |
+| FI3 | Budget warnings at 80%, 90% and 100% of the revised budget, once each, to the project manager and Finance | Yes |
+| FI4 | BOQ import is CSV (save from Excel); direct Excel import can be added | Yes |
+| FI5 | Three-way match: invoice total = amount + VAT; VAT 15% (±R1) for VAT vendors and none for non-vendors; invoiced to date ≤ order value and ≤ value received (R5 tolerance) | Yes |
+| FI6 | Invoices without a purchase order always fail the match and need a Director or Company Admin override with a reason | No |
+| FI7 | The person who captures an invoice cannot approve it | No |
+| FI8 | Payment runs are approved by a Director (two Directors above R1m); non-compliant suppliers are left out and re-checked when marking paid | Yes |
+| FI9 | The payment schedule CSV lists beneficiary, registration number, amount and references; bank account numbers are not stored (beneficiaries are held in online banking) | No |
+| FI10 | Variations: QS then PM up to R100k; adds Development Manager to R1m; adds a Director above | Yes |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.
