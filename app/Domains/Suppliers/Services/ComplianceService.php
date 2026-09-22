@@ -117,7 +117,8 @@ final class ComplianceService
         /** @var array<int, int|null> $limits */
         $limits = config('supplier_compliance.cidb_limits');
 
-        return $limits[$grade] ?? 0;
+        // Grade 9 has no upper limit (null); ungraded or unknown grades may take no work.
+        return array_key_exists($grade, $limits) ? $limits[$grade] : 0;
     }
 
     /**

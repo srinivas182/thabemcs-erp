@@ -104,3 +104,11 @@ it('keeps suppliers away from roles that do not manage them', function (): void 
     $this->actingAs($pm)->get('/suppliers')->assertOk();
     $this->actingAs($pm)->post('/suppliers', ['name' => 'X', 'type' => 'supplier'])->assertForbidden();
 });
+
+it('allows a grade 9 contractor to take a contract of any value', function (): void {
+    $service = app(ComplianceService::class);
+    $this->supplier->update(['cidb_grade' => 9]);
+
+    expect($service->cidbLimit(9))->toBeNull()
+        ->and($service->cidbProblem($this->supplier->fresh(), 900_000_000))->toBeNull();
+});

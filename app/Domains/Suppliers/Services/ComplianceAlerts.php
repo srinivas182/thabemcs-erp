@@ -33,7 +33,12 @@ final class ComplianceAlerts
                 $dates = array_map(static fn (int $d): string => Carbon::today()->addDays($d)->toDateString(), $days);
                 $dates[] = Carbon::yesterday()->toDateString();
 
-                $due = SupplierDocument::query()->with('supplier')->whereIn('expires_on', $dates)->get();
+                $due = SupplierDocument::query()->with('supplier')
+                    ->where(function ($q) use ($dates): void {
+                        foreach ($dates as $date) {
+                            $q->orWhereDate('expires_on', $date);
+                        }
+                    })->get();
                 if ($due->isEmpty()) {
                     return;
                 }
