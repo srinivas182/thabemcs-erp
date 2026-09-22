@@ -43,7 +43,21 @@ final class InvoiceService
         }
 
         $order = $invoice->purchaseOrder;
-        if ($order === null) {
+        $certificate = $invoice->certificate;
+        if ($certificate !== null) {
+            // Contractor invoices are matched to a certified payment certificate instead of a purchase order.
+            if ($certificate->status !== 'certified') {
+                $issues[] = 'The payment certificate has not been certified.';
+            }
+            if ($certificate->contract->supplier_id !== $invoice->supplier_id) {
+                $issues[] = 'The payment certificate is for a different contractor.';
+            }
+            $previous = (float) SupplierInvoice::query()->where('payment_certificate_id', $certificate->id)->whereKeyNot($invoice->id)
+                ->whereNotIn('status', ['rejected'])->sum('subtotal');
+            if ($subtotal + $previous > (float) $certificate->amount_due + $tolerance) {
+                $issues[] = sprintf('The certificate allows R%s; R%s has been invoiced.', number_format((float) $certificate->amount_due, 2, '.', ' '), number_format($subtotal + $previous, 2, '.', ' '));
+            }
+        } elseif ($order === null) {
             $issues[] = 'There is no purchase order for this invoice.';
         } else {
             if ($order->supplier_id !== $invoice->supplier_id) {

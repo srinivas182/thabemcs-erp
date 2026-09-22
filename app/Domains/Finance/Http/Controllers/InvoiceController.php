@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Finance\Http\Controllers;
 
+use App\Domains\Contracts\Models\PaymentCertificate;
 use App\Domains\Documents\Enums\DocumentCategory;
 use App\Domains\Documents\Services\DocumentService;
 use App\Domains\Finance\Exceptions\FinanceException;
@@ -52,6 +53,8 @@ final class InvoiceController
             'suppliers' => Supplier::query()->orderBy('name')->get(['ulid', 'name'])->map(static fn (Supplier $s): array => ['key' => $s->ulid, 'label' => $s->name])->values(),
             'orders' => PurchaseOrder::query()->with('supplier:id,ulid,name')->whereIn('status', ['issued', 'partially_received', 'received'])->latest('id')->limit(200)->get()
                 ->map(static fn (PurchaseOrder $o): array => ['key' => $o->ulid, 'label' => "{$o->reference()} {$o->supplier->name}", 'supplier' => $o->supplier->ulid])->values(),
+            'certificates' => PaymentCertificate::query()->with('contract.supplier:id,ulid,name')->where('status', 'certified')->latest('id')->limit(100)->get()
+                ->map(static fn ($c): array => ['key' => $c->ulid, 'label' => "{$c->reference()} {$c->contract->reference} (R".number_format((float) $c->amount_due, 2, '.', ' ').')', 'supplier' => $c->contract->supplier->ulid])->values(),
             'projects' => Project::query()->orderBy('name')->get(['id', 'ulid', 'name'])->map(static fn (Project $p): array => ['key' => $p->ulid, 'label' => $p->name])->values(),
             'budgetLines' => BudgetLine::query()->with('project:id,ulid')->orderBy('code')->get()
                 ->map(static fn (BudgetLine $l): array => ['key' => (string) $l->id, 'label' => "{$l->code} {$l->description}", 'project' => $l->project->ulid])->values(),
@@ -68,8 +71,9 @@ final class InvoiceController
         $data = $request->validate([
             'supplier' => ['required', 'string', Rule::exists('suppliers', 'ulid')->where('company_id', $companyId)],
             'purchase_order' => ['nullable', 'string', Rule::exists('purchase_orders', 'ulid')->where('company_id', $companyId)],
-            'project' => ['required_without:purchase_order', 'nullable', 'string', Rule::exists('projects', 'ulid')->where('company_id', $companyId)],
-            'budget_line_id' => ['required_without:purchase_order', 'nullable', 'integer', Rule::exists('budget_lines', 'id')->where('company_id', $companyId)],
+            'certificate' => ['nullable', 'string', Rule::exists('payment_certificates', 'ulid')->where('company_id', $companyId)],
+            'project' => ['required_without_all:purchase_order,certificate', 'nullable', 'string', Rule::exists('projects', 'ulid')->where('company_id', $companyId)],
+            'budget_line_id' => ['required_without_all:purchase_order,certificate', 'nullable', 'integer', Rule::exists('budget_lines', 'id')->where('company_id', $companyId)],
             'invoice_number' => ['required', 'string', 'max:60', Rule::unique('supplier_invoices')->where('supplier_id', $supplier?->id)],
             'invoice_date' => ['required', 'date', 'before_or_equal:today'],
             'due_date' => ['required', 'date', 'after_or_equal:invoice_date'],
@@ -83,7 +87,8 @@ final class InvoiceController
         ]);
 
         $order = isset($data['purchase_order']) ? PurchaseOrder::query()->where('ulid', $data['purchase_order'])->first() : null;
-        $projectId = $order !== null ? $order->project_id : Project::query()->where('ulid', $data['project'])->value('id');
+        $certificate = isset($data['certificate']) ? PaymentCertificate::query()->with('contract')->where('ulid', $data['certificate'])->first() : null;
+        $projectId = $order !== null ? $order->project_id : ($certificate !== null ? $certificate->contract->project_id : Project::query()->where('ulid', $data['project'])->value('id'));
 
         /** @var User $user */
         $user = $request->user();
@@ -93,8 +98,8 @@ final class InvoiceController
         ], $user)->id : null;
 
         $invoice = SupplierInvoice::query()->create([
-            'project_id' => $projectId, 'supplier_id' => $supplier?->id, 'purchase_order_id' => $order?->id,
-            'budget_line_id' => $order !== null ? $order->budget_line_id : (isset($data['budget_line_id']) ? (int) $data['budget_line_id'] : null),
+            'project_id' => $projectId, 'supplier_id' => $supplier?->id, 'purchase_order_id' => $order?->id, 'payment_certificate_id' => $certificate?->id,
+            'budget_line_id' => $order !== null ? $order->budget_line_id : ($certificate !== null ? $certificate->contract->budget_line_id : (isset($data['budget_line_id']) ? (int) $data['budget_line_id'] : null)),
             'invoice_number' => $data['invoice_number'], 'invoice_date' => $data['invoice_date'], 'due_date' => $data['due_date'],
             'subtotal' => $data['subtotal'], 'vat' => $data['vat'], 'total' => $data['total'], 'document_id' => $documentId, 'captured_by' => $user->id,
         ]);

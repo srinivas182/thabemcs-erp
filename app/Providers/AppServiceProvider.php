@@ -104,6 +104,20 @@ class AppServiceProvider extends ServiceProvider
             Role::CompanyAdmin->value, Role::Director->value,
         ]));
 
+        // Contracts, workforce and plant.
+        Gate::define('manage-contracts', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::QuantitySurveyor->value,
+        ]));
+        Gate::define('manage-workforce', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::ProjectManager->value, Role::SiteManager->value,
+        ]));
+        Gate::define('approve-leave', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::ProjectManager->value,
+        ]));
+        Gate::define('manage-plant', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::ProjectManager->value, Role::SiteManager->value, Role::Procurement->value,
+        ]));
+
         // Company Admins and Directors can read their company's audit trail.
         Gate::define('view-audit-log', static fn (User $user): bool => $user->hasAnyRole([Role::CompanyAdmin->value, Role::Director->value]));
 

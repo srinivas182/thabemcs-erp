@@ -3,14 +3,17 @@
 declare(strict_types=1);
 
 use App\Domains\Approvals\Http\Controllers\ApprovalController;
+use App\Domains\Contracts\Http\Controllers\ContractController;
 use App\Domains\Documents\Http\Controllers\DocumentController;
 use App\Domains\Feasibility\Http\Controllers\FeasibilityController;
 use App\Domains\Finance\Http\Controllers\BudgetController;
 use App\Domains\Finance\Http\Controllers\InvoiceController;
 use App\Domains\Finance\Http\Controllers\PaymentRunController;
+use App\Domains\Finance\Http\Controllers\ReportsExportController;
 use App\Domains\Funding\Http\Controllers\FundingController;
 use App\Domains\Funding\Http\Controllers\InvestorController;
 use App\Domains\Land\Http\Controllers\LandController;
+use App\Domains\Plant\Http\Controllers\PlantController;
 use App\Domains\Platform\Http\Controllers\ActingCompanyController;
 use App\Domains\Platform\Http\Controllers\CompanyController;
 use App\Domains\Platform\Http\Controllers\MyDayController;
@@ -31,6 +34,7 @@ use App\Domains\Site\Http\Controllers\SiteController;
 use App\Domains\Suppliers\Http\Controllers\SupplierController;
 use App\Domains\Team\Http\Controllers\TeamController;
 use App\Domains\Workflow\Http\Controllers\InboxController;
+use App\Domains\Workforce\Http\Controllers\WorkforceController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -204,6 +208,34 @@ Route::middleware(['auth'])->group(function (): void {
         Route::post('payment-runs/{run}/submit', [PaymentRunController::class, 'submit'])->name('payment-runs.submit');
         Route::post('payment-runs/{run}/paid', [PaymentRunController::class, 'paid'])->name('payment-runs.paid');
         Route::get('payment-runs/{run}/export', [PaymentRunController::class, 'export'])->name('payment-runs.export');
+
+        Route::get('projects/{project}/contracts', [ContractController::class, 'show'])->name('projects.contracts');
+        Route::post('projects/{project}/contracts', [ContractController::class, 'store'])->name('projects.contracts.store');
+        Route::patch('contracts/{contract}/completion', [ContractController::class, 'completion'])->name('contracts.completion');
+        Route::post('contracts/{contract}/certificates', [ContractController::class, 'prepare'])->name('contracts.certificates.store');
+        Route::post('payment-certificates/{certificate}/submit', [ContractController::class, 'submit'])->name('payment-certificates.submit');
+
+        Route::get('projects/{project}/cashflow', [ReportsExportController::class, 'cashflow'])->name('projects.cashflow');
+        Route::get('exports', [ReportsExportController::class, 'index'])->name('exports.index');
+        Route::get('exports/{type}', [ReportsExportController::class, 'download'])->name('exports.download');
+    });
+
+    // Workforce: employees, site allocation, leave and overtime (BCEA).
+    Route::middleware('module:workforce')->group(function (): void {
+        Route::get('workforce', [WorkforceController::class, 'index'])->name('workforce.index');
+        Route::post('workforce', [WorkforceController::class, 'store'])->name('workforce.store');
+        Route::get('workforce/{employee}', [WorkforceController::class, 'show'])->name('workforce.show');
+        Route::post('workforce/{employee}/allocations', [WorkforceController::class, 'allocate'])->name('workforce.allocate');
+        Route::post('workforce/{employee}/leave', [WorkforceController::class, 'requestLeave'])->name('workforce.leave');
+        Route::post('workforce/{employee}/overtime', [WorkforceController::class, 'overtime'])->name('workforce.overtime');
+        Route::patch('leave/{leave}', [WorkforceController::class, 'decideLeave'])->name('leave.decide');
+    });
+
+    // Plant and equipment.
+    Route::middleware('module:plant')->group(function (): void {
+        Route::get('plant', [PlantController::class, 'index'])->name('plant.index');
+        Route::post('plant', [PlantController::class, 'store'])->name('plant.store');
+        Route::post('plant/{item}/events', [PlantController::class, 'event'])->name('plant.events.store');
     });
 
     // Company settings (Company Admin).

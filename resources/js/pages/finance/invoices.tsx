@@ -13,6 +13,7 @@ interface Props {
     filter: string;
     suppliers: Option[];
     orders: (Option & { supplier: string })[];
+    certificates: (Option & { supplier: string })[];
     projects: Option[];
     budgetLines: (Option & { project: string })[];
     canOverride: boolean;
@@ -20,15 +21,15 @@ interface Props {
 
 const LABEL: Record<string, string> = { captured: 'Captured', matched: 'Matched', exception: 'Match failed', approved: 'Approved', scheduled: 'In a payment run', paid: 'Paid', rejected: 'Rejected' };
 
-export default function Invoices({ invoices, filter, suppliers, orders, projects, budgetLines, canOverride }: Props) {
+export default function Invoices({ invoices, filter, suppliers, orders, certificates, projects, budgetLines, canOverride }: Props) {
     const [capturing, setCapturing] = useState(false);
     return (
         <>
             <Head title="Supplier invoices" />
             <div className="mx-auto grid max-w-6xl gap-6">
                 <PageHeader title="Supplier invoices" description="Every invoice is matched to its purchase order and the goods received before it can be paid."
-                    action={<div className="flex gap-2"><Button variant="secondary" asChild><Link href="/payment-runs">Payment runs</Link></Button><Button onClick={() => setCapturing(!capturing)}>Capture invoice</Button></div>} />
-                {capturing && <Capture suppliers={suppliers} orders={orders} projects={projects} budgetLines={budgetLines} onDone={() => setCapturing(false)} />}
+                    action={<div className="flex gap-2"><Button variant="ghost" asChild><Link href="/exports">Exports</Link></Button><Button variant="secondary" asChild><Link href="/payment-runs">Payment runs</Link></Button><Button onClick={() => setCapturing(!capturing)}>Capture invoice</Button></div>} />
+                {capturing && <Capture suppliers={suppliers} orders={orders} certificates={certificates} projects={projects} budgetLines={budgetLines} onDone={() => setCapturing(false)} />}
                 <div className="flex flex-wrap gap-1.5">
                     {['', 'exception', 'matched', 'approved', 'scheduled', 'paid', 'rejected'].map((s) => (
                         <button key={s} onClick={() => router.get('/invoices', s ? { status: s } : {})} className={cn('rounded-full border px-3 py-1 text-sm', filter === s ? 'border-line bg-line text-white' : 'border-concrete bg-surface')}>{s ? LABEL[s] : 'All'}</button>
@@ -77,16 +78,17 @@ function InvoiceCard({ invoice: i, canOverride }: { invoice: Row; canOverride: b
     );
 }
 
-function Capture({ suppliers, orders, projects, budgetLines, onDone }: Omit<Props, 'invoices' | 'filter' | 'canOverride'> & { onDone: () => void }) {
-    const form = useForm<{ supplier: string; purchase_order: string; project: string; budget_line_id: string; invoice_number: string; invoice_date: string; due_date: string; subtotal: string; vat: string; total: string; file: File | null }>({
-        supplier: '', purchase_order: '', project: '', budget_line_id: '', invoice_number: '', invoice_date: '', due_date: '', subtotal: '', vat: '', total: '', file: null,
+function Capture({ suppliers, orders, certificates, projects, budgetLines, onDone }: Omit<Props, 'invoices' | 'filter' | 'canOverride'> & { onDone: () => void }) {
+    const form = useForm<{ supplier: string; purchase_order: string; certificate: string; project: string; budget_line_id: string; invoice_number: string; invoice_date: string; due_date: string; subtotal: string; vat: string; total: string; file: File | null }>({
+        supplier: '', purchase_order: '', certificate: '', project: '', budget_line_id: '', invoice_number: '', invoice_date: '', due_date: '', subtotal: '', vat: '', total: '', file: null,
     });
     const bind = (k: 'invoice_number' | 'invoice_date' | 'due_date' | 'subtotal' | 'vat' | 'total') => ({ name: k, value: form.data[k], onChange: (e: { target: { value: string } }) => form.setData(k, e.target.value), error: form.errors[k] });
     const supplierOrders = orders.filter((o) => o.supplier === form.data.supplier);
+    const supplierCertificates = certificates.filter((c) => c.supplier === form.data.supplier);
 
     function submit(e: FormEvent) {
         e.preventDefault();
-        form.transform((d) => ({ ...d, purchase_order: d.purchase_order || null, project: d.project || null, budget_line_id: d.budget_line_id || null }));
+        form.transform((d) => ({ ...d, purchase_order: d.purchase_order || null, certificate: d.certificate || null, project: d.project || null, budget_line_id: d.budget_line_id || null }));
         form.post('/invoices', { preserveScroll: true, forceFormData: true, onSuccess: onDone });
     }
 
@@ -103,7 +105,10 @@ function Capture({ suppliers, orders, projects, budgetLines, onDone }: Omit<Prop
                 <SelectField label="Purchase order" name="purchase_order" value={form.data.purchase_order} onChange={(v) => form.setData('purchase_order', v)} options={supplierOrders} placeholder={supplierOrders.length ? 'Choose' : 'No open orders for this supplier'} />
                 <Field label="Supplier's invoice number" {...bind('invoice_number')} />
             </div>
-            {!form.data.purchase_order && (
+            {supplierCertificates.length > 0 && !form.data.purchase_order && (
+                <SelectField label="Payment certificate (contractor invoices)" name="certificate" value={form.data.certificate} onChange={(v) => form.setData('certificate', v)} options={supplierCertificates} placeholder="Not for a certificate" />
+            )}
+            {!form.data.purchase_order && !form.data.certificate && (
                 <div className="grid gap-4 sm:grid-cols-2">
                     <SelectField label="Project" name="project" value={form.data.project} onChange={(v) => form.setData((d) => ({ ...d, project: v, budget_line_id: '' }))} options={projects} placeholder="Choose" error={form.errors.project} />
                     <SelectField label="Cost code" name="budget_line_id" value={form.data.budget_line_id} onChange={(v) => form.setData('budget_line_id', v)} options={budgetLines.filter((l) => l.project === form.data.project)} placeholder="Choose" error={form.errors.budget_line_id} />

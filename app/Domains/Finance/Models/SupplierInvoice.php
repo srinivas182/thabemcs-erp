@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Finance\Models;
 
+use App\Domains\Contracts\Models\PaymentCertificate;
 use App\Domains\Procurement\Models\PurchaseOrder;
 use App\Domains\Projects\Models\Project;
 use App\Domains\Suppliers\Models\Supplier;
@@ -25,6 +26,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property int $supplier_id
  * @property int|null $purchase_order_id
  * @property int|null $budget_line_id
+ * @property int|null $payment_certificate_id
  * @property int|null $payment_run_id
  * @property string $invoice_number
  * @property Carbon $invoice_date
@@ -45,13 +47,15 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property-read PurchaseOrder|null $purchaseOrder
  * @property-read BudgetLine|null $budgetLine
  * @property-read User|null $approver
+ * @property-read PaymentRun|null $paymentRun
+ * @property-read PaymentCertificate|null $certificate
  */
 class SupplierInvoice extends Model
 {
     use BelongsToCompany, HasPublicUlid, LogsActivity;
 
     protected $fillable = [
-        'project_id', 'supplier_id', 'purchase_order_id', 'budget_line_id', 'invoice_number', 'invoice_date', 'due_date',
+        'project_id', 'supplier_id', 'purchase_order_id', 'payment_certificate_id', 'budget_line_id', 'invoice_number', 'invoice_date', 'due_date',
         'subtotal', 'vat', 'total', 'document_id', 'captured_by',
     ];
 
@@ -106,5 +110,21 @@ class SupplierInvoice extends Model
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    /**
+     * @return BelongsTo<PaymentRun, $this>
+     */
+    public function paymentRun(): BelongsTo
+    {
+        return $this->belongsTo(PaymentRun::class);
+    }
+
+    /**
+     * @return BelongsTo<PaymentCertificate, $this>
+     */
+    public function certificate(): BelongsTo
+    {
+        return $this->belongsTo(PaymentCertificate::class, 'payment_certificate_id');
     }
 }

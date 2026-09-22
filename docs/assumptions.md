@@ -110,6 +110,20 @@ Everything marked **configurable** can be changed in settings without code chang
 | FI9 | The payment schedule CSV lists beneficiary, registration number, amount and references; bank account numbers are not stored (beneficiaries are held in online banking) | No |
 | FI10 | Variations: QS then PM up to R100k; adds Development Manager to R1m; adds a Director above | Yes |
 
+## Contracts, workforce and plant (Sprint 11)
+| # | Assumption | Configurable |
+|---|---|---|
+| CO1 | Retention defaults: 10% of value to date, limited to 5% of the contract sum, half released at practical completion and the rest at final completion (JBCC-style); set per contract | Yes (per contract) |
+| CO2 | Certificates: value to date (incl. materials on site and variations) less net retention less previous certificates; one certificate in progress at a time; the value to date cannot go down | No |
+| CO3 | Payment certificates approved by PM then Development Manager, adding a Director above R1m | Yes |
+| CO4 | Contractor invoices are matched against the certified amount instead of a purchase order | No |
+| CF1 | Cash-flow forecast month 1 = the project's planned start (or the baseline approval month); actual = supplier invoices paid, excl. VAT | No |
+| WF1 | Annual leave 15 working days a year (21 consecutive days), sick leave 30 days per 3-year cycle, family responsibility 3 days a year, scaled for 6-day weeks; cycles run from the start date | Yes |
+| WF2 | Weekends and SA public holidays (incl. Good Friday, Family Day and the Sunday rule) are not counted as leave days; once-off declared holidays must be added | Partly |
+| WF3 | Overtime at most 3 hours a day and 10 a week (BCEA s10); 1.5x normally, 2x on Sundays and public holidays | Yes |
+| WF4 | Employee ID numbers are encrypted and shown masked (POPIA); pay rates stay in the payroll system | No |
+| EX1 | Export column layouts target Sage Business Cloud (invoices) and a generic payroll input layout (SimplePay maps columns); confirm with the client's accountant | Yes |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.

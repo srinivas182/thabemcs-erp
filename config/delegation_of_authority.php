@@ -33,6 +33,12 @@ return [
             ['up_to' => null, 'steps' => ['quantity-surveyor', 'project-manager', 'development-manager', 'director']],
         ],
 
+        // Contractor payment certificates, prepared by the QS.
+        'payment_certificate' => [
+            ['up_to' => 1_000_000, 'steps' => ['project-manager', 'development-manager']],
+            ['up_to' => null, 'steps' => ['project-manager', 'development-manager', 'director']],
+        ],
+
         // Supplier payment runs, prepared by Finance.
         'payment_run' => [
             ['up_to' => 1_000_000, 'steps' => ['director']],

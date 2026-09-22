@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.11.0] — Certificates, cash flow, workforce, plant and exports: Release 2 complete (Sprint 11)
+
+### Added
+- Construction contracts per project (JBCC PBA/MWA, NEC4, GCC 2015, FIDIC, own form) with contract sum, retention rate, retention limit and release at practical completion; contractor compliance checked on appointment.
+- Interim payment certificates (PC-001 ...): value to date, retention (with limit and release at practical and final completion), previous certificates, amount due and VAT; approved through the approval engine.
+- Contractor invoices matched to certified certificates.
+- Cash flow per project: forecast from the approved feasibility against actual payments, with a cumulative S-curve.
+- Workforce: employees (encrypted ID numbers), site allocation history, leave with BCEA balances and SA public holidays, overtime with BCEA daily and weekly limits and 1.5x/2x rates.
+- Plant and equipment register: owned and hired plant, moves between sites, services with next-service dates, breakdowns and off-hire.
+- Accounting and payroll CSV exports: supplier invoices (Sage layout), supplier payments, payroll inputs (overtime and leave).
+
 ## [0.10.0] — Finance: budgets, invoices, payments, variations (Sprint 10)
 
 ### Added

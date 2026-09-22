@@ -168,6 +168,16 @@ export default function ProjectShow(props: Props) {
                             Budget
                         </Link>
                     )}
+                    {modules.has('finance') && (
+                        <>
+                            <Link href={`/projects/${project.id}/contracts`} className="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink">
+                                Contracts
+                            </Link>
+                            <Link href={`/projects/${project.id}/cashflow`} className="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink">
+                                Cash flow
+                            </Link>
+                        </>
+                    )}
                     {modules.has('funding') && (
                         <Link href={`/projects/${project.id}/funding`} className="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink">
                             Funding
