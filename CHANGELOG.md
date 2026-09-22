@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.0] — Feasibility, funding and investors (Sprint 5)
+
+### Added
+- Development feasibility per project with multiple scenarios (base case, slower sales and so on), created from a standard SA appraisal template or copied from another scenario.
+- Timed cost and revenue lines by heading (land, acquisition, professional fees, municipal, construction, contingency, marketing, finance, other, revenue); amounts or percentages of construction or revenue.
+- Results: revenue, cost, profit, margin on revenue, profit on cost, peak funding requirement and month, annualised IRR, and a monthly cash-flow chart.
+- Baseline approval: one approved, locked scenario per project.
+- Funding page per project: funding requirement from the baseline vs committed sources, gap to raise, money received and paid out per source.
+- Funding sources: developer equity, investor capital, loans (with interest rate), grants; agreement date and status.
+- Project bank account (last four digits only).
+- Investor register with encrypted ID/registration numbers and FICA verification.
+- Feasibility and Funding links on the project page; Investors in the sidebar.
+
 ## [0.4.0] — Projects and stage gates (Sprint 4)
 
 ### Added

@@ -25,6 +25,21 @@ Everything marked **configurable** can be changed in settings without code chang
 | PR6 | Risks are scored 1 to 5 for likelihood and impact: low under 5, medium 5 to 9, high 10 to 19, critical 20 and above | Yes (later sprint) |
 | PR7 | Anyone can be assigned a task; assignees can mark their own tasks done | No |
 
+## Feasibility and funding (Sprint 5)
+| # | Assumption | Configurable |
+|---|---|---|
+| FE1 | All feasibility figures are in rand excluding VAT; VAT is handled in the finance module | No |
+| FE2 | Costs and revenue are spread evenly across the months they apply to | No |
+| FE3 | Template starting rates: professional fees 12% of construction, contingency 5% of construction, marketing and agents' commission 5% of revenue | Yes, per scenario |
+| FE4 | Peak funding requirement = lowest cumulative cash position; IRR is monthly, annualised | No |
+| FE5 | One approved baseline per project; approved scenarios are locked and changes are made by copying | No |
+| FE6 | Directors, Development Managers and Company Admins approve feasibilities; Finance, PMs and Development Managers edit them | Yes (later sprint) |
+| FU1 | Funding types: developer equity, investor capital, debt, grant | No |
+| FU2 | "Committed" and "Active" sources count towards funding secured | No |
+| FU3 | Investor ID/registration numbers are encrypted; FICA verification is recorded as a manual check | No |
+| FU4 | Only the last four digits of the project bank account are stored | No |
+| FU5 | Investors and funding are visible to Company Admins, Directors, Development Managers and Finance only | Yes (later sprint) |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.

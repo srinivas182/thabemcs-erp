@@ -1,9 +1,10 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { Button, cn, Field } from '@thabekhulu/ui';
 import { Check, Lock } from 'lucide-react';
 import { type FormEvent, type ReactNode, useEffect, useState } from 'react';
 import { formatDate, formatDateTime, formatRand, selectClass, SelectField } from '@/components/data';
 import AppLayout from '@/layouts/app-layout';
+import type { SharedProps } from '@/types';
 
 type Option = { key: string; label: string };
 
@@ -63,6 +64,7 @@ const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johanne
 export default function ProjectShow(props: Props) {
     const { project, stages, can } = props;
     const [tab, setTab] = useState<Tab>('gate');
+    const modules = new Set(usePage<SharedProps>().props.company?.modules.map((m) => m.key) ?? []);
 
     useEffect(() => {
         const hash = window.location.hash.replace('#', '') as Tab;
@@ -133,6 +135,16 @@ export default function ProjectShow(props: Props) {
                             {t.key === 'risks' && ` (${props.openRiskCount})`}
                         </button>
                     ))}
+                    {modules.has('feasibility') && (
+                        <Link href={`/projects/${project.id}/feasibility`} className="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink">
+                            Feasibility
+                        </Link>
+                    )}
+                    {modules.has('funding') && (
+                        <Link href={`/projects/${project.id}/funding`} className="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink">
+                            Funding
+                        </Link>
+                    )}
                 </nav>
 
                 {tab === 'gate' && <GateTab {...props} currentIndex={currentIndex} />}

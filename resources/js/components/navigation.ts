@@ -14,4 +14,5 @@ export const NAV_GROUPS: { title: string; modules: string[] }[] = [
 /** Modules that have screens so far. Others show as "coming soon" until their sprint ships. */
 export const MODULE_ROUTES: Record<string, string> = {
     projects: '/projects',
+    funding: '/investors',
 };
