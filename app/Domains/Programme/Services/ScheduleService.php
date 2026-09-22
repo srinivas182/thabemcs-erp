@@ -30,6 +30,8 @@ final class ScheduleService
         if ($activities->isEmpty()) {
             return ['finish' => null, 'activities' => []];
         }
+        /** @var array<int, ProgrammeActivity> $byId */
+        $byId = $activities->all();
 
         $deps = ActivityDependency::query()->whereIn('successor_id', $activities->keys())->get();
         $preds = [];
@@ -39,7 +41,7 @@ final class ScheduleService
             $succs[$d->predecessor_id][] = $d;
         }
 
-        $order = $this->topologicalOrder($activities->keys()->all(), $deps->all());
+        $order = $this->topologicalOrder(array_map('intval', array_keys($byId)), array_values($deps->all()));
 
         // Working-day calendar from the earliest planned start.
         $base = $activities->min(static fn (ProgrammeActivity $a): string => $a->planned_start->toDateString());
@@ -49,7 +51,7 @@ final class ScheduleService
         $es = [];
         $ef = [];
         foreach ($order as $id) {
-            $a = $activities[$id];
+            $a = $byId[$id];
             $start = $this->indexOf($index, $calendar, $a->planned_start);
             foreach ($preds[$id] ?? [] as $d) {
                 $start = max($start, $ef[$d->predecessor_id] + $d->lag_days);
@@ -58,7 +60,7 @@ final class ScheduleService
             $ef[$id] = $start + $a->duration_days;
         }
 
-        $projectFinish = max($ef);
+        $projectFinish = $ef === [] ? 0 : max($ef);
         $ls = [];
         $lf = [];
         foreach (array_reverse($order) as $id) {
@@ -67,13 +69,13 @@ final class ScheduleService
                 $finish = min($finish, $ls[$d->successor_id] - $d->lag_days);
             }
             $lf[$id] = $finish;
-            $ls[$id] = $finish - $activities[$id]->duration_days;
+            $ls[$id] = $finish - $byId[$id]->duration_days;
         }
 
         $today = Carbon::today('Africa/Johannesburg');
         $result = [];
         foreach ($order as $id) {
-            $a = $activities[$id];
+            $a = $byId[$id];
             $finishIdx = max($es[$id], $ef[$id] - 1); // last working day of the activity (milestones: the start day)
             $earlyFinish = $calendar[$finishIdx] ?? $calendar[count($calendar) - 1];
             $float = $ls[$id] - $es[$id];
@@ -86,7 +88,9 @@ final class ScheduleService
             ];
         }
 
-        return ['finish' => max(array_column($result, 'earlyFinish')), 'activities' => $result];
+        $finishes = array_column($result, 'earlyFinish');
+
+        return ['finish' => $finishes === [] ? null : max($finishes), 'activities' => $result];
     }
 
     /**
