@@ -59,7 +59,7 @@ it('saves a designed report that runs, filters, sorts and totals like a standard
 
     $this->actingAs($this->finance)->get("/reports/custom-{$report->id}")
         ->assertInertia(fn (Assert $page) => $page->component('reports/show')
-            ->has('result.rows', 2)->where('result.rows.0.reference', 'PO-0002')->where('result.totals.subtotal', 150000.0)
+            ->has('result.rows', 2)->where('result.rows.0.reference', 'PO-0002')->where('result.totals.subtotal', fn ($v) => (float) $v === 150000.0)
             ->where('result.columns.2.label', 'Amount excl. VAT'));
 
     $this->actingAs($this->finance)->get('/reports')->assertInertia(fn (Assert $page) => $page->where('reports', fn ($r) => collect($r)->pluck('key')->contains("custom-{$report->id}")));
@@ -135,7 +135,9 @@ it('sends approved invoices to Sage once, with the mapped account and VAT type',
     expect((string) DB::table('integrations')->value('credentials'))->not->toContain('S3cret!');
 
     $this->actingAs($this->finance)->post('/settings/integrations/sage_za/test')->assertSessionHas('success', fn (string $m) => str_contains($m, 'Thabekhulu (Pty) Ltd'));
-    $this->actingAs($this->finance)->post('/settings/integrations/sage_za/sync')->assertSessionHas('success', fn (string $m) => str_contains($m, '1 invoices sent') && str_contains($m, 'No Sage ID Supplies'));
+    $this->actingAs($this->finance)->post('/settings/integrations/sage_za/sync');
+    expect(session('error'))->toBeNull()->and(inCompany($this->company, fn () => IntegrationSync::query()->pluck('error')->filter()->all()))->toBe([]);
+    expect(session('success'))->toContain('1 invoices sent')->toContain('No Sage ID Supplies');
     $this->actingAs($this->finance)->post('/settings/integrations/sage_za/sync');
 
     Http::assertSentCount(2); // the connection test and one invoice; the second run sends nothing new

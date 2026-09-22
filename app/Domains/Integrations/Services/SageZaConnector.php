@@ -90,7 +90,7 @@ final class SageZaConnector
         $settings = $integration->settings ?? [];
         /** @var array<string, string> $accounts */
         $accounts = (array) ($settings['accounts'] ?? []);
-        $account = $accounts[$invoice->budgetLine?->code ?? ''] ?? ($settings['default_account_id'] ?? null);
+        $account = $accounts[$invoice->budgetLine->code ?? ''] ?? ($settings['default_account_id'] ?? null);
         if ($account === null || $account === '') {
             throw new IntegrationException('No Sage account is mapped for cost code '.($invoice->budgetLine->code ?? '(none)').' and there is no default account.');
         }
