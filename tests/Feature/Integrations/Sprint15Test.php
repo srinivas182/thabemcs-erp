@@ -136,7 +136,7 @@ it('sends approved invoices to Sage once, with the mapped account and VAT type',
 
     $this->actingAs($this->finance)->post('/settings/integrations/sage_za/test')->assertSessionHas('success', fn (string $m) => str_contains($m, 'Thabekhulu (Pty) Ltd'));
     $this->actingAs($this->finance)->post('/settings/integrations/sage_za/sync');
-    expect(session('error'))->toBeNull()->and(inCompany($this->company, fn () => IntegrationSync::query()->pluck('error')->filter()->all()))->toBe([]);
+    expect(inCompany($this->company, fn () => IntegrationSync::query()->pluck('error')->filter()->all()))->toBe([])->and(session('error'))->toBeNull();
     expect(session('success'))->toContain('1 invoices sent')->toContain('No Sage ID Supplies');
     $this->actingAs($this->finance)->post('/settings/integrations/sage_za/sync');
 
