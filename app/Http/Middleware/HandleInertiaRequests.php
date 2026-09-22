@@ -40,6 +40,10 @@ class HandleInertiaRequests extends Middleware
                     'roles' => $user->is_super_admin ? ['super-admin'] : $user->getRoleNames()->all(),
                 ] : null,
             ],
+            'can' => [
+                'manageCompanies' => $user instanceof User && $user->is_super_admin,
+                'manageUsers' => $user instanceof User && $company !== null && $user->can('manage-company-users'),
+            ],
             'company' => $company ? [
                 'id' => $company->ulid,
                 'name' => $company->name,

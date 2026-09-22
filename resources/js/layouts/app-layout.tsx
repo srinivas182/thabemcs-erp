@@ -1,12 +1,13 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { cn } from '@thabekhulu/ui';
-import { CalendarCheck, LogOut, Menu, X } from 'lucide-react';
+import { Building2, CalendarCheck, LogOut, Menu, Users, X } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { NAV_GROUPS } from '@/components/navigation';
 import type { SharedProps } from '@/types';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
-    const { auth, company, flash, app } = usePage<SharedProps>().props;
+    const { auth, company, flash, app, can } = usePage<SharedProps>().props;
+    const url = usePage().url;
     const [open, setOpen] = useState(false);
     const enabled = new Map(company?.modules.map((m) => [m.key, m.label]) ?? []);
 
@@ -17,12 +18,21 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 <p className="text-sm text-ink-soft">{company?.name ?? 'Platform administration'}</p>
             </div>
 
-            <Link
-                href="/"
-                className="flex items-center gap-2 rounded-[var(--radius-control)] bg-line-wash px-3 py-2 text-sm font-semibold text-line-deep"
-            >
-                <CalendarCheck className="size-4" aria-hidden /> My day
-            </Link>
+            <div className="grid gap-0.5">
+                <NavLink href="/" active={url === '/'} icon={<CalendarCheck className="size-4" aria-hidden />}>
+                    My day
+                </NavLink>
+                {can.manageCompanies && (
+                    <NavLink href="/platform/companies" active={url.startsWith('/platform')} icon={<Building2 className="size-4" aria-hidden />}>
+                        Companies
+                    </NavLink>
+                )}
+                {can.manageUsers && (
+                    <NavLink href="/settings/users" active={url.startsWith('/settings/users')} icon={<Users className="size-4" aria-hidden />}>
+                        People
+                    </NavLink>
+                )}
+            </div>
 
             {NAV_GROUPS.map((group) => {
                 const items = group.modules.filter((key) => enabled.has(key));
@@ -86,6 +96,17 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                     </div>
                 </header>
 
+                {auth.user?.isSuperAdmin && company && (
+                    <div className="flex items-center justify-between gap-3 border-b border-hivis/40 bg-hivis-wash px-4 py-2 text-sm lg:px-8">
+                        <span>
+                            You are working in <strong>{company.name}</strong> as Super Admin.
+                        </span>
+                        <button className="font-semibold underline" onClick={() => router.delete('/platform/acting-company')}>
+                            Back to platform view
+                        </button>
+                    </div>
+                )}
+
                 {(flash.success || flash.error) && (
                     <div
                         role="status"
@@ -101,5 +122,21 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 <main className="flex-1 px-4 py-6 lg:px-8 lg:py-8">{children}</main>
             </div>
         </div>
+    );
+}
+
+function NavLink({ href, active, icon, children }: { href: string; active: boolean; icon: ReactNode; children: ReactNode }) {
+    return (
+        <Link
+            href={href}
+            aria-current={active ? 'page' : undefined}
+            className={cn(
+                'flex items-center gap-2 rounded-[var(--radius-control)] px-3 py-2 text-sm',
+                active ? 'bg-line-wash font-semibold text-line-deep' : 'text-ink hover:bg-concrete-soft',
+            )}
+        >
+            {icon}
+            {children}
+        </Link>
     );
 }

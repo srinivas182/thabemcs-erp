@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domains\Platform\Enums\Role;
 use App\Models\User;
 use App\Support\Tenancy\CurrentCompany;
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Super Admins pass every authorisation check; company users go through roles and policies.
         Gate::before(static fn (User $user): ?bool => $user->is_super_admin ? true : null);
+
+        // Company Admins manage the people in their own company.
+        Gate::define('manage-company-users', static fn (User $user): bool => $user->hasRole(Role::CompanyAdmin->value));
 
         Password::defaults(fn () => $this->app->isProduction()
             ? Password::min(12)->mixedCase()->numbers()->symbols()->uncompromised()
