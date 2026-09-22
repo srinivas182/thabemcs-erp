@@ -68,6 +68,19 @@ Everything marked **configurable** can be changed in settings without code chang
 | DO4 | Restricted documents are visible to the chosen roles plus Company Admins and Directors | No |
 | DO5 | Virus scanning of uploads is recommended in production (e.g. ClamAV) and will be added with the hosting set-up | n/a |
 
+## Site app and health & safety (Sprint 8)
+| # | Assumption | Configurable |
+|---|---|---|
+| SI1 | The site app is served from the same domain at `/site` and signs in with the same account (Sanctum cookie) | No |
+| SI2 | One site diary per project per day; a later submission for the same day replaces it | No |
+| SI3 | Attendance is checked against the project's site point and sign-in radius (default 300 m), allowing up to 100 m for GPS accuracy; outside-radius sign-ins are flagged, not blocked | Yes (radius per project) |
+| SI4 | Photos are shrunk on the phone to 1600 px (selfies 800 px) before upload | Yes |
+| SI5 | Records captured offline sync automatically; validation failures stay on the phone for the user to review | No |
+| SI6 | Damaged or short deliveries notify Procurement and Project Managers | Yes |
+| HS1 | Fatalities and dangerous occurrences are marked reportable to the Department of Employment and Labour (OHS Act s24) automatically; lost-time and medical cases prompt a reportability check | Yes |
+| HS2 | Incidents (other than near misses) need a root cause and corrective action before closing; reportable incidents also need the date reported | No |
+| HS3 | Incidents notify Safety Officers, Project Managers and Directors immediately | Yes |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.

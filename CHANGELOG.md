@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.8.0] — Site app and health & safety (Sprint 8)
+
+### Added
+- Site app (PWA at `/site`): sign-in (with two-factor), project picker, works offline with an automatic sync queue and a "not sent yet" list.
+- Capture on the phone: daily diary, sign in/out with GPS and selfie, geotagged progress photos, deliveries (condition, delivery note), incident reports.
+- Photos compressed on the phone before upload; retries never duplicate records (client IDs).
+- Site API (`/api/v1/site/...`) for projects, suppliers, diary, attendance, photos, deliveries, incidents.
+- Geofenced attendance: distance from the site point recorded; sign-ins outside the radius flagged.
+- Project site location and sign-in radius on the project form.
+- Site page per project: diary, attendance (7 days), photo gallery, deliveries, numbered site instructions (SI-1, SI-2 ...), quality inspections and snag list (open, fixed, verified).
+- Health and safety page: key figures, incident register with investigation, reportability to the Department of Employment and Labour, toolbox talks, safety inspections.
+- Notifications for serious incidents and problem deliveries.
+
 ## [0.7.0] — Suppliers and documents: Release 1 complete (Sprint 7)
 
 ### Added

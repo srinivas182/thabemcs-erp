@@ -42,6 +42,7 @@ final class ProjectRequest extends FormRequest
             'town' => ['nullable', 'string', 'max:120'],
             'latitude' => ['nullable', 'numeric', 'between:-35,-22'],
             'longitude' => ['nullable', 'numeric', 'between:16,33'],
+            'geofence_radius_m' => ['nullable', 'integer', 'between:50,5000'],
             'estimated_value' => ['nullable', 'numeric', 'min:0', 'max:999999999999'],
             'planned_start_date' => ['nullable', 'date'],
             'planned_completion_date' => ['nullable', 'date', 'after_or_equal:planned_start_date'],

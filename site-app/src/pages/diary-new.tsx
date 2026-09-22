@@ -1,127 +1,61 @@
 import { useNavigate } from '@tanstack/react-router';
 import { siteDiaryEntrySchema, WEATHER } from '@thabekhulu/shared';
-import { Button, cn, Field } from '@thabekhulu/ui';
+import { Button, Field } from '@thabekhulu/ui';
 import { type FormEvent, useState } from 'react';
-import { db } from '../lib/db';
+import { enqueue } from '../lib/db';
+import { nowIso, todayInSouthAfrica } from '../lib/device';
+import { useCurrentProject } from '../lib/session';
 import { flushOutbox } from '../lib/sync';
+import { Choice, Page, TextArea } from './ui';
 
-const WEATHER_LABELS: Record<(typeof WEATHER)[number], string> = {
-    clear: 'Clear',
-    cloudy: 'Cloudy',
-    rain: 'Rain',
-    storm: 'Storm',
-    wind: 'Windy',
-    heat: 'Very hot',
-};
-
-type Errors = Partial<Record<string, string>>;
-
-function todayInSouthAfrica(): string {
-    return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' }).format(new Date());
-}
+const WEATHER_LABELS: Record<(typeof WEATHER)[number], string> = { clear: 'Clear', cloudy: 'Cloudy', rain: 'Rain', storm: 'Storm', wind: 'Windy', heat: 'Very hot' };
 
 export function DiaryNewPage() {
     const navigate = useNavigate();
-    const [errors, setErrors] = useState<Errors>({});
+    const project = useCurrentProject();
     const [weather, setWeather] = useState<(typeof WEATHER)[number]>('clear');
-    const [saving, setSaving] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     async function submit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        if (!project) return;
         const data = new FormData(event.currentTarget);
-
         const result = siteDiaryEntrySchema.safeParse({
             clientId: crypto.randomUUID(),
-            // Project selection is wired to the API in the Site Management sprint.
-            projectId: String(data.get('projectId') ?? ''),
+            projectId: project.id,
             date: String(data.get('date') ?? ''),
             weather,
             workersOnSite: Number(data.get('workersOnSite') ?? 0),
             workCompleted: String(data.get('workCompleted') ?? ''),
             delays: String(data.get('delays') ?? '') || undefined,
-            capturedAt: new Date().toISOString(),
+            capturedAt: nowIso(),
         });
 
         if (!result.success) {
-            const next: Errors = {};
-            for (const issue of result.error.issues) {
-                const key = String(issue.path[0] ?? 'form');
-                next[key] ??= issue.message;
-            }
+            const next: Record<string, string> = {};
+            for (const issue of result.error.issues) next[String(issue.path[0])] ??= issue.message;
             setErrors(next);
             return;
         }
 
-        setSaving(true);
-        await db.outbox.add({
-            id: result.data.clientId,
-            kind: 'site_diary',
-            payload: result.data,
-            status: 'pending',
-            attempts: 0,
-            createdAt: result.data.capturedAt,
-        });
+        await enqueue('site_diary', `Diary ${result.data.date}, ${project.name}`, result.data);
         void flushOutbox();
         await navigate({ to: '/' });
     }
 
+    if (!project) return <p className="text-ink-soft">Choose a project first.</p>;
+
     return (
-        <form onSubmit={submit} className="grid gap-5" noValidate>
-            <h1 className="text-2xl font-bold">Daily diary</h1>
-
-            <Field label="Project code" name="projectId" placeholder="e.g. PRJ-0142" error={errors.projectId} />
-            <Field label="Date" name="date" type="date" defaultValue={todayInSouthAfrica()} error={errors.date} />
-
-            <fieldset>
-                <legend className="text-sm font-medium">Weather</legend>
-                <div className="mt-1.5 grid grid-cols-3 gap-2">
-                    {WEATHER.map((w) => (
-                        <button
-                            key={w}
-                            type="button"
-                            aria-pressed={weather === w}
-                            onClick={() => setWeather(w)}
-                            className={cn(
-                                'h-11 rounded-[var(--radius-control)] border text-sm font-medium',
-                                weather === w ? 'border-line bg-line text-white' : 'border-concrete bg-surface',
-                            )}
-                        >
-                            {WEATHER_LABELS[w]}
-                        </button>
-                    ))}
-                </div>
-            </fieldset>
-
-            <Field label="Workers on site" name="workersOnSite" type="number" inputMode="numeric" min={0} defaultValue={0} error={errors.workersOnSite} />
-
-            <div className="grid gap-1.5">
-                <label htmlFor="workCompleted" className="text-sm font-medium">
-                    Work completed today
-                </label>
-                <textarea
-                    id="workCompleted"
-                    name="workCompleted"
-                    rows={4}
-                    className="rounded-[var(--radius-control)] border border-concrete bg-surface p-3 text-base focus:border-line focus:outline-none"
-                />
-                {errors.workCompleted && <p className="text-sm text-brick">{errors.workCompleted}</p>}
-            </div>
-
-            <div className="grid gap-1.5">
-                <label htmlFor="delays" className="text-sm font-medium">
-                    Delays or problems <span className="font-normal text-ink-soft">(optional)</span>
-                </label>
-                <textarea
-                    id="delays"
-                    name="delays"
-                    rows={3}
-                    className="rounded-[var(--radius-control)] border border-concrete bg-surface p-3 text-base focus:border-line focus:outline-none"
-                />
-            </div>
-
-            <Button type="submit" size="lg" disabled={saving}>
-                {saving ? 'Saving…' : 'Save diary'}
-            </Button>
-        </form>
+        <Page title="Daily diary">
+            <form onSubmit={submit} className="grid gap-5" noValidate>
+                <p className="text-sm text-ink-soft">{project.name}. One diary per day: saving again for the same date replaces it.</p>
+                <Field label="Date" name="date" type="date" defaultValue={todayInSouthAfrica()} error={errors.date} />
+                <Choice label="Weather" value={weather} onChange={setWeather} options={WEATHER.map((w) => ({ key: w, label: WEATHER_LABELS[w] }))} />
+                <Field label="Workers on site" name="workersOnSite" type="number" inputMode="numeric" min={0} defaultValue={0} error={errors.workersOnSite} />
+                <TextArea label="Work completed today" name="workCompleted" rows={4} error={errors.workCompleted} />
+                <TextArea label="Delays or problems" name="delays" optional />
+                <Button type="submit" size="lg">Save diary</Button>
+            </form>
+        </Page>
     );
 }

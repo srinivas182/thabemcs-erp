@@ -5,6 +5,8 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 // Site App: offline-first PWA used by site teams on phones and tablets.
 export default defineConfig({
+    // Served by Laravel at /site in production (built into public/site).
+    base: '/site/',
     plugins: [
         react(),
         tailwindcss(),
@@ -18,17 +20,21 @@ export default defineConfig({
                 theme_color: '#0E6B63',
                 background_color: '#F6F6F3',
                 display: 'standalone',
-                start_url: '/',
+                start_url: '/site/',
+                scope: '/site/',
                 icons: [{ src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' }],
             },
             workbox: {
                 // The app shell is cached; API calls are never cached (data syncs through the outbox).
-                navigateFallback: '/index.html',
+                navigateFallback: '/site/index.html',
+                navigateFallbackAllowlist: [/^\/site\//],
                 globPatterns: ['**/*.{js,css,html,svg,woff2}'],
             },
         }),
     ],
     build: {
+        outDir: '../public/site',
+        emptyOutDir: true,
         rolldownOptions: {
             output: {
                 // Keep framework code in long-lived cached chunks, separate from app code.
@@ -47,6 +53,9 @@ export default defineConfig({
         proxy: {
             '/api': 'http://localhost:8080',
             '/sanctum': 'http://localhost:8080',
+            '/login': 'http://localhost:8080',
+            '/logout': 'http://localhost:8080',
+            '/two-factor-challenge': 'http://localhost:8080',
         },
     },
 });

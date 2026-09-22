@@ -4,10 +4,19 @@ import { RootLayout } from './pages/root-layout';
 
 const rootRoute = createRootRoute({ component: RootLayout });
 
-const homeRoute = createRoute({ getParentRoute: () => rootRoute, path: '/', component: HomePage });
-const diaryNewRoute = createRoute({ getParentRoute: () => rootRoute, path: '/diary/new', component: lazyRouteComponent(() => import('./pages/diary-new'), 'DiaryNewPage') });
+const page = (path: string, loader: () => Promise<Record<string, unknown>>, name: string) =>
+    createRoute({ getParentRoute: () => rootRoute, path, component: lazyRouteComponent(loader as never, name as never) });
 
-export const router = createRouter({ routeTree: rootRoute.addChildren([homeRoute, diaryNewRoute]) });
+const routeTree = rootRoute.addChildren([
+    createRoute({ getParentRoute: () => rootRoute, path: '/', component: HomePage }),
+    page('/diary/new', () => import('./pages/diary-new'), 'DiaryNewPage'),
+    page('/attendance', () => import('./pages/attendance'), 'AttendancePage'),
+    page('/photo', () => import('./pages/photo'), 'PhotoPage'),
+    page('/delivery', () => import('./pages/delivery'), 'DeliveryPage'),
+    page('/incident', () => import('./pages/incident'), 'IncidentPage'),
+]);
+
+export const router = createRouter({ routeTree, basepath: '/site' });
 
 declare module '@tanstack/react-router' {
     interface Register {

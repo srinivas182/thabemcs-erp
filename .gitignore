@@ -30,3 +30,5 @@ Thumbs.db
 node_modules/
 /site-app/dist
 /site-app/dev-dist
+
+/public/site

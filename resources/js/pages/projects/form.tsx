@@ -20,6 +20,9 @@ interface ProjectData {
     planned_completion_date: string | null;
     description: string | null;
     project_manager: string | null;
+    latitude: string | null;
+    longitude: string | null;
+    geofence_radius_m: number | null;
 }
 
 interface Props {
@@ -49,6 +52,9 @@ export default function ProjectForm({ project, suggestedCode, developmentTypes, 
         planned_completion_date: project?.planned_completion_date ?? '',
         description: project?.description ?? '',
         project_manager: project?.project_manager ?? '',
+        latitude: project?.latitude ?? '',
+        longitude: project?.longitude ?? '',
+        geofence_radius_m: String(project?.geofence_radius_m ?? 300),
     });
 
     type Key = keyof typeof form.data;
@@ -61,7 +67,7 @@ export default function ProjectForm({ project, suggestedCode, developmentTypes, 
 
     function submit(e: FormEvent) {
         e.preventDefault();
-        form.transform((d) => ({ ...d, region_id: d.region_id || null, project_manager: d.project_manager || null }));
+        form.transform((d) => ({ ...d, region_id: d.region_id || null, project_manager: d.project_manager || null, latitude: d.latitude || null, longitude: d.longitude || null }));
         if (editing) form.put(`/projects/${project.id}`);
         else form.post('/projects');
     }
@@ -92,6 +98,12 @@ export default function ProjectForm({ project, suggestedCode, developmentTypes, 
                     <Field label="Estimated value (R, excl. VAT)" type="number" min={0} {...text('estimated_value')} />
                     <Field label="Planned start" type="date" {...text('planned_start_date')} />
                     <Field label="Planned completion" type="date" {...text('planned_completion_date')} />
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-3">
+                    <Field label="Site latitude" type="number" step="0.000001" {...text('latitude')} placeholder="-29.5389" hint="From Google Maps: right-click the site, copy the numbers." />
+                    <Field label="Site longitude" type="number" step="0.000001" {...text('longitude')} placeholder="31.2139" />
+                    <Field label="Sign-in radius (metres)" type="number" min={50} {...text('geofence_radius_m')} hint="How far from the site point people may sign in." />
                 </div>
 
                 {editing && (

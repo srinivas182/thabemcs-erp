@@ -1,63 +1,71 @@
 import { Link } from '@tanstack/react-router';
-import { AlertTriangle, Camera, ClipboardList, Truck, Users } from 'lucide-react';
+import { cn } from '@thabekhulu/ui';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { AlertTriangle, Camera, ClipboardList, Truck, UserCheck } from 'lucide-react';
 import type { ComponentType } from 'react';
+import { db, setSetting } from '../lib/db';
+import { useCurrentProject } from '../lib/session';
+import { flushOutbox } from '../lib/sync';
 
-interface Action {
-    label: string;
-    description: string;
-    icon: ComponentType<{ className?: string }>;
-    to?: '/diary/new';
-}
-
-// One tap for the things site teams record most. Actions without a route arrive in later sprints.
-const ACTIONS: Action[] = [
-    { label: 'Daily diary', description: 'Weather, workers on site, work done, delays', icon: ClipboardList, to: '/diary/new' },
-    { label: 'Photo', description: 'Progress photo with location', icon: Camera },
-    { label: 'Attendance', description: 'Sign workers in and out', icon: Users },
-    { label: 'Delivery', description: 'Receive materials against a PO', icon: Truck },
-    { label: 'Incident', description: 'Report a safety incident or near miss', icon: AlertTriangle },
+const ACTIONS: { to: '/diary/new' | '/attendance' | '/photo' | '/delivery' | '/incident'; label: string; description: string; icon: ComponentType<{ className?: string }>; tone?: string }[] = [
+    { to: '/attendance', label: 'Sign in or out', description: 'Site attendance with location and selfie', icon: UserCheck },
+    { to: '/diary/new', label: 'Daily diary', description: 'Weather, workers, work done, delays', icon: ClipboardList },
+    { to: '/photo', label: 'Progress photo', description: 'Geotagged photo of the works', icon: Camera },
+    { to: '/delivery', label: 'Delivery received', description: 'Materials, delivery note, condition', icon: Truck },
+    { to: '/incident', label: 'Report an incident', description: 'Injury, near miss or damage', icon: AlertTriangle, tone: 'text-brick bg-brick-wash' },
 ];
 
 export function HomePage() {
+    const project = useCurrentProject();
+    const projects = useLiveQuery(() => db.projects.orderBy('name').toArray(), [], []);
+    const problems = useLiveQuery(() => db.outbox.where('status').anyOf('failed', 'rejected').toArray(), [], []);
+
     return (
         <div className="grid gap-5">
-            <div>
-                <h1 className="text-2xl font-bold">What are you recording?</h1>
-                <p className="mt-1 text-ink-soft">Everything saves on this phone first and sends when you have signal.</p>
+            <div className="grid gap-1.5">
+                <label htmlFor="project" className="text-sm font-medium">Project</label>
+                <select id="project" value={project?.id ?? ''} onChange={(e) => void setSetting('projectId', e.target.value)}
+                    className="h-12 rounded-[var(--radius-control)] border border-concrete bg-surface px-3 text-base">
+                    <option value="" disabled>Choose the project you are on</option>
+                    {projects.map((p) => (<option key={p.id} value={p.id}>{p.name} ({p.code})</option>))}
+                </select>
             </div>
 
-            <ul className="grid gap-2.5">
-                {ACTIONS.map(({ label, description, icon: Icon, to }) => {
-                    const body = (
-                        <>
-                            <span className="grid size-11 shrink-0 place-items-center rounded-[var(--radius-control)] bg-line-wash text-line-deep">
-                                <Icon className="size-5" />
-                            </span>
-                            <span className="min-w-0">
-                                <span className="block font-semibold">{label}</span>
-                                <span className="block text-sm text-ink-soft">{to ? description : 'Coming in a later release'}</span>
-                            </span>
-                        </>
-                    );
-
-                    return (
-                        <li key={label}>
-                            {to ? (
-                                <Link
-                                    to={to}
-                                    className="flex items-center gap-3 rounded-[var(--radius-panel)] border border-concrete bg-surface p-3 active:bg-concrete-soft"
-                                >
-                                    {body}
-                                </Link>
-                            ) : (
-                                <div aria-disabled="true" className="flex items-center gap-3 rounded-[var(--radius-panel)] border border-dashed border-concrete p-3 opacity-60">
-                                    {body}
-                                </div>
-                            )}
+            {project ? (
+                <ul className="grid gap-2.5">
+                    {ACTIONS.map(({ to, label, description, icon: Icon, tone }) => (
+                        <li key={to}>
+                            <Link to={to} className="flex items-center gap-3 rounded-[var(--radius-panel)] border border-concrete bg-surface p-3 active:bg-concrete-soft">
+                                <span className={cn('grid size-11 shrink-0 place-items-center rounded-[var(--radius-control)]', tone ?? 'bg-line-wash text-line-deep')}><Icon className="size-5" /></span>
+                                <span className="min-w-0">
+                                    <span className="block font-semibold">{label}</span>
+                                    <span className="block text-sm text-ink-soft">{description}</span>
+                                </span>
+                            </Link>
                         </li>
-                    );
-                })}
-            </ul>
+                    ))}
+                </ul>
+            ) : (
+                <p className="text-ink-soft">Choose a project to start recording.</p>
+            )}
+
+            {problems.length > 0 && (
+                <section className="grid gap-2 rounded-[var(--radius-panel)] border border-hivis bg-hivis-wash p-3">
+                    <p className="font-semibold">Not sent yet</p>
+                    <ul className="grid gap-2 text-sm">
+                        {problems.map((p) => (
+                            <li key={p.id} className="flex items-start justify-between gap-2">
+                                <span>{p.label}<span className="block text-ink-soft">{p.lastError}</span></span>
+                                {p.status === 'rejected' ? (
+                                    <button className="shrink-0 text-brick underline" onClick={() => window.confirm('Delete this record from the phone?') && void db.outbox.delete(p.id)}>Delete</button>
+                                ) : (
+                                    <button className="shrink-0 underline" onClick={() => void flushOutbox()}>Retry</button>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
         </div>
     );
 }

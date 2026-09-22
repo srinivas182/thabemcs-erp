@@ -21,6 +21,8 @@ use App\Domains\Projects\Http\Controllers\ProjectController;
 use App\Domains\Projects\Http\Controllers\RiskController;
 use App\Domains\Projects\Http\Controllers\StageGateController;
 use App\Domains\Projects\Http\Controllers\TaskController;
+use App\Domains\Safety\Http\Controllers\SafetyController;
+use App\Domains\Site\Http\Controllers\SiteController;
 use App\Domains\Suppliers\Http\Controllers\SupplierController;
 use App\Domains\Team\Http\Controllers\TeamController;
 use Illuminate\Support\Facades\Route;
@@ -134,6 +136,24 @@ Route::middleware(['auth'])->group(function (): void {
         Route::delete('documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
     });
 
+    // Site management (web view of what the site app captures).
+    Route::middleware(['module:projects', 'module:site'])->group(function (): void {
+        Route::get('projects/{project}/site', [SiteController::class, 'show'])->name('projects.site');
+        Route::post('projects/{project}/site-instructions', [SiteController::class, 'storeInstruction'])->name('projects.site-instructions.store');
+        Route::patch('site-instructions/{instruction}', [SiteController::class, 'updateInstruction'])->name('site-instructions.update');
+        Route::post('projects/{project}/inspections', [SiteController::class, 'storeInspection'])->name('projects.inspections.store');
+        Route::post('projects/{project}/snags', [SiteController::class, 'storeSnag'])->name('projects.snags.store');
+        Route::patch('snags/{snag}', [SiteController::class, 'updateSnag'])->name('snags.update');
+        Route::get('site-photos/{photo}', [SiteController::class, 'photo'])->name('site-photos.show');
+    });
+
+    // Health and safety.
+    Route::middleware(['module:projects', 'module:safety'])->group(function (): void {
+        Route::get('projects/{project}/safety', [SafetyController::class, 'show'])->name('projects.safety');
+        Route::patch('safety-incidents/{incident}', [SafetyController::class, 'updateIncident'])->name('safety-incidents.update');
+        Route::post('projects/{project}/toolbox-talks', [SafetyController::class, 'storeTalk'])->name('projects.toolbox-talks.store');
+    });
+
     // Company settings (Company Admin).
     Route::prefix('settings')->name('settings.')->group(function (): void {
         Route::get('profile', [ProfileController::class, 'show'])->name('profile');
@@ -143,3 +163,14 @@ Route::middleware(['auth'])->group(function (): void {
         Route::patch('users/{user:ulid}', [CompanyUserController::class, 'update'])->name('users.update');
     });
 });
+
+/*
+| Site app (PWA), built into public/site. Any /site/* path returns the app shell;
+| the app's own router takes over in the browser.
+*/
+Route::get('/site/{path?}', function () {
+    $shell = public_path('site/index.html');
+    abort_unless(is_file($shell), 404, 'The site app has not been built. Run: npm run build --workspace site-app');
+
+    return response()->file($shell, ['Cache-Control' => 'no-cache']);
+})->where('path', '.*')->name('site-app');

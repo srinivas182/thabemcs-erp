@@ -69,6 +69,18 @@ class AppServiceProvider extends ServiceProvider
             array_filter(Role::cases(), static fn (Role $r): bool => $r !== Role::Contractor),
         ))));
 
+        // Site capture (site app), site management and health & safety.
+        Gate::define('capture-site', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::ProjectManager->value,
+            Role::SiteManager->value, Role::SafetyOfficer->value, Role::QuantitySurveyor->value,
+        ]));
+        Gate::define('manage-site', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::ProjectManager->value, Role::SiteManager->value,
+        ]));
+        Gate::define('manage-safety', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::ProjectManager->value, Role::SiteManager->value, Role::SafetyOfficer->value,
+        ]));
+
         // Company Admins and Directors can read their company's audit trail.
         Gate::define('view-audit-log', static fn (User $user): bool => $user->hasAnyRole([Role::CompanyAdmin->value, Role::Director->value]));
 

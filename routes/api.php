@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domains\Site\Http\Controllers\Api\SiteApiController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -26,4 +27,15 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'company', 'throttle:api'])->gr
             ],
         ];
     })->name('api.v1.me');
+
+    // Site app sync endpoints (idempotent by clientId).
+    Route::middleware('module:site')->prefix('site')->name('api.v1.site.')->group(function (): void {
+        Route::get('projects', [SiteApiController::class, 'projects'])->name('projects');
+        Route::get('suppliers', [SiteApiController::class, 'suppliers'])->name('suppliers');
+        Route::post('diary-entries', [SiteApiController::class, 'diary'])->name('diary');
+        Route::post('attendance', [SiteApiController::class, 'attendance'])->name('attendance');
+        Route::post('photos', [SiteApiController::class, 'photo'])->name('photos');
+        Route::post('deliveries', [SiteApiController::class, 'delivery'])->name('deliveries');
+        Route::post('incidents', [SiteApiController::class, 'incident'])->middleware('module:safety')->name('incidents');
+    });
 });
