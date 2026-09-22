@@ -163,6 +163,18 @@ Everything marked **configurable** can be changed in settings without code chang
 | PO3 | Data subject requests are due 30 days after receipt; exports cover employees and system users | Yes |
 | PO4 | The Information Officer's name and email are set per deployment (POPIA_INFORMATION_OFFICER) | Yes |
 
+## Reporting, forms and integrations (Sprint 15)
+| # | Assumption | Configurable |
+|---|---|---|
+| RD1 | Report designer datasets: purchase orders, supplier invoices, budget by cost code, suppliers, incidents, employees, programme activities; up to 5 000 rows; filters is / is not / contains / at least / at most | No |
+| RD2 | Custom reports are visible to everyone in the company who has permission for the dataset; only the author or a Company Admin/Director can edit or delete | No |
+| RP8 | Ten standard reports: the seven from Sprint 12 plus variation register, programme status and supplier compliance | No |
+| MP1 | Command centre health: red = over budget, open incident or forecast late; amber = 80%+ budget used, high risks or activities behind; map tiles from OpenStreetMap (fine for this volume; a commercial tile service can be swapped in) | Yes |
+| FB1 | Form builder question types: pass/fail/N/A, yes/no, choice, number, text, date, photo. A form fails if any pass/fail answer is "fail". Editing questions creates a new version; completed forms keep their questions | No |
+| IN1 | Sage Business Cloud Accounting ZA uses API v2.0.0 (API key + Basic auth + company ID; 5 000 calls/day). Approved, scheduled and paid supplier invoices are sent as supplier invoices with one account line per invoice; accounts mapped per cost code with a default; field names to be confirmed in the client's Sage sandbox | Yes |
+| IN2 | SimplePay: overtime hours (1.5x and 2x) and allowances go to the payslip for the period end through Bulk Inputs; the payslip item for each is set per company; approved leave is sent as leave days (working days, public holidays excluded) | Yes |
+| IN3 | Each supplier and employee needs its ID from Sage/SimplePay entered once; records without it are listed as not sent. Nothing is sent twice | No |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.

@@ -24,7 +24,8 @@ export default function Reports({ reports, schedules, people, canSchedule }: Pro
         <>
             <Head title="Reports" />
             <div className="mx-auto grid max-w-5xl gap-8">
-                <PageHeader title="Reports" description="Standard reports you can view, print to PDF, download for Excel, or have emailed on a schedule." />
+                <PageHeader title="Reports" description="Standard and custom reports you can view, print to PDF, download for Excel, or have emailed on a schedule."
+                    action={<Button asChild><Link href="/reports/designer">Design a report</Link></Button>} />
                 <ul className="grid gap-3 sm:grid-cols-2">
                     {reports.map((r) => (
                         <li key={r.key}>

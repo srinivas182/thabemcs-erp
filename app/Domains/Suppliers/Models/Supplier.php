@@ -29,6 +29,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property int|null $cidb_grade
  * @property string|null $cidb_class
  * @property string|null $bbbee_level
+ * @property string|null $accounting_ref
  * @property string|null $contact_name
  * @property string|null $email
  * @property string|null $phone
@@ -44,7 +45,7 @@ class Supplier extends Model
 
     protected $fillable = [
         'name', 'trading_name', 'type', 'registration_number', 'vat_number', 'cidb_crs_number', 'cidb_grade', 'cidb_class',
-        'bbbee_level', 'contact_name', 'email', 'phone', 'province', 'status', 'notes',
+        'bbbee_level', 'accounting_ref', 'contact_name', 'email', 'phone', 'province', 'status', 'notes',
     ];
 
     protected $attributes = ['status' => 'active'];

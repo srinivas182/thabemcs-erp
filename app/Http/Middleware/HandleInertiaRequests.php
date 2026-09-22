@@ -54,6 +54,8 @@ class HandleInertiaRequests extends Middleware
             ],
             'can' => [
                 'manageCompanies' => $user instanceof User && $user->is_super_admin,
+                'manageForms' => $user instanceof User && $user->can('manage-forms'),
+                'manageIntegrations' => $user instanceof User && $user->can('manage-integrations'),
                 'managePopia' => $user instanceof User && $user->can('manage-popia'),
                 'manageMasterData' => $user instanceof User && $user->can('manage-master-data'),
                 'viewPortfolio' => $user instanceof User && ($user->is_super_admin || $user->can('view-financial-reports')),

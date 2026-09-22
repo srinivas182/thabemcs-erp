@@ -23,6 +23,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property string $ulid
  * @property int|null $user_id
  * @property string $employee_number
+ * @property string|null $payroll_ref
  * @property string $first_name
  * @property string $last_name
  * @property string|null $id_number
@@ -44,7 +45,7 @@ class Employee extends Model
     use BelongsToCompany, HasPublicUlid, LogsActivity;
 
     protected $fillable = [
-        'user_id', 'employee_number', 'first_name', 'last_name', 'id_number', 'job_title', 'employment_type',
+        'user_id', 'employee_number', 'payroll_ref', 'first_name', 'last_name', 'id_number', 'job_title', 'employment_type',
         'start_date', 'end_date', 'phone', 'emergency_contact', 'days_per_week', 'status',
     ];
 

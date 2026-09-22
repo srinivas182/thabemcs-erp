@@ -1,17 +1,20 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { api, getMe } from './api';
-import { db, getSetting, setSetting, type CachedEmployee, type CachedOrder, type CachedProject } from './db';
+import { db, getSetting, setSetting, type CachedEmployee, type CachedForm, type CachedOrder, type CachedProject } from './db';
 
 /** Refresh the signed-in user and the cached project and supplier lists (when online). */
 export async function refreshSession(): Promise<boolean> {
     try {
         const me = await getMe();
         await setSetting('me', me);
-        const [projects, suppliers] = await Promise.all([
+        const [projects, suppliers, forms] = await Promise.all([
             api<{ data: CachedProject[] }>('/api/v1/site/projects'),
             api<{ data: { id: string; name: string }[] }>('/api/v1/site/suppliers'),
+            api<{ data: CachedForm[] }>('/api/v1/site/forms').catch(() => ({ data: [] as CachedForm[] })),
         ]);
-        await db.transaction('rw', db.projects, db.suppliers, async () => {
+        await db.transaction('rw', [db.projects, db.suppliers, db.forms], async () => {
+            await db.forms.clear();
+            await db.forms.bulkAdd(forms.data);
             await db.projects.clear();
             await db.projects.bulkAdd(projects.data);
             await db.suppliers.clear();

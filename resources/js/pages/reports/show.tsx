@@ -39,6 +39,7 @@ export default function ReportShow({ report, result, values, projects }: Props) 
                         <p className="text-ink-soft">{result.subtitle}</p>
                     </div>
                     <div className="flex flex-wrap gap-2 print:hidden">
+                        {report.key.startsWith('custom-') && <Button variant="ghost" asChild><a href={`/reports/designer/${report.key.slice(7)}`}>Edit design</a></Button>}
                         <Button variant="secondary" onClick={() => window.print()}><Printer className="size-4" /> Print or save as PDF</Button>
                         <Button variant="secondary" asChild><a href={`/reports/${report.key}/download/xlsx?${query}`}><Download className="size-4" /> Excel</a></Button>
                         <Button variant="ghost" asChild><a href={`/reports/${report.key}/download/csv?${query}`}>CSV</a></Button>

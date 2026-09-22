@@ -4,7 +4,7 @@ import Dexie, { type EntityTable } from 'dexie';
  * Everything captured on site is written to the phone first (IndexedDB), then sent by the
  * sync worker when there is signal. Projects and suppliers are cached so forms work offline.
  */
-export type OutboxKind = 'site_diary' | 'attendance' | 'photo' | 'delivery' | 'incident' | 'crew' | 'receipt' | 'snag' | 'inspection' | 'instruction';
+export type OutboxKind = 'site_diary' | 'attendance' | 'photo' | 'delivery' | 'incident' | 'crew' | 'receipt' | 'snag' | 'inspection' | 'instruction' | 'form';
 export type OutboxStatus = 'pending' | 'syncing' | 'failed' | 'rejected';
 
 export interface OutboxItem {
@@ -15,6 +15,8 @@ export interface OutboxItem {
     /** Photo or selfie, sent as multipart. */
     file?: Blob;
     fileField?: string;
+    /** Extra photos keyed by form field name (form builder photo questions). */
+    files?: Record<string, Blob>;
     status: OutboxStatus;
     attempts: number;
     lastError?: string;
@@ -52,6 +54,14 @@ export interface CachedOrder {
     lines: { id: number; description: string; unit: string; ordered: number; outstanding: number }[];
 }
 
+export interface CachedForm {
+    id: string;
+    name: string;
+    kind: string;
+    version: number;
+    fields: { id: string; label: string; type: string; required: boolean; options?: string[] }[];
+}
+
 export interface Setting {
     key: string;
     value: unknown;
@@ -64,6 +74,7 @@ export const db = new Dexie('thabekhulu-site') as Dexie & {
     settings: EntityTable<Setting, 'key'>;
     employees: EntityTable<CachedEmployee, 'id'>;
     orders: EntityTable<CachedOrder, 'id'>;
+    forms: EntityTable<CachedForm, 'id'>;
 };
 
 db.version(1).stores({ outbox: 'id, kind, status, createdAt' });
@@ -81,6 +92,15 @@ db.version(3).stores({
     employees: 'id, projectId, name',
     orders: 'id, projectId, reference',
 });
+db.version(4).stores({
+    outbox: 'id, kind, status, createdAt',
+    projects: 'id, name',
+    suppliers: 'id, name',
+    settings: 'key',
+    employees: 'id, projectId, name',
+    orders: 'id, projectId, reference',
+    forms: 'id, name',
+});
 
 export async function getSetting<T>(key: string): Promise<T | undefined> {
     return (await db.settings.get(key))?.value as T | undefined;
@@ -91,7 +111,7 @@ export async function setSetting(key: string, value: unknown): Promise<void> {
 }
 
 /** Queue a record for sending and try to send straight away. */
-export async function enqueue(kind: OutboxKind, label: string, payload: Record<string, unknown>, file?: Blob, fileField?: string): Promise<void> {
+export async function enqueue(kind: OutboxKind, label: string, payload: Record<string, unknown>, file?: Blob, fileField?: string, files?: Record<string, Blob>): Promise<void> {
     await db.outbox.add({
         id: String(payload.clientId),
         kind,
@@ -99,6 +119,7 @@ export async function enqueue(kind: OutboxKind, label: string, payload: Record<s
         payload,
         file,
         fileField,
+        files,
         status: 'pending',
         attempts: 0,
         createdAt: new Date().toISOString(),

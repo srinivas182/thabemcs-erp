@@ -12,18 +12,20 @@ const ENDPOINTS: Record<OutboxItem['kind'], string> = {
     snag: '/api/v1/site/snags',
     inspection: '/api/v1/site/inspections',
     instruction: '/api/v1/site/instructions',
+    form: '/api/v1/site/form-submissions',
 };
 
 let running = false;
 
 function body(item: OutboxItem): BodyInit {
-    if (!item.file) return JSON.stringify(item.payload);
+    if (!item.file && !item.files) return JSON.stringify(item.payload);
 
     const form = new FormData();
     for (const [key, value] of Object.entries(item.payload)) {
         if (value !== null && value !== undefined) form.append(key, String(value));
     }
-    form.append(item.fileField ?? 'file', item.file, `${item.id}.jpg`);
+    if (item.file) form.append(item.fileField ?? 'file', item.file, `${item.id}.jpg`);
+    for (const [field, blob] of Object.entries(item.files ?? {})) form.append(field, blob, `${field}.jpg`);
     return form;
 }
 

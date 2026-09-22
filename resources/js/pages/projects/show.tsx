@@ -138,6 +138,9 @@ export default function ProjectShow(props: Props) {
                     <Link href={`/projects/${project.id}/programme`} className="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink">
                         Programme
                     </Link>
+                    <Link href={`/projects/${project.id}/forms`} className="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink">
+                        Forms
+                    </Link>
                     <Link href={`/projects/${project.id}/meetings`} className="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink">
                         Meetings
                     </Link>

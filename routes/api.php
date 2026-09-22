@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domains\Forms\Http\Controllers\FormController;
 use App\Domains\Site\Http\Controllers\Api\SiteApiController;
 use App\Domains\Site\Http\Controllers\Api\SiteOperationsApiController;
 use App\Models\User;
@@ -45,5 +46,7 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'company', 'throttle:api'])->gr
         Route::post('snags', [SiteOperationsApiController::class, 'snag'])->name('snags');
         Route::post('inspections', [SiteOperationsApiController::class, 'inspection'])->name('inspections');
         Route::post('instructions', [SiteOperationsApiController::class, 'instruction'])->name('instructions');
+        Route::get('forms', [FormController::class, 'apiTemplates'])->name('forms');
+        Route::post('form-submissions', [FormController::class, 'apiSubmit'])->name('form-submissions');
     });
 });

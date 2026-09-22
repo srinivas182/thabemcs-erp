@@ -1,13 +1,13 @@
 import { Link } from '@tanstack/react-router';
 import { cn } from '@thabekhulu/ui';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { AlertTriangle, Camera, ClipboardCheck, ClipboardList, FileSignature, PackageCheck, Truck, UserCheck, Users, Wrench } from 'lucide-react';
+import { AlertTriangle, Camera, ClipboardCheck, ClipboardList, FileSignature, ListChecks, PackageCheck, Truck, UserCheck, Users, Wrench } from 'lucide-react';
 import { type ComponentType, useEffect } from 'react';
 import { db, setSetting } from '../lib/db';
 import { refreshProjectCache, useCurrentProject } from '../lib/session';
 import { flushOutbox } from '../lib/sync';
 
-const ACTIONS: { to: '/diary/new' | '/attendance' | '/photo' | '/delivery' | '/incident' | '/crew' | '/receive' | '/snag' | '/inspection' | '/instruction'; label: string; description: string; icon: ComponentType<{ className?: string }>; tone?: string }[] = [
+const ACTIONS: { to: '/diary/new' | '/attendance' | '/photo' | '/delivery' | '/incident' | '/crew' | '/receive' | '/snag' | '/inspection' | '/instruction' | '/forms'; label: string; description: string; icon: ComponentType<{ className?: string }>; tone?: string }[] = [
     { to: '/attendance', label: 'Sign in or out', description: 'Site attendance with location and selfie', icon: UserCheck },
     { to: '/diary/new', label: 'Daily diary', description: 'Weather, workers, work done, delays', icon: ClipboardList },
     { to: '/photo', label: 'Progress photo', description: 'Geotagged photo of the works', icon: Camera },
@@ -15,6 +15,7 @@ const ACTIONS: { to: '/diary/new' | '/attendance' | '/photo' | '/delivery' | '/i
     { to: '/receive', label: 'Goods received', description: 'Against a purchase order: scan its QR code', icon: PackageCheck },
     { to: '/delivery', label: 'Delivery without an order', description: 'Materials, delivery note, condition', icon: Truck },
     { to: '/inspection', label: 'Inspection', description: 'Quality or safety, pass or fail', icon: ClipboardCheck },
+    { to: '/forms', label: 'Checklists', description: 'Your company\'s own forms, e.g. pre-pour or plant pre-use', icon: ListChecks },
     { to: '/snag', label: 'Snag', description: 'Defect with photo, for a contractor to fix', icon: Wrench },
     { to: '/instruction', label: 'Site instruction', description: 'Written instruction to a contractor', icon: FileSignature },
     { to: '/incident', label: 'Report an incident', description: 'Injury, near miss or damage', icon: AlertTriangle, tone: 'text-brick bg-brick-wash' },

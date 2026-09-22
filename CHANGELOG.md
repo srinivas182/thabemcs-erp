@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.15.0] — Reporting and integrations (Sprint 15)
+
+### Added
+- Report designer: choose a dataset, columns and their order, conditions, sort and totals; saved reports can be viewed, printed, exported and scheduled like standard reports.
+- Three more standard reports (ten in total): variation register, programme status, supplier compliance.
+- Command centre: live projects on a map coloured by health, with the reasons listed; group view for Super Admin.
+- Form builder with drag-and-drop ordering and seven question types; forms are versioned; filled in offline on the site app (with photos) and listed per project with pass/fail.
+- Sage Business Cloud Accounting (South Africa) connection: sends approved supplier invoices with the mapped account and VAT type; SimplePay connection: sends overtime, allowances and approved leave. Encrypted credentials, connection test, send log, and nothing sent twice.
+
 ## [0.14.0] — Commercial and compliance completion (Sprint 14)
 
 ### Added

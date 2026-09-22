@@ -19,6 +19,7 @@ const routeTree = rootRoute.addChildren([
     page('/snag', () => import('./pages/snag'), 'SnagPage'),
     page('/inspection', () => import('./pages/inspection'), 'InspectionPage'),
     page('/instruction', () => import('./pages/instruction'), 'InstructionPage'),
+    page('/forms', () => import('./pages/forms'), 'FormsPage'),
 ]);
 
 export const router = createRouter({ routeTree, basepath: '/site' });

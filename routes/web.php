@@ -11,8 +11,10 @@ use App\Domains\Finance\Http\Controllers\BudgetController;
 use App\Domains\Finance\Http\Controllers\InvoiceController;
 use App\Domains\Finance\Http\Controllers\PaymentRunController;
 use App\Domains\Finance\Http\Controllers\ReportsExportController;
+use App\Domains\Forms\Http\Controllers\FormController;
 use App\Domains\Funding\Http\Controllers\FundingController;
 use App\Domains\Funding\Http\Controllers\InvestorController;
+use App\Domains\Integrations\Http\Controllers\IntegrationController;
 use App\Domains\Land\Http\Controllers\LandController;
 use App\Domains\MasterData\Http\Controllers\MasterDataController;
 use App\Domains\Meetings\Http\Controllers\MeetingController;
@@ -35,7 +37,9 @@ use App\Domains\Projects\Http\Controllers\ProjectController;
 use App\Domains\Projects\Http\Controllers\RiskController;
 use App\Domains\Projects\Http\Controllers\StageGateController;
 use App\Domains\Projects\Http\Controllers\TaskController;
+use App\Domains\Reporting\Http\Controllers\MapController;
 use App\Domains\Reporting\Http\Controllers\ReportController;
+use App\Domains\Reporting\Http\Controllers\ReportDesignerController;
 use App\Domains\Safety\Http\Controllers\SafetyComplianceController;
 use App\Domains\Safety\Http\Controllers\SafetyController;
 use App\Domains\Site\Http\Controllers\SiteController;
@@ -193,15 +197,37 @@ Route::middleware(['auth'])->group(function (): void {
 
     // Portfolio dashboard (group view for the Super Admin with no company selected).
     Route::get('dashboard/portfolio', [ReportController::class, 'dashboard'])->name('dashboard.portfolio');
+    Route::get('dashboard/map', [MapController::class, 'show'])->name('dashboard.map');
 
     // Standard reports: view, print, Excel/CSV download, schedule by email.
     Route::middleware('module:reporting')->group(function (): void {
         Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
         Route::post('reports/schedules', [ReportController::class, 'schedule'])->name('reports.schedules.store');
+        Route::get('reports/designer', [ReportDesignerController::class, 'edit'])->name('reports.designer');
+        Route::post('reports/designer', [ReportDesignerController::class, 'store'])->name('reports.designer.store');
+        Route::get('reports/designer/{report}', [ReportDesignerController::class, 'edit'])->name('reports.designer.edit');
+        Route::put('reports/designer/{report}', [ReportDesignerController::class, 'update'])->name('reports.designer.update');
+        Route::delete('reports/designer/{report}', [ReportDesignerController::class, 'destroy'])->name('reports.designer.destroy');
         Route::delete('reports/schedules/{schedule}', [ReportController::class, 'unschedule'])->name('reports.schedules.destroy');
         Route::get('reports/{key}', [ReportController::class, 'show'])->name('reports.show');
         Route::get('reports/{key}/download/{format}', [ReportController::class, 'download'])->name('reports.download');
     });
+
+    // Form builder: custom checklists for the site app.
+    Route::get('forms', [FormController::class, 'index'])->name('forms.index');
+    Route::get('forms/new', [FormController::class, 'edit'])->name('forms.create');
+    Route::post('forms', [FormController::class, 'store'])->name('forms.store');
+    Route::get('forms/{form}/edit', [FormController::class, 'edit'])->name('forms.edit');
+    Route::put('forms/{form}', [FormController::class, 'update'])->name('forms.update');
+    Route::get('projects/{project}/forms', [FormController::class, 'submissions'])->middleware('module:projects')->name('projects.forms');
+
+    // Accounting and payroll integrations.
+    Route::get('settings/integrations', [IntegrationController::class, 'index'])->name('integrations.index');
+    Route::put('settings/integrations/{provider}', [IntegrationController::class, 'save'])->whereIn('provider', ['sage_za', 'simplepay'])->name('integrations.save');
+    Route::post('settings/integrations/{provider}/test', [IntegrationController::class, 'test'])->whereIn('provider', ['sage_za', 'simplepay'])->name('integrations.test');
+    Route::post('settings/integrations/{provider}/sync', [IntegrationController::class, 'sync'])->whereIn('provider', ['sage_za', 'simplepay'])->middleware('throttle:10,1')->name('integrations.sync');
+    Route::patch('suppliers/{supplier}/accounting-ref', [IntegrationController::class, 'supplierRef'])->name('suppliers.accounting-ref');
+    Route::patch('workforce/{employee}/payroll-ref', [IntegrationController::class, 'employeeRef'])->name('workforce.payroll-ref');
 
     // Company master data: cost code library and units.
     Route::get('settings/master-data', [MasterDataController::class, 'index'])->name('master-data.index');

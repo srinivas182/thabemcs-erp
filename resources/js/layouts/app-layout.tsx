@@ -1,6 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { cn } from '@thabekhulu/ui';
-import { Bell, Building2, CalendarCheck, Gauge, History, Inbox, ListTree, LogOut, Menu, Search, ShieldCheck, Users, X } from 'lucide-react';
+import { Bell, Building2, CalendarCheck, ClipboardList, Gauge, History, Inbox, ListTree, LogOut, Map as MapIcon, Menu, Plug, Search, ShieldCheck, Users, X } from 'lucide-react';
 import CommandPalette from '@/components/command-palette';
 import { type ReactNode, useEffect, useState } from 'react';
 import { MODULE_ROUTES, NAV_GROUPS } from '@/components/navigation';
@@ -38,6 +38,21 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 {can.viewPortfolio && (
                     <NavLink href="/dashboard/portfolio" active={url.startsWith('/dashboard/portfolio')} icon={<Gauge className="size-4" aria-hidden />}>
                         {company ? 'Portfolio' : 'Group portfolio'}
+                    </NavLink>
+                )}
+                {can.viewPortfolio && (
+                    <NavLink href="/dashboard/map" active={url.startsWith('/dashboard/map')} icon={<MapIcon className="size-4" aria-hidden />}>
+                        Command centre
+                    </NavLink>
+                )}
+                {company && can.manageForms && (
+                    <NavLink href="/forms" active={url.startsWith('/forms')} icon={<ClipboardList className="size-4" aria-hidden />}>
+                        Forms
+                    </NavLink>
+                )}
+                {company && can.manageIntegrations && (
+                    <NavLink href="/settings/integrations" active={url.startsWith('/settings/integrations')} icon={<Plug className="size-4" aria-hidden />}>
+                        Integrations
                     </NavLink>
                 )}
                 {company && can.manageMasterData && (
