@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Domains\Approvals\Http\Controllers\ApprovalController;
 use App\Domains\Feasibility\Http\Controllers\FeasibilityController;
 use App\Domains\Funding\Http\Controllers\FundingController;
 use App\Domains\Funding\Http\Controllers\InvestorController;
+use App\Domains\Land\Http\Controllers\LandController;
 use App\Domains\Platform\Http\Controllers\ActingCompanyController;
 use App\Domains\Platform\Http\Controllers\CompanyController;
 use App\Domains\Platform\Http\Controllers\MyDayController;
@@ -18,6 +20,7 @@ use App\Domains\Projects\Http\Controllers\ProjectController;
 use App\Domains\Projects\Http\Controllers\RiskController;
 use App\Domains\Projects\Http\Controllers\StageGateController;
 use App\Domains\Projects\Http\Controllers\TaskController;
+use App\Domains\Team\Http\Controllers\TeamController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -80,6 +83,32 @@ Route::middleware(['auth'])->group(function (): void {
         Route::post('investors', [InvestorController::class, 'store'])->name('investors.store');
         Route::post('investors/{investor}/verify', [InvestorController::class, 'verify'])->name('investors.verify');
         Route::delete('investors/{investor}', [InvestorController::class, 'destroy'])->name('investors.destroy');
+    });
+
+    // Land pipeline and due diligence.
+    Route::middleware('module:land')->group(function (): void {
+        Route::get('land', [LandController::class, 'index'])->name('land.index');
+        Route::post('land', [LandController::class, 'store'])->name('land.store');
+        Route::get('land/{parcel}', [LandController::class, 'show'])->name('land.show');
+        Route::put('land/{parcel}', [LandController::class, 'update'])->name('land.update');
+        Route::patch('land/{parcel}/status', [LandController::class, 'status'])->name('land.status');
+        Route::patch('land/{parcel}/checks/{check}', [LandController::class, 'check'])->name('land.checks.update');
+    });
+
+    // Statutory approvals register.
+    Route::middleware(['module:approvals', 'module:projects'])->group(function (): void {
+        Route::get('approvals', [ApprovalController::class, 'index'])->name('approvals.index');
+        Route::post('approvals', [ApprovalController::class, 'store'])->name('approvals.store');
+        Route::patch('approvals/{application}', [ApprovalController::class, 'update'])->name('approvals.update');
+    });
+
+    // Professional team and fee claims (part of the Projects module).
+    Route::middleware('module:projects')->group(function (): void {
+        Route::get('projects/{project}/team', [TeamController::class, 'show'])->name('projects.team');
+        Route::post('projects/{project}/team', [TeamController::class, 'store'])->name('projects.team.store');
+        Route::post('appointments/{appointment}/verify', [TeamController::class, 'verify'])->name('appointments.verify');
+        Route::post('appointments/{appointment}/claims', [TeamController::class, 'storeClaim'])->name('appointments.claims.store');
+        Route::patch('fee-claims/{claim}', [TeamController::class, 'updateClaim'])->name('fee-claims.update');
     });
 
     // Company settings (Company Admin).

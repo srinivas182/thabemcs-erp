@@ -15,4 +15,6 @@ export const NAV_GROUPS: { title: string; modules: string[] }[] = [
 export const MODULE_ROUTES: Record<string, string> = {
     projects: '/projects',
     funding: '/investors',
+    land: '/land',
+    approvals: '/approvals',
 };

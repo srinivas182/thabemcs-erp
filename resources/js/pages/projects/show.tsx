@@ -120,7 +120,7 @@ export default function ProjectShow(props: Props) {
                     ))}
                 </ol>
 
-                <nav className="flex gap-1 border-b border-concrete" aria-label="Project sections">
+                <nav className="flex gap-1 overflow-x-auto border-b border-concrete" aria-label="Project sections">
                     {TABS.map((t) => (
                         <button
                             key={t.key}
@@ -140,6 +140,14 @@ export default function ProjectShow(props: Props) {
                             Feasibility
                         </Link>
                     )}
+                    {modules.has('approvals') && (
+                        <Link href={`/approvals?project=${project.id}`} className="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink">
+                            Approvals
+                        </Link>
+                    )}
+                    <Link href={`/projects/${project.id}/team`} className="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink">
+                        Team
+                    </Link>
                     {modules.has('funding') && (
                         <Link href={`/projects/${project.id}/funding`} className="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink">
                             Funding

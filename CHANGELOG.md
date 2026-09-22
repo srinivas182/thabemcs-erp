@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.6.0] — Land, statutory approvals and professional team (Sprint 6)
+
+### Added
+- Land pipeline: sites from identified through due diligence, offer, acceptance and transfer, with key dates; link land to a project.
+- SA land due-diligence checklist (13 checks) with clear / issue / not applicable results, notes and who checked; offers can't be accepted with open issues.
+- Statutory approvals register across projects: town planning, building plans, engineering services, environmental, water use, heritage, fire, NHBRC, construction work permit, occupancy.
+- Decision tracking, conditions, validity dates; My Day alerts for approvals lapsing within 60 days and overdue decisions.
+- Professional team per project with the correct SA council per discipline, registration verification, fee basis and agreed fee.
+- Fee claims: recorded by the project team, approved by the QS, paid by Finance; claims over the agreed fee are flagged.
+- Land and Approvals in the sidebar; Approvals and Team on the project page.
+
 ## [0.5.0] — Feasibility, funding and investors (Sprint 5)
 
 ### Added

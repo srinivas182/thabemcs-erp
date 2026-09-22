@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domains\Platform\Http\Controllers;
 
+use App\Domains\Approvals\Enums\ApplicationStatus;
+use App\Domains\Approvals\Models\StatutoryApplication;
 use App\Domains\Projects\Enums\ProjectStage;
 use App\Domains\Projects\Enums\ProjectStatus;
 use App\Domains\Projects\Enums\RiskStatus;
@@ -120,6 +122,34 @@ final class MyDayController
                     'level' => 'warning',
                 ];
             });
+
+        if ($user->can('manage-projects')) {
+            StatutoryApplication::query()->with('project:id,ulid,name')
+                ->where('status', ApplicationStatus::Approved)
+                ->whereDate('valid_until', '<=', Carbon::today()->addDays(60))
+                ->orderBy('valid_until')->limit(5)->get()
+                ->each(function (StatutoryApplication $a) use (&$alerts): void {
+                    $days = $a->daysToExpiry() ?? 0;
+                    $alerts[] = [
+                        'title' => $a->type->label().($days < 0 ? ' has lapsed' : " lapses in {$days} days"),
+                        'detail' => "{$a->project->name}. Start construction or apply for an extension before it lapses.",
+                        'url' => route('approvals.index', ['project' => $a->project->ulid]),
+                        'level' => $days < 14 ? 'danger' : 'warning',
+                    ];
+                });
+
+            $overdue = StatutoryApplication::query()
+                ->whereIn('status', [ApplicationStatus::Submitted, ApplicationStatus::Query])
+                ->whereDate('expected_decision_on', '<', Carbon::today())->count();
+            if ($overdue > 0) {
+                $alerts[] = [
+                    'title' => $overdue === 1 ? '1 application decision is overdue' : "{$overdue} application decisions are overdue",
+                    'detail' => 'Follow up with the authority.',
+                    'url' => route('approvals.index', ['view' => 'attention']),
+                    'level' => 'warning',
+                ];
+            }
+        }
 
         return $alerts;
     }

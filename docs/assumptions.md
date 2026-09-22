@@ -40,6 +40,20 @@ Everything marked **configurable** can be changed in settings without code chang
 | FU4 | Only the last four digits of the project bank account are stored | No |
 | FU5 | Investors and funding are visible to Company Admins, Directors, Development Managers and Finance only | Yes (later sprint) |
 
+## Land, approvals and professional team (Sprint 6)
+| # | Assumption | Configurable |
+|---|---|---|
+| LA1 | Land due-diligence checklist per `config/land_checks.php` (title, encumbrances, zoning, servitudes, services, access, geotech, environmental, flood lines, heritage, land claims, rates, valuation) | Yes |
+| LA2 | An offer can only be accepted or land transferred once every required check is clear or not applicable | No |
+| LA3 | Land can exist before a project and be linked later | No |
+| LA4 | Company Admins, Directors and Development Managers manage land | Yes (later sprint) |
+| AP1 | Applications needing attention: approvals lapsing within 60 days, and decisions past their expected date | Yes |
+| AP2 | Approval expiry must be entered from the decision letter (validity differs by municipality and approval type) | No |
+| PT1 | Statutory councils: SACAP (architects), SACQSP (QS), ECSA (engineers), SACPLAN (town planners), SAGC (land surveyors), SACPCMP (construction PMs, H&S agents), EAPASA (environmental), LPC (attorneys, conveyancers) | No |
+| PT2 | Registration is verified manually against each council's public register and recorded with who checked it | No |
+| PT3 | Fee claims are approved by the QS, Development Manager, Director or Company Admin, and marked paid by Finance | Yes (later sprint) |
+| PT4 | Approved claims above the agreed fee are flagged, not blocked | Yes |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.
