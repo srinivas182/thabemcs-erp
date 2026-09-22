@@ -22,6 +22,10 @@ export interface CurrentCompany {
 export interface SharedProps {
     [key: string]: unknown;
     app: { name: string; timezone: string };
+    brand: {
+        name: string; shortName: string; owner: string; tagline: string; logo: string | null;
+        supportEmail: string | null; supportPhone: string | null; supportHours: string | null; privacyUrl: string | null; poweredBy: string | null;
+    };
     auth: { user: AuthUser | null };
     can: { manageCompanies: boolean; viewPortfolio: boolean; manageUsers: boolean; viewAuditLog: boolean };
     notifications: { unread: number };

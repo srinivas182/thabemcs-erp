@@ -104,6 +104,7 @@ function SignIn({ onDone }: { onDone: () => void }) {
                 {!online && <p className="text-sm text-ink-soft">You're offline. Connect to sign in.</p>}
                 <Button type="submit" size="lg" disabled={busy || !online}>{busy ? 'Signing in…' : 'Continue'}</Button>
             </form>
+            <p className="text-xs text-ink-soft">For authorised users only. Sign-ins and activity are recorded. Forgot your password? Reset it on the web app, or ask your company administrator.</p>
         </div>
     );
 }

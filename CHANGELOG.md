@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.12.1] — Sign-in page polish
+
+### Added
+- Branding from `.env` (config/branding.php): name, short name, owner, tagline, optional logo file, support email, phone and hours, privacy notice link, "built by" line.
+- Brand mark (or the client's logo) on all sign-in, password and two-factor screens, including on phones.
+- Authorised-use and POPIA notice, support contact, and a link to the site app on the sign-in screens; notice added to the site app sign-in.
+- Show or hide password, Caps Lock warning, and status messages (for example after a password reset) on the sign-in page.
+- Search engines asked not to index the system (robots.txt and a noindex tag).
+
 ## [0.12.0] — Reports and dashboards (Sprint 12)
 
 ### Added

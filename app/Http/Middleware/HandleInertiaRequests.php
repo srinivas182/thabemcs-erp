@@ -30,6 +30,18 @@ class HandleInertiaRequests extends Middleware
                 'name' => config('app.name'),
                 'timezone' => config('app.display_timezone'),
             ],
+            'brand' => [
+                'name' => config('branding.name'),
+                'shortName' => config('branding.short_name'),
+                'owner' => config('branding.owner'),
+                'tagline' => config('branding.tagline'),
+                'logo' => config('branding.logo') ?: null,
+                'supportEmail' => config('branding.support.email') ?: null,
+                'supportPhone' => config('branding.support.phone') ?: null,
+                'supportHours' => config('branding.support.hours') ?: null,
+                'privacyUrl' => config('branding.privacy_url') ?: null,
+                'poweredBy' => config('branding.powered_by') ?: null,
+            ],
             'auth' => [
                 'user' => $user instanceof User ? [
                     'id' => $user->ulid,

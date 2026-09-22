@@ -27,7 +27,8 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
 
         // Authentication screens are rendered by the React management app.
-        Fortify::loginView(fn () => Inertia::render('auth/login'));
+        // "status" carries messages such as "Your password has been reset" back to the sign-in page.
+        Fortify::loginView(fn (Request $request) => Inertia::render('auth/login', ['status' => $request->session()->get('status')]));
         Fortify::requestPasswordResetLinkView(fn () => Inertia::render('auth/forgot-password', [
             'status' => session('status'),
         ]));
