@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Scope;
  *
  * Fails closed: with no company context and no platform access, the query
  * returns no rows rather than leaking another company's data.
+ *
+ * @implements Scope<Model>
  */
 final class CompanyScope implements Scope
 {

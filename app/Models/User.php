@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
@@ -33,7 +34,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string|null $job_title
  * @property bool $is_super_admin
  * @property bool $is_active
- * @property \Illuminate\Support\Carbon|null $last_login_at
+ * @property Carbon|null $last_login_at
  * @property-read Company|null $company
  */
 #[Fillable(['name', 'email', 'password', 'phone', 'job_title'])]
@@ -84,6 +85,10 @@ class User extends Authenticatable
 
         $companyId = $request->session()->get('acting_company_id');
 
-        return $companyId === null ? null : Company::query()->find($companyId);
+        if (! is_int($companyId)) {
+            return null;
+        }
+
+        return Company::query()->find($companyId);
     }
 }

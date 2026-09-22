@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -39,8 +40,8 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property Province|null $province
  * @property string|null $town
  * @property string|null $estimated_value
- * @property \Illuminate\Support\Carbon|null $planned_start_date
- * @property \Illuminate\Support\Carbon|null $planned_completion_date
+ * @property Carbon|null $planned_start_date
+ * @property Carbon|null $planned_completion_date
  */
 class Project extends Model
 {

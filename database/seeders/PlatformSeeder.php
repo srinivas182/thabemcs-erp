@@ -15,10 +15,10 @@ class PlatformSeeder extends Seeder
     public function run(): void
     {
         User::query()->firstOrCreate(
-            ['email' => env('SUPER_ADMIN_EMAIL', 'admin@thabekhulu.local')],
+            ['email' => config('platform.super_admin.email')],
             [
-                'name' => env('SUPER_ADMIN_NAME', 'Platform Administrator'),
-                'password' => env('SUPER_ADMIN_PASSWORD', 'ChangeMe!2026'),
+                'name' => config('platform.super_admin.name'),
+                'password' => config('platform.super_admin.password'),
             ],
         )->forceFill(['is_super_admin' => true, 'email_verified_at' => now()])->save();
     }

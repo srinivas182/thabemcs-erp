@@ -27,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
         // Super Admins pass every authorisation check; company users go through roles and policies.
         Gate::before(static fn (User $user): ?bool => $user->is_super_admin ? true : null);
 
-        Password::defaults(static fn () => $this->app->isProduction()
+        Password::defaults(fn () => $this->app->isProduction()
             ? Password::min(12)->mixedCase()->numbers()->symbols()->uncompromised()
             : Password::min(8));
     }

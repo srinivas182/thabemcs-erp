@@ -66,7 +66,13 @@ jobs:
             for f in /tmp/ci-pint.txt /tmp/ci-phpstan.txt /tmp/ci-pest.txt; do
               [ -f "$f" ] || continue
               echo; echo "#### $(basename "$f" .txt)"; echo '```'
-              sed 's/\x1b\[[0-9;]*m//g' "$f" | tail -c 18000
+              clean=$(sed 's/\x1b\[[0-9;]*m//g' "$f")
+              if [ "$f" = /tmp/ci-pest.txt ]; then
+                echo "$clean" | grep -v '^#[0-9]' | grep -A18 'FAILED' | head -c 16000
+                echo "$clean" | tail -4
+              else
+                echo "$clean" | tail -c 12000
+              fi
               echo '```'
             done
           } > /tmp/report.md
