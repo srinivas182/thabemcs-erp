@@ -41,17 +41,17 @@ beforeEach(function (): void {
     $this->project = inCompany($this->company, fn () => Project::factory()->create(['project_manager_id' => $this->pm->id]));
 });
 
-function activity($test, string $name, string $start, int $days): ProgrammeActivity
+function programmeActivity($test, string $name, string $start, int $days): ProgrammeActivity
 {
     return inCompany($test->company, fn () => ProgrammeActivity::query()->create(['project_id' => $test->project->id, 'name' => $name, 'planned_start' => $start, 'duration_days' => $days]));
 }
 
 it('schedules on working days around public holidays and finds the critical path', function (): void {
     // Human Rights Day falls on Sunday 21 March 2027, so Monday 22 is a holiday; Good Friday 26 and Family Day 29 March.
-    $a = activity($this, 'Foundations', '2027-03-15', 5);
-    $b = activity($this, 'Ground floor slab', '2027-03-15', 3);
-    $c = activity($this, 'Slab signed off', '2027-03-15', 0);
-    $d = activity($this, 'Site hoarding', '2027-03-15', 2);
+    $a = programmeActivity($this, 'Foundations', '2027-03-15', 5);
+    $b = programmeActivity($this, 'Ground floor slab', '2027-03-15', 3);
+    $c = programmeActivity($this, 'Slab signed off', '2027-03-15', 0);
+    $d = programmeActivity($this, 'Site hoarding', '2027-03-15', 2);
 
     $this->actingAs($this->pm)->post("/programme-activities/{$b->ulid}/links", ['predecessor' => $a->ulid])->assertSessionHas('success');
     $this->actingAs($this->pm)->post("/programme-activities/{$c->ulid}/links", ['predecessor' => $b->ulid])->assertSessionHas('success');
