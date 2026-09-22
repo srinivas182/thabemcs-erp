@@ -79,13 +79,13 @@ final class PortfolioService
      */
     public function forGroup(): array
     {
-        return Company::query()->where('status', 'active')->orderBy('name')->get()
+        return array_values(Company::query()->where('status', 'active')->orderBy('name')->get()
             ->map(function (Company $c): array {
                 /** @var array<string, float|int|null> $totals */
                 $totals = $this->context->runFor($c, fn (): array => $this->forCurrentCompany()['totals']);
 
                 return ['id' => $c->ulid, 'name' => $c->name, ...$totals];
             })
-            ->values()->all();
+            ->all());
     }
 }
