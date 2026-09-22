@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domains\Site\Models;
 
+use App\Domains\Procurement\Models\GoodsReceipt;
 use App\Domains\Projects\Models\Project;
 use App\Models\User;
 use App\Support\HasPublicUlid;
 use App\Support\Tenancy\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
@@ -55,5 +57,13 @@ class Delivery extends Model
     public function receiver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'received_by');
+    }
+
+    /**
+     * @return HasOne<GoodsReceipt, $this>
+     */
+    public function goodsReceipt(): HasOne
+    {
+        return $this->hasOne(GoodsReceipt::class);
     }
 }

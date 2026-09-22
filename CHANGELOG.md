@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.9.0] — Approval engine and procurement (Sprint 9)
+
+### Added
+- Approval engine with delegation-of-authority bands, sequential steps by role, no self-approval, one step per person, reasons required for rejection.
+- Approvals inbox (sidebar) for everything waiting for you, your own requests and their progress; My Day lists pending approvals.
+- Delegation while away (up to 90 days), recorded as "approved by X for Y".
+- Hourly escalation of approvals waiting more than 48 hours.
+- Requisitions with line items and estimates, submitted for approval.
+- Quotes per requisition with uploaded quotation documents; lowest-quote marking; supplier compliance shown per quote.
+- Award rules: three quotes above R30 000 or a single-source reason; reason required when not choosing the cheapest.
+- Purchase orders: drafted from the award with line prices, VAT at 15% for VAT vendors, approval trail, issue to supplier, cancellation.
+- Compliance and CIDB checks at award, submission and issue.
+- Goods received notes (GRN) with partial receipts, over-receipt prevention and links to site-app deliveries.
+
 ## [0.8.0] — Site app and health & safety (Sprint 8)
 
 ### Added

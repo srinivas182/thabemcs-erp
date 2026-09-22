@@ -18,5 +18,6 @@ export const MODULE_ROUTES: Record<string, string> = {
     land: '/land',
     approvals: '/approvals',
     suppliers: '/suppliers',
+    procurement: '/requisitions',
     documents: '/documents',
 };

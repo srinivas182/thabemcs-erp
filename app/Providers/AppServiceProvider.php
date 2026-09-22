@@ -81,6 +81,15 @@ class AppServiceProvider extends ServiceProvider
             Role::CompanyAdmin->value, Role::Director->value, Role::ProjectManager->value, Role::SiteManager->value, Role::SafetyOfficer->value,
         ]));
 
+        // Procurement: who can ask to buy, and who runs quotes, orders and issuing.
+        Gate::define('raise-requisitions', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::ProjectManager->value,
+            Role::SiteManager->value, Role::QuantitySurveyor->value, Role::Procurement->value,
+        ]));
+        Gate::define('manage-procurement', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::Procurement->value,
+        ]));
+
         // Company Admins and Directors can read their company's audit trail.
         Gate::define('view-audit-log', static fn (User $user): bool => $user->hasAnyRole([Role::CompanyAdmin->value, Role::Director->value]));
 

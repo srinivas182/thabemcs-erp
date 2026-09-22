@@ -1,6 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { cn } from '@thabekhulu/ui';
-import { Bell, Building2, CalendarCheck, History, LogOut, Menu, Search, Users, X } from 'lucide-react';
+import { Bell, Building2, CalendarCheck, History, Inbox, LogOut, Menu, Search, Users, X } from 'lucide-react';
 import CommandPalette from '@/components/command-palette';
 import { type ReactNode, useEffect, useState } from 'react';
 import { MODULE_ROUTES, NAV_GROUPS } from '@/components/navigation';
@@ -35,6 +35,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 <NavLink href="/" active={url === '/'} icon={<CalendarCheck className="size-4" aria-hidden />}>
                     My day
                 </NavLink>
+                {company && (
+                    <NavLink href="/inbox" active={url.startsWith('/inbox')} icon={<Inbox className="size-4" aria-hidden />}>
+                        Approvals
+                    </NavLink>
+                )}
                 {can.manageCompanies && (
                     <NavLink href="/platform/companies" active={url.startsWith('/platform')} icon={<Building2 className="size-4" aria-hidden />}>
                         Companies

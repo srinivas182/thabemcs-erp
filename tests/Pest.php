@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Domains\Platform\Enums\Role;
 use App\Domains\Platform\Models\Company;
+use App\Domains\Suppliers\Models\Supplier;
+use App\Domains\Suppliers\Models\SupplierDocument;
 use App\Models\User;
 use App\Support\Tenancy\CurrentCompany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -39,4 +41,21 @@ function userWithRole(Company $company, Role $role = Role::CompanyAdmin): User
     setPermissionsTeamId($previous);
 
     return $user;
+}
+
+/**
+ * A supplier holding every compliance document its type requires (valid for a year).
+ */
+function compliantSupplier(Company $company, string $name, string $type = 'supplier', ?string $vat = '4123456789'): Supplier
+{
+    return inCompany($company, function () use ($name, $type, $vat) {
+        $supplier = Supplier::query()->create(['name' => $name, 'type' => $type, 'vat_number' => $vat, 'cidb_grade' => 9]);
+        foreach (array_keys(config("supplier_compliance.required.{$type}")) as $doc) {
+            SupplierDocument::query()->create([
+                'supplier_id' => $supplier->id, 'type' => $doc, 'expires_on' => now()->addYear()->toDateString(),
+            ]);
+        }
+
+        return $supplier;
+    });
 }

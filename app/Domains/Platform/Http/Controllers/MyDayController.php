@@ -15,7 +15,11 @@ use App\Domains\Projects\Models\Risk;
 use App\Domains\Projects\Models\StageGateItem;
 use App\Domains\Projects\Models\Task;
 use App\Domains\Suppliers\Models\SupplierDocument;
+use App\Domains\Workflow\Contracts\Approvable;
+use App\Domains\Workflow\Models\ApprovalRequest;
+use App\Domains\Workflow\Services\ApprovalEngine;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
@@ -65,7 +69,19 @@ final class MyDayController
             'greetingName' => str($user->name)->before(' ')->toString(),
             'pipeline' => $pipeline,
             'tasks' => $tasks,
-            'approvals' => $user->can('approve-stage-gate') ? $this->gatesReadyForApproval() : [],
+            'approvals' => [
+                ...app(ApprovalEngine::class)->pendingFor($user)->map(static function (ApprovalRequest $r): array {
+                    /** @var Model&Approvable $item */
+                    $item = $r->approvable;
+
+                    return [
+                        'title' => $item->approvalTitle(),
+                        'detail' => 'R'.number_format((float) $r->amount, 0, '.', ' ')." excl. VAT, from {$r->requester->name}.",
+                        'url' => route('inbox'),
+                    ];
+                })->all(),
+                ...($user->can('approve-stage-gate') ? $this->gatesReadyForApproval() : []),
+            ],
             'alerts' => $this->alerts($user),
         ]);
     }

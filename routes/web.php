@@ -16,6 +16,8 @@ use App\Domains\Platform\Http\Controllers\SearchController;
 use App\Domains\Platform\Http\Controllers\Settings\ActivityLogController;
 use App\Domains\Platform\Http\Controllers\Settings\CompanyUserController;
 use App\Domains\Platform\Http\Controllers\Settings\ProfileController;
+use App\Domains\Procurement\Http\Controllers\PurchaseOrderController;
+use App\Domains\Procurement\Http\Controllers\RequisitionController;
 use App\Domains\Projects\Http\Controllers\MilestoneController;
 use App\Domains\Projects\Http\Controllers\ProjectController;
 use App\Domains\Projects\Http\Controllers\RiskController;
@@ -25,6 +27,7 @@ use App\Domains\Safety\Http\Controllers\SafetyController;
 use App\Domains\Site\Http\Controllers\SiteController;
 use App\Domains\Suppliers\Http\Controllers\SupplierController;
 use App\Domains\Team\Http\Controllers\TeamController;
+use App\Domains\Workflow\Http\Controllers\InboxController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -152,6 +155,30 @@ Route::middleware(['auth'])->group(function (): void {
         Route::get('projects/{project}/safety', [SafetyController::class, 'show'])->name('projects.safety');
         Route::patch('safety-incidents/{incident}', [SafetyController::class, 'updateIncident'])->name('safety-incidents.update');
         Route::post('projects/{project}/toolbox-talks', [SafetyController::class, 'storeTalk'])->name('projects.toolbox-talks.store');
+    });
+
+    // Approvals inbox and delegation while away.
+    Route::get('inbox', [InboxController::class, 'index'])->name('inbox');
+    Route::post('inbox/{approval}', [InboxController::class, 'decide'])->name('inbox.decide');
+    Route::post('delegations', [InboxController::class, 'delegate'])->name('delegations.store');
+    Route::delete('delegations/{delegation}', [InboxController::class, 'revoke'])->name('delegations.destroy');
+
+    // Procurement: requisitions, quotes, purchase orders, goods received.
+    Route::middleware(['module:procurement', 'module:projects'])->group(function (): void {
+        Route::get('requisitions', [RequisitionController::class, 'index'])->name('requisitions.index');
+        Route::post('requisitions', [RequisitionController::class, 'store'])->name('requisitions.store');
+        Route::get('requisitions/{requisition}', [RequisitionController::class, 'show'])->name('requisitions.show');
+        Route::post('requisitions/{requisition}/submit', [RequisitionController::class, 'submit'])->name('requisitions.submit');
+        Route::post('requisitions/{requisition}/quotes', [RequisitionController::class, 'storeQuote'])->name('requisitions.quotes.store');
+        Route::post('requisitions/{requisition}/award', [RequisitionController::class, 'award'])->name('requisitions.award');
+
+        Route::get('purchase-orders', [PurchaseOrderController::class, 'index'])->name('purchase-orders.index');
+        Route::get('purchase-orders/{order}', [PurchaseOrderController::class, 'show'])->name('purchase-orders.show');
+        Route::put('purchase-orders/{order}', [PurchaseOrderController::class, 'updateLines'])->name('purchase-orders.update');
+        Route::post('purchase-orders/{order}/submit', [PurchaseOrderController::class, 'submit'])->name('purchase-orders.submit');
+        Route::post('purchase-orders/{order}/issue', [PurchaseOrderController::class, 'issue'])->name('purchase-orders.issue');
+        Route::post('purchase-orders/{order}/receive', [PurchaseOrderController::class, 'receive'])->name('purchase-orders.receive');
+        Route::post('purchase-orders/{order}/cancel', [PurchaseOrderController::class, 'cancel'])->name('purchase-orders.cancel');
     });
 
     // Company settings (Company Admin).

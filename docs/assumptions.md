@@ -81,6 +81,21 @@ Everything marked **configurable** can be changed in settings without code chang
 | HS2 | Incidents (other than near misses) need a root cause and corrective action before closing; reportable incidents also need the date reported | No |
 | HS3 | Incidents notify Safety Officers, Project Managers and Directors immediately | Yes |
 
+## Approvals and procurement (Sprint 9)
+| # | Assumption | Configurable |
+|---|---|---|
+| DA1 | Purchase order approvals (excl. VAT): up to R25k Project Manager; to R250k PM, Finance, Development Manager; to R1m adds a Director; above R1m PM, Finance and two different Directors | Yes (`config/delegation_of_authority.php`) |
+| DA2 | Requisitions are approved by a Project Manager | Yes |
+| DA3 | Nobody approves their own request, and one person cannot approve two steps of the same request | No |
+| DA4 | Steps waiting more than 48 hours are escalated to Directors and Company Admins (checked hourly) | Yes |
+| DA5 | Approvers can delegate to a colleague for up to 90 days; delegated approvals record who acted and for whom | Yes |
+| PR1 | Three quotes are required above R30 000 excl. VAT unless a single-source reason is recorded | Yes |
+| PR2 | Choosing a quote other than the cheapest requires a written reason | No |
+| PR3 | Supplier compliance and CIDB grading are checked at award, at submission for approval and again at issue | No |
+| PR4 | VAT at 15% is added when the supplier has a VAT number | Yes |
+| PR5 | PO line prices are spread from the awarded quote in proportion to the requisition estimate; buyers adjust them to the quotation | No |
+| PR6 | Goods cannot be received beyond the ordered quantity; partial receipts are allowed | No |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.
