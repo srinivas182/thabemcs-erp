@@ -47,7 +47,7 @@ final class CompanyUserController
                 'name' => $user->name,
                 'email' => $user->email,
                 'jobTitle' => $user->job_title,
-                'role' => $user->roles->first()?->name,
+                'role' => $user->getRoleNames()->first(),
                 'isActive' => $user->is_active,
                 'lastLoginAt' => $user->last_login_at?->toIso8601String(),
             ]);
