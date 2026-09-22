@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Scope;
 final class CompanyScope implements Scope
 {
     /**
-     * @param  Builder<Model>  $builder
+     * @param  Builder<covariant Model>  $builder
      */
     public function apply(Builder $builder, Model $model): void
     {
