@@ -1,0 +1,49 @@
+/*
+ * Thabekhulu design tokens — shared by the management app and the site app.
+ *
+ * Palette taken from the building site: plaster walls, graphite drawings,
+ * the surveyor's teal line, hi-vis amber for things that need attention.
+ */
+@theme {
+    --font-sans: "Archivo", ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+
+    --color-ink: #1f2328;
+    --color-ink-soft: #545a61;
+    --color-plaster: #f6f6f3;
+    --color-surface: #ffffff;
+    --color-concrete: #d9dbd6;
+    --color-concrete-soft: #ebece8;
+
+    --color-line: #0e6b63;
+    --color-line-deep: #0a4f49;
+    --color-line-wash: #e3f0ee;
+
+    --color-hivis: #e3a008;
+    --color-hivis-wash: #fdf4dc;
+    --color-brick: #b4412c;
+    --color-brick-wash: #f8e7e3;
+    --color-moss: #3f7d4e;
+
+    --radius-control: 6px;
+    --radius-panel: 10px;
+}
+
+@layer base {
+    html {
+        color: var(--color-ink);
+        background: var(--color-plaster);
+        font-feature-settings: "tnum" 1;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-line);
+        outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}
