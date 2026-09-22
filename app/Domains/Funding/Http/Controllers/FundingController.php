@@ -16,6 +16,7 @@ use App\Models\User;
 use App\Support\Tenancy\CurrentCompany;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -81,7 +82,7 @@ final class FundingController
         ], ['investor.required_if' => 'Choose the investor.', 'interest_rate.required_if' => 'Enter the loan interest rate.']);
 
         FundingSource::query()->create([
-            ...collect($data)->except('investor')->all(),
+            ...Arr::except($data, ['investor']),
             'project_id' => $project->id,
             'investor_id' => isset($data['investor']) ? Investor::query()->where('ulid', $data['investor'])->value('id') : null,
         ]);
