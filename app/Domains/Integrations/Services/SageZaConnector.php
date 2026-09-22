@@ -54,7 +54,7 @@ final class SageZaConnector
         $failed = 0;
         $skipped = [];
 
-        SupplierInvoice::query()->with(['supplier', 'budgetLine'])->whereIn('status', ['approved', 'scheduled', 'paid'])->orderBy('invoice_date')->each(
+        SupplierInvoice::query()->with(['supplier', 'budgetLine', 'purchaseOrder'])->whereIn('status', ['approved', 'scheduled', 'paid'])->orderBy('invoice_date')->each(
             function (SupplierInvoice $invoice) use ($integration, &$sent, &$failed, &$skipped): void {
                 if ($this->repo->alreadySent(self::PROVIDER, 'supplier_invoice', $invoice->id)) {
                     return;
