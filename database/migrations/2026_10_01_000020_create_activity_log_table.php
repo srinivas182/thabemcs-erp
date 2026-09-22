@@ -12,6 +12,7 @@ return new class extends Migration
     {
         Schema::create('activity_log', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('company_id')->nullable()->index()->comment('Company the activity belongs to (null = platform level)');
             $table->string('log_name')->nullable()->index();
             $table->text('description');
             $table->nullableMorphs('subject', 'subject');

@@ -36,6 +36,7 @@ class FortifyServiceProvider extends ServiceProvider
             'token' => $request->route('token'),
         ]));
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor-challenge'));
+        Fortify::confirmPasswordView(fn () => Inertia::render('auth/confirm-password'));
 
         // Inactive users cannot sign in.
         Fortify::authenticateUsing(function (Request $request): ?User {

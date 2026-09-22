@@ -43,6 +43,10 @@ class HandleInertiaRequests extends Middleware
             'can' => [
                 'manageCompanies' => $user instanceof User && $user->is_super_admin,
                 'manageUsers' => $user instanceof User && $company !== null && $user->can('manage-company-users'),
+                'viewAuditLog' => $user instanceof User && $user->can('view-audit-log'),
+            ],
+            'notifications' => [
+                'unread' => fn (): int => $user instanceof User ? $user->unreadNotifications()->count() : 0,
             ],
             'company' => $company ? [
                 'id' => $company->ulid,

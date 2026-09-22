@@ -5,59 +5,40 @@ declare(strict_types=1);
 namespace App\Actions\Fortify;
 
 use App\Models\User;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
 
+/**
+ * Lets a signed-in user update their own name, email and mobile number.
+ */
 class UpdateUserProfileInformation implements UpdatesUserProfileInformation
 {
     /**
-     * Validate and update the given user's profile information.
-     *
-     * @param  array<string, string>  $input
+     * @param  array<string, mixed>  $input
      *
      * @throws ValidationException
      */
     public function update(User $user, array $input): void
     {
-        Validator::make($input, [
-            'name' => ['required', 'string', 'max:255'],
-
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique('users')->ignore($user->id),
-            ],
-        ])->validateWithBag('updateProfileInformation');
-
-        if ($input['email'] !== $user->email &&
-            $user instanceof MustVerifyEmail) {
-            $this->updateVerifiedUser($user, $input);
-        } else {
-            $user->forceFill([
-                'name' => $input['name'],
-                'email' => $input['email'],
-            ])->save();
+        if (isset($input['phone']) && is_string($input['phone'])) {
+            $input['phone'] = preg_replace('/\s+/', '', $input['phone']);
         }
-    }
 
-    /**
-     * Update the given verified user's profile information.
-     *
-     * @param  array<string, string>  $input
-     */
-    protected function updateVerifiedUser(User $user, array $input): void
-    {
+        /** @var array{name: string, email: string, phone?: string|null} $data */
+        $data = Validator::make($input, [
+            'name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'string', 'email:rfc', 'max:190', Rule::unique('users')->ignore($user->id)],
+            'phone' => ['nullable', 'string', 'regex:/^(\+27|0)\d{9}$/'],
+        ], [
+            'phone.regex' => 'Use a South African number, for example 082 123 4567 or +27821234567.',
+        ])->validate();
+
         $user->forceFill([
-            'name' => $input['name'],
-            'email' => $input['email'],
-            'email_verified_at' => null,
+            'name' => $data['name'],
+            'email' => strtolower($data['email']),
+            'phone' => $data['phone'] ?? null,
         ])->save();
-
-        $user->sendEmailVerificationNotification();
     }
 }

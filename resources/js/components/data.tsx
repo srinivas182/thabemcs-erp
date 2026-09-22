@@ -42,3 +42,23 @@ export const tableClass = 'w-full text-left text-sm [&_th]:px-3 [&_th]:py-2.5 [&
 
 export const selectClass =
     'h-11 w-full rounded-[var(--radius-control)] border border-concrete bg-surface px-3 text-base text-ink focus:border-line focus:outline-none focus:ring-2 focus:ring-line/20';
+
+/** Previous / next links for a Laravel paginator. */
+export function Pager({ prev, next, page, last }: { prev: string | null; next: string | null; page: number; last: number }) {
+    if (last <= 1) return null;
+    const link = 'rounded-[var(--radius-control)] border border-concrete bg-surface px-3 py-1.5 text-sm hover:bg-concrete-soft';
+    return (
+        <nav className="flex items-center justify-between text-sm" aria-label="Pages">
+            {prev ? <a className={link} href={prev}>Previous</a> : <span />}
+            <span className="text-ink-soft">
+                Page {page} of {last}
+            </span>
+            {next ? <a className={link} href={next}>Next</a> : <span />}
+        </nav>
+    );
+}
+
+export function formatDateTime(iso: string | null): string {
+    if (!iso) return '';
+    return new Intl.DateTimeFormat('en-ZA', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Africa/Johannesburg' }).format(new Date(iso));
+}

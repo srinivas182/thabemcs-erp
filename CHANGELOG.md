@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0] — Platform foundation complete (Sprint 3)
+
+### Added
+- Profile page: update name, email and SA mobile number; change password.
+- Two-factor authentication: set up with an authenticator app (QR code), confirm, recovery codes, turn off. Password re-confirmation before enabling.
+- Notification centre with unread badge in the header; mark one or all as read.
+- Global search (Ctrl+K) across projects, people (Company Admins) and companies (Super Admins), respecting company isolation.
+- Audit log screen for Company Admins and Directors; every audit entry is stamped with its company.
+- `docs/assumptions.md` — assumptions to confirm in discovery.
+
+### Changed
+- Site app split into cached chunks (largest chunk 219 KB, was 547 KB).
+
 ## [0.2.0] — Platform administration (unreleased)
 
 ### Added

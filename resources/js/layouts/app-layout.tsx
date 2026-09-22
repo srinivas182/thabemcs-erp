@@ -1,12 +1,25 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { cn } from '@thabekhulu/ui';
-import { Building2, CalendarCheck, LogOut, Menu, Users, X } from 'lucide-react';
-import { type ReactNode, useState } from 'react';
+import { Bell, Building2, CalendarCheck, History, LogOut, Menu, Search, Users, X } from 'lucide-react';
+import CommandPalette from '@/components/command-palette';
+import { type ReactNode, useEffect, useState } from 'react';
 import { NAV_GROUPS } from '@/components/navigation';
 import type { SharedProps } from '@/types';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
-    const { auth, company, flash, app, can } = usePage<SharedProps>().props;
+    const { auth, company, flash, app, can, notifications } = usePage<SharedProps>().props;
+    const [searching, setSearching] = useState(false);
+
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                setSearching(true);
+            }
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, []);
     const url = usePage().url;
     const [open, setOpen] = useState(false);
     const enabled = new Map(company?.modules.map((m) => [m.key, m.label]) ?? []);
@@ -25,6 +38,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 {can.manageCompanies && (
                     <NavLink href="/platform/companies" active={url.startsWith('/platform')} icon={<Building2 className="size-4" aria-hidden />}>
                         Companies
+                    </NavLink>
+                )}
+                {can.viewAuditLog && (
+                    <NavLink href="/settings/activity" active={url.startsWith('/settings/activity')} icon={<History className="size-4" aria-hidden />}>
+                        Audit log
                     </NavLink>
                 )}
                 {can.manageUsers && (
@@ -77,14 +95,31 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                     <button className="rounded p-1.5 lg:hidden" onClick={() => setOpen(!open)} aria-label="Open menu">
                         {open ? <X className="size-5" /> : <Menu className="size-5" />}
                     </button>
-                    <p className="hidden text-sm text-ink-soft sm:block">
-                        Times shown in {app.timezone === 'Africa/Johannesburg' ? 'SAST' : app.timezone}
-                    </p>
-                    <div className="flex items-center gap-3">
-                        <div className="text-right leading-tight">
+                    <button
+                        onClick={() => setSearching(true)}
+                        className="flex h-9 w-full max-w-sm items-center gap-2 rounded-[var(--radius-control)] border border-concrete bg-plaster px-3 text-sm text-ink-soft hover:border-ink-soft/40"
+                    >
+                        <Search className="size-4" aria-hidden />
+                        <span className="flex-1 text-left">Search projects, people…</span>
+                        <kbd className="hidden rounded border border-concrete px-1.5 text-xs sm:inline">Ctrl K</kbd>
+                    </button>
+                    <div className="flex items-center gap-2">
+                        <Link
+                            href="/notifications"
+                            className="relative rounded-[var(--radius-control)] p-2 text-ink-soft hover:bg-concrete-soft hover:text-ink"
+                            aria-label={notifications.unread ? `Notifications, ${notifications.unread} unread` : 'Notifications'}
+                        >
+                            <Bell className="size-5" />
+                            {notifications.unread > 0 && (
+                                <span className="absolute top-0.5 right-0.5 grid min-w-4 place-items-center rounded-full bg-hivis px-1 text-[10px] font-bold text-ink tabular-nums">
+                                    {notifications.unread > 9 ? '9+' : notifications.unread}
+                                </span>
+                            )}
+                        </Link>
+                        <Link href="/settings/profile" className="hidden rounded-[var(--radius-control)] px-2 py-1 text-right leading-tight hover:bg-concrete-soft sm:block" title={`Your profile. Times shown in ${app.timezone === 'Africa/Johannesburg' ? 'SAST' : app.timezone}`}>
                             <p className="text-sm font-semibold">{auth.user?.name}</p>
                             <p className="text-xs text-ink-soft">{auth.user?.jobTitle ?? (auth.user?.isSuperAdmin ? 'Super Admin' : '')}</p>
-                        </div>
+                        </Link>
                         <button
                             onClick={() => router.post('/logout')}
                             className="rounded-[var(--radius-control)] p-2 text-ink-soft hover:bg-concrete-soft hover:text-ink"
@@ -120,6 +155,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 )}
 
                 <main className="flex-1 px-4 py-6 lg:px-8 lg:py-8">{children}</main>
+                {searching && <CommandPalette onClose={() => setSearching(false)} />}
             </div>
         </div>
     );

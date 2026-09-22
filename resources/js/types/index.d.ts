@@ -23,7 +23,18 @@ export interface SharedProps {
     [key: string]: unknown;
     app: { name: string; timezone: string };
     auth: { user: AuthUser | null };
-    can: { manageCompanies: boolean; manageUsers: boolean };
+    can: { manageCompanies: boolean; manageUsers: boolean; viewAuditLog: boolean };
+    notifications: { unread: number };
     company: CurrentCompany | null;
     flash: { success: string | null; error: string | null };
+}
+
+/** Laravel paginator as serialised to JSON. */
+export interface Paginated<T> {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    total: number;
+    prev_page_url: string | null;
+    next_page_url: string | null;
 }

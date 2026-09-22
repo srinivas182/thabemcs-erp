@@ -28,6 +28,20 @@ export default defineConfig({
             },
         }),
     ],
+    build: {
+        rolldownOptions: {
+            output: {
+                // Keep framework code in long-lived cached chunks, separate from app code.
+                advancedChunks: {
+                    groups: [
+                        { name: 'react', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ },
+                        { name: 'tanstack', test: /node_modules[\\/]@tanstack[\\/]/ },
+                        { name: 'data', test: /node_modules[\\/](dexie|dexie-react-hooks|zod)[\\/]/ },
+                    ],
+                },
+            },
+        },
+    },
     server: {
         port: 5174,
         proxy: {

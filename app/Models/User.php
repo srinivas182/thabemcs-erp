@@ -35,6 +35,9 @@ use Spatie\Permission\Traits\HasRoles;
  * @property bool $is_super_admin
  * @property bool $is_active
  * @property Carbon|null $last_login_at
+ * @property string|null $two_factor_secret
+ * @property string|null $two_factor_recovery_codes
+ * @property Carbon|null $two_factor_confirmed_at
  * @property-read Company|null $company
  */
 #[Fillable(['name', 'email', 'password', 'phone', 'job_title'])]
@@ -60,6 +63,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
+            'two_factor_confirmed_at' => 'datetime',
             'password' => 'hashed',
             'is_super_admin' => 'boolean',
             'is_active' => 'boolean',

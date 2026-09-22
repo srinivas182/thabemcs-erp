@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Domains\Platform\Enums\Role;
+use App\Domains\Platform\Models\Company;
 use App\Models\User;
 use App\Support\Tenancy\CurrentCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Spatie\Activitylog\Models\Activity;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,6 +32,26 @@ class AppServiceProvider extends ServiceProvider
 
         // Company Admins manage the people in their own company.
         Gate::define('manage-company-users', static fn (User $user): bool => $user->hasRole(Role::CompanyAdmin->value));
+
+        // Company Admins and Directors can read their company's audit trail.
+        Gate::define('view-audit-log', static fn (User $user): bool => $user->hasAnyRole([Role::CompanyAdmin->value, Role::Director->value]));
+
+        // Every audit entry records the company it belongs to, so company audit trails stay isolated.
+        Activity::creating(static function (Activity $activity): void {
+            if ($activity->getAttribute('company_id') !== null) {
+                return;
+            }
+
+            $subject = $activity->subject;
+            $companyId = app(CurrentCompany::class)->id()
+                ?? match (true) {
+                    $subject instanceof Company => $subject->getKey(),
+                    $subject instanceof User => $subject->company_id,
+                    default => null,
+                };
+
+            $activity->setAttribute('company_id', $companyId);
+        });
 
         Password::defaults(fn () => $this->app->isProduction()
             ? Password::min(12)->mixedCase()->numbers()->symbols()->uncompromised()

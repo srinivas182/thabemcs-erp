@@ -39,6 +39,9 @@ class UserFactory extends Factory
             'is_super_admin' => false,
             'is_active' => true,
             'last_login_at' => null,
+            'two_factor_secret' => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at' => null,
         ];
     }
 
