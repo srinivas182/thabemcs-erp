@@ -23,7 +23,7 @@ final class CashFlowService
     public function forProject(Project $project): array
     {
         $baseline = Feasibility::query()->with('lines')->where('project_id', $project->id)->where('is_baseline', true)->first();
-        $start = $project->planned_start_date ?? $baseline?->approved_at ?? null;
+        $start = $project->planned_start_date ?? ($baseline !== null ? $baseline->approved_at : null);
         $start = $start ? Carbon::parse($start)->startOfMonth() : null;
 
         $forecast = [];

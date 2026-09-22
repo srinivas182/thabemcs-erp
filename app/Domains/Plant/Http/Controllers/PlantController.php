@@ -89,7 +89,7 @@ final class PlantController
                 'serviced' => $item->update(['status' => $item->project_id ? 'on_site' : 'available', 'next_service_on' => $item->service_interval_days ? $on->copy()->addDays($item->service_interval_days)->toDateString() : null]),
                 'breakdown' => $item->update(['status' => 'broken']),
                 'repaired' => $item->update(['status' => $item->project_id ? 'on_site' : 'available']),
-                'off_hired' => $item->update(['status' => 'off_hired', 'project_id' => null]),
+                default => $item->update(['status' => 'off_hired', 'project_id' => null]), // off_hired (validated above)
             };
         });
 
