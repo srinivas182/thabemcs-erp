@@ -136,7 +136,7 @@ final class SiteApiController
         $supplier = isset($data['supplierId']) ? Supplier::query()->where('ulid', $data['supplierId'])->first() : null;
 
         [$delivery, $created] = $this->capture->delivery($project, [
-            'client_id' => $data['clientId'], 'supplier_id' => $supplier?->id, 'supplier_name' => $supplier?->name ?? ($data['supplierName'] ?? null),
+            'client_id' => $data['clientId'], 'supplier_id' => $supplier?->id, 'supplier_name' => $supplier !== null ? $supplier->name : ($data['supplierName'] ?? null),
             'delivery_note_number' => $data['deliveryNote'] ?? null, 'items' => $data['items'], 'condition' => $data['condition'],
             'notes' => $data['notes'] ?? null, 'received_at' => $data['receivedAt'],
         ], $this->user($request));
