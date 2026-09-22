@@ -52,8 +52,8 @@ final class PlantUtilisationReport implements Report
                 $rate = $p->hire_rate_per_day === null ? null : (float) $p->hire_rate_per_day;
 
                 return [
-                    'asset' => $p->asset_number, 'description' => $p->description, 'ownership' => $p->ownership === 'hired' ? 'Hired: '.($p->supplier?->name ?? '') : 'Owned',
-                    'location' => $p->project?->code ?? 'Yard', 'on_site' => $onSite, 'broken' => $broken,
+                    'asset' => $p->asset_number, 'description' => $p->description, 'ownership' => $p->ownership === 'hired' ? 'Hired: '.($p->supplier->name ?? '') : 'Owned',
+                    'location' => $p->project->code ?? 'Yard', 'on_site' => $onSite, 'broken' => $broken,
                     'utilisation' => $periodDays ? round(max(0, $onSite - $broken) / $periodDays * 100, 1) : 0.0,
                     'hire_cost' => $p->ownership === 'hired' && $rate !== null ? round($onSite * $rate, 2) : null,
                 ];
@@ -72,7 +72,7 @@ final class PlantUtilisationReport implements Report
      * Walk the event history: "moved" puts the item on site, "off_hired" takes it off;
      * "breakdown" to "repaired" counts as broken.
      *
-     * @param  list<PlantEvent>  $events
+     * @param  array<int, PlantEvent>  $events
      * @return array{0: int, 1: int}
      */
     private function days(array $events, Carbon $from, Carbon $to): array
