@@ -4,7 +4,7 @@ import Dexie, { type EntityTable } from 'dexie';
  * Everything captured on site is written to the phone first (IndexedDB), then sent by the
  * sync worker when there is signal. Projects and suppliers are cached so forms work offline.
  */
-export type OutboxKind = 'site_diary' | 'attendance' | 'photo' | 'delivery' | 'incident';
+export type OutboxKind = 'site_diary' | 'attendance' | 'photo' | 'delivery' | 'incident' | 'crew' | 'receipt' | 'snag' | 'inspection' | 'instruction';
 export type OutboxStatus = 'pending' | 'syncing' | 'failed' | 'rejected';
 
 export interface OutboxItem {
@@ -36,6 +36,22 @@ export interface CachedSupplier {
     name: string;
 }
 
+export interface CachedEmployee {
+    id: string;
+    projectId: string;
+    number: string;
+    name: string;
+    jobTitle: string | null;
+}
+
+export interface CachedOrder {
+    id: string;
+    projectId: string;
+    reference: string;
+    supplier: string;
+    lines: { id: number; description: string; unit: string; ordered: number; outstanding: number }[];
+}
+
 export interface Setting {
     key: string;
     value: unknown;
@@ -46,6 +62,8 @@ export const db = new Dexie('thabekhulu-site') as Dexie & {
     projects: EntityTable<CachedProject, 'id'>;
     suppliers: EntityTable<CachedSupplier, 'id'>;
     settings: EntityTable<Setting, 'key'>;
+    employees: EntityTable<CachedEmployee, 'id'>;
+    orders: EntityTable<CachedOrder, 'id'>;
 };
 
 db.version(1).stores({ outbox: 'id, kind, status, createdAt' });
@@ -54,6 +72,14 @@ db.version(2).stores({
     projects: 'id, name',
     suppliers: 'id, name',
     settings: 'key',
+});
+db.version(3).stores({
+    outbox: 'id, kind, status, createdAt',
+    projects: 'id, name',
+    suppliers: 'id, name',
+    settings: 'key',
+    employees: 'id, projectId, name',
+    orders: 'id, projectId, reference',
 });
 
 export async function getSetting<T>(key: string): Promise<T | undefined> {

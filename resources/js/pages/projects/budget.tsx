@@ -12,6 +12,7 @@ interface Props {
     totals: Omit<Line, 'id' | 'code' | 'description' | 'used'>;
     variations: { id: string; reference: string; title: string; code: string; reason: string; amount: number; days: number; status: string; by: string }[];
     instructions: { key: string; label: string }[];
+    library: { key: string; label: string }[];
     can: { manage: boolean; vary: boolean };
 }
 
@@ -31,10 +32,10 @@ function UsageBar({ used }: { used: number }) {
     );
 }
 
-export default function Budget({ project, lines, totals, variations, instructions, can }: Props) {
+export default function Budget({ project, lines, totals, variations, instructions, library, can }: Props) {
     const [importing, setImporting] = useState(false);
     const upload = useForm<{ file: File | null }>({ file: null });
-    const line = useForm({ code: '', description: '', original_amount: '' });
+    const line = useForm({ cost_code_id: '', code: '', description: '', original_amount: '' });
     const vo = useForm({ budget_line_id: '', title: '', description: '', reason: 'client_request', amount: '', time_impact_days: '0', site_instruction_id: '' });
 
     function raise(e: FormEvent) {
@@ -106,9 +107,10 @@ export default function Budget({ project, lines, totals, variations, instruction
                 )}
 
                 {can.manage && lines.length > 0 && (
-                    <form onSubmit={(e) => { e.preventDefault(); line.post(`/projects/${project.id}/budget/lines`, { preserveScroll: true, onSuccess: () => line.reset() }); }} className="grid items-end gap-3 sm:grid-cols-[140px_1fr_200px_auto]">
-                        <Field label="New cost code" name="code" value={line.data.code} onChange={(e) => line.setData('code', e.target.value)} error={line.errors.code} placeholder="e.g. 05.04" />
-                        <Field label="Description" name="description" value={line.data.description} onChange={(e) => line.setData('description', e.target.value)} error={line.errors.description} />
+                    <form onSubmit={(e) => { e.preventDefault(); line.transform((d) => ({ ...d, cost_code_id: d.cost_code_id || null })); line.post(`/projects/${project.id}/budget/lines`, { preserveScroll: true, onSuccess: () => line.reset() }); }} className="grid items-end gap-3 sm:grid-cols-[1.4fr_120px_1fr_200px_auto]">
+                        <SelectField label="From the cost code library" name="cost_code_id" value={line.data.cost_code_id} onChange={(v) => line.setData('cost_code_id', v)} options={library} placeholder="Or type a new code" />
+                        <Field label="Code" name="code" value={line.data.code} onChange={(e) => line.setData('code', e.target.value)} error={line.errors.code} placeholder="05.04" disabled={!!line.data.cost_code_id} />
+                        <Field label="Description" name="description" value={line.data.description} onChange={(e) => line.setData('description', e.target.value)} error={line.errors.description} disabled={!!line.data.cost_code_id} />
                         <Field label="Budget (R)" name="original_amount" type="number" value={line.data.original_amount} onChange={(e) => line.setData('original_amount', e.target.value)} error={line.errors.original_amount} />
                         <Button type="submit" variant="secondary" disabled={line.processing}>Add</Button>
                     </form>

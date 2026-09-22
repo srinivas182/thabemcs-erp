@@ -46,6 +46,8 @@ final class SafetyController
                 ->map(static fn (Inspection $i): array => ['id' => $i->ulid, 'title' => $i->title, 'location' => $i->location, 'result' => $i->result, 'findings' => $i->findings, 'on' => $i->inspected_on->toDateString()]),
             'talks' => ToolboxTalk::query()->where('project_id', $project->id)->orderByDesc('held_on')->limit(30)->get()
                 ->map(static fn (ToolboxTalk $t): array => ['id' => $t->id, 'topic' => $t->topic, 'on' => $t->held_on->toDateString(), 'attendees' => $t->attendees, 'presenter' => $t->presenter]),
+            'compliance' => SafetyComplianceController::summary($project),
+            'appointmentTypes' => collect((array) config('safety_compliance.appointments'))->map(static fn (array $t, string $k): array => ['key' => $k, 'label' => $t['label'].' ('.$t['reference'].')'])->values(),
             'canManage' => $request->user()?->can('manage-safety') ?? false,
         ]);
     }

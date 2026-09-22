@@ -6,6 +6,7 @@ namespace App\Domains\Procurement\Http\Controllers;
 
 use App\Domains\Documents\Enums\DocumentCategory;
 use App\Domains\Documents\Services\DocumentService;
+use App\Domains\MasterData\Services\MasterDataService;
 use App\Domains\Platform\Enums\Role;
 use App\Domains\Procurement\Exceptions\ProcurementException;
 use App\Domains\Procurement\Models\PurchaseOrder;
@@ -53,6 +54,7 @@ final class RequisitionController
                 ]),
             'filter' => $status,
             'projects' => Project::query()->where('status', 'active')->orderBy('name')->get(['ulid', 'name'])->map(static fn (Project $p): array => ['key' => $p->ulid, 'label' => $p->name])->values(),
+            'units' => app(MasterDataService::class)->unitOptions(),
             'canRaise' => $request->user()?->can('raise-requisitions') ?? false,
         ]);
     }

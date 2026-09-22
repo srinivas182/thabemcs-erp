@@ -1,6 +1,6 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Button, cn, Field } from '@thabekhulu/ui';
-import { type ReactNode, useState } from 'react';
+import { type FormEvent, type ReactNode, useState } from 'react';
 import { formatDate, formatDateTime, SelectField } from '@/components/data';
 import AppLayout from '@/layouts/app-layout';
 
@@ -10,7 +10,17 @@ interface Incident {
     correctiveAction: string | null; status: string; by: string | null;
 }
 
+interface Compliance {
+    appointments: { id: string; type: string; label: string; reference: string | null; name: string; appointedOn: string; expires: string | null; expired: boolean; expiring: boolean }[];
+    gaps: string[];
+    file: { item: string; label: string; status: string; reviewDue: string | null; notes: string | null; hasDocument: boolean }[];
+    fileComplete: number;
+    fileTotal: number;
+}
+
 interface Props {
+    compliance: Compliance;
+    appointmentTypes: { key: string; label: string }[];
     project: { id: string; name: string; code: string };
     stats: { daysSinceLostTime: number | null; nearMisses90: number; open: number; talks90: number };
     incidents: Incident[];
@@ -21,7 +31,7 @@ interface Props {
 
 const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' }).format(new Date());
 
-export default function Safety({ project, stats, incidents, inspections, talks, canManage }: Props) {
+export default function Safety({ project, stats, incidents, inspections, talks, compliance, appointmentTypes, canManage }: Props) {
     const talk = useForm({ topic: '', held_on: today(), attendees: '', presenter: '' });
     const insp = useForm({ kind: 'safety', title: '', location: '', result: 'pass', findings: '', inspected_on: today() });
     const figures = [
@@ -44,6 +54,8 @@ export default function Safety({ project, stats, incidents, inspections, talks, 
                 <section className="grid grid-cols-2 gap-px overflow-hidden rounded-[var(--radius-panel)] border border-concrete bg-concrete sm:grid-cols-4">
                     {figures.map((f) => (<div key={f.label} className="bg-surface p-3"><p className="text-xs text-ink-soft">{f.label}</p><p className="mt-1 text-xl font-bold tabular-nums">{f.value}</p></div>))}
                 </section>
+
+                <Compliance project={project} compliance={compliance} types={appointmentTypes} canManage={canManage} />
 
                 <section className="grid gap-3">
                     <h2 className="text-lg font-bold">Incidents and near misses</h2>
@@ -140,6 +152,68 @@ function IncidentCard({ incident: i, canManage }: { incident: Incident; canManag
                 </>
             )}
         </li>
+    );
+}
+
+function Compliance({ project, compliance: c, types, canManage }: { project: Props['project']; compliance: Compliance; types: Props['appointmentTypes']; canManage: boolean }) {
+    const form = useForm<{ type: string; appointee_name: string; appointed_on: string; competency_expires_on: string; file: File | null }>({ type: types[0]?.key ?? '', appointee_name: '', appointed_on: today(), competency_expires_on: '', file: null });
+    function appoint(e: FormEvent) {
+        e.preventDefault();
+        form.transform((d) => ({ ...d, competency_expires_on: d.competency_expires_on || null }));
+        form.post(`/projects/${project.id}/safety-appointments`, { preserveScroll: true, forceFormData: true, onSuccess: () => form.reset('appointee_name', 'competency_expires_on', 'file') });
+    }
+    const setItem = (item: string, status: string) => router.post(`/projects/${project.id}/safety-file`, { item, status }, { preserveScroll: true });
+
+    return (
+        <div className="grid gap-8 lg:grid-cols-2">
+            <section className="grid content-start gap-3">
+                <h2 className="text-lg font-bold">Legal appointments</h2>
+                {c.gaps.length > 0 && <p className="rounded-[var(--radius-control)] bg-brick-wash px-3 py-2 text-sm text-brick"><strong>Not yet appointed:</strong> {c.gaps.join(', ')}.</p>}
+                <ul className="divide-y divide-concrete rounded-[var(--radius-panel)] border border-concrete bg-surface text-sm">
+                    {c.appointments.map((a) => (
+                        <li key={a.id} className="flex flex-wrap items-start justify-between gap-2 p-3">
+                            <span>
+                                <span className="font-medium">{a.label}</span> <span className="text-ink-soft">{a.reference}</span>
+                                <span className="block">{a.name}, from {formatDate(a.appointedOn)}</span>
+                                {a.expires && <span className={cn('block', a.expired ? 'font-semibold text-brick' : a.expiring ? 'font-semibold text-ink' : 'text-ink-soft')}>Competency {a.expired ? 'expired' : 'valid to'} {formatDate(a.expires)}</span>}
+                            </span>
+                            {canManage && <button className="text-xs text-brick hover:underline" onClick={() => window.confirm(`End ${a.name}'s appointment?`) && router.post(`/safety-appointments/${a.id}/end`, {}, { preserveScroll: true })}>End</button>}
+                        </li>
+                    ))}
+                    {c.appointments.length === 0 && <li className="p-3 text-ink-soft">No appointments recorded.</li>}
+                </ul>
+                {canManage && (
+                    <form onSubmit={appoint} className="grid gap-3 rounded-[var(--radius-panel)] border border-concrete bg-surface p-4">
+                        <SelectField label="Appointment" name="type" value={form.data.type} onChange={(v) => form.setData('type', v)} options={types} />
+                        <div className="grid gap-3 sm:grid-cols-3">
+                            <Field label="Appointed person" name="appointee_name" value={form.data.appointee_name} onChange={(e) => form.setData('appointee_name', e.target.value)} error={form.errors.appointee_name} />
+                            <Field label="Appointed on" name="appointed_on" type="date" value={form.data.appointed_on} onChange={(e) => form.setData('appointed_on', e.target.value)} />
+                            <Field label="Competency valid to" name="competency_expires_on" type="date" value={form.data.competency_expires_on} onChange={(e) => form.setData('competency_expires_on', e.target.value)} error={form.errors.competency_expires_on} />
+                        </div>
+                        <input type="file" accept=".pdf,.jpg,.jpeg,.png" aria-label="Signed appointment letter" onChange={(e) => form.setData('file', e.target.files?.[0] ?? null)} className="text-sm" />
+                        <div><Button type="submit" disabled={form.processing}>Record appointment</Button></div>
+                    </form>
+                )}
+            </section>
+
+            <section className="grid content-start gap-3">
+                <h2 className="text-lg font-bold">Safety file <span className="font-normal text-ink-soft">({c.fileComplete} of {c.fileTotal} in place)</span></h2>
+                <ul className="divide-y divide-concrete rounded-[var(--radius-panel)] border border-concrete bg-surface text-sm">
+                    {c.file.map((f) => (
+                        <li key={f.item} className="flex items-center justify-between gap-3 px-3 py-2">
+                            <span className={cn(f.status === 'not_applicable' && 'text-ink-soft line-through')}>{f.label}</span>
+                            {canManage ? (
+                                <select aria-label={`Status of ${f.label}`} value={f.status} onChange={(e) => setItem(f.item, e.target.value)}
+                                    className={cn('h-8 rounded-[var(--radius-control)] border px-2 text-xs', f.status === 'missing' ? 'border-brick text-brick' : 'border-concrete')}>
+                                    <option value="missing">Missing</option><option value="in_place">In place</option><option value="not_applicable">Not applicable</option>
+                                </select>
+                            ) : <span className="text-xs">{f.status === 'in_place' ? 'In place' : f.status === 'missing' ? 'Missing' : 'N/A'}</span>}
+                        </li>
+                    ))}
+                </ul>
+                <p className="text-xs text-ink-soft">Keep the documents themselves in <Link href={`/documents?project=${project.id}&folder=Health and Safety`} className="underline">Documents / Health and Safety</Link>.</p>
+            </section>
+        </div>
     );
 }
 

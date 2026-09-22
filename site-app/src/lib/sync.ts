@@ -7,6 +7,11 @@ const ENDPOINTS: Record<OutboxItem['kind'], string> = {
     photo: '/api/v1/site/photos',
     delivery: '/api/v1/site/deliveries',
     incident: '/api/v1/site/incidents',
+    crew: '/api/v1/site/crew-attendance',
+    receipt: '/api/v1/site/receipts',
+    snag: '/api/v1/site/snags',
+    inspection: '/api/v1/site/inspections',
+    instruction: '/api/v1/site/instructions',
 };
 
 let running = false;

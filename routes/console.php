@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domains\Platform\Models\Company;
+use App\Domains\Projects\Services\TaskEscalation;
 use App\Domains\Reporting\Services\ScheduledReportSender;
 use App\Domains\Suppliers\Services\ComplianceAlerts;
 use App\Domains\Workflow\Services\ApprovalEngine;
@@ -39,3 +40,10 @@ Artisan::command('reports:send-scheduled', function (ScheduledReportSender $send
 })->purpose('Email scheduled reports that are due today');
 
 Schedule::command('reports:send-scheduled')->dailyAt('06:00')->timezone('Africa/Johannesburg');
+
+// Tasks more than two working days overdue are escalated once to the project manager (07:30 SAST).
+Artisan::command('tasks:escalate', function (TaskEscalation $escalation): void {
+    $this->info('Escalated '.$escalation->run().' overdue tasks.');
+})->purpose('Escalate overdue tasks to project managers');
+
+Schedule::command('tasks:escalate')->weekdays()->at('07:30')->timezone('Africa/Johannesburg');

@@ -10,7 +10,7 @@ import type { Paginated } from '@/types';
 interface Row { id: string; reference: string; title: string; project: string; status: string; total: number; quotes: number; neededBy: string | null; by: string }
 type Line = { description: string; quantity: string; unit: string; estimated_unit_price: string };
 
-export default function Requisitions({ requisitions, filter, projects, canRaise }: { requisitions: Paginated<Row>; filter: string; projects: { key: string; label: string }[]; canRaise: boolean }) {
+export default function Requisitions({ requisitions, filter, projects, units, canRaise }: { requisitions: Paginated<Row>; filter: string; projects: { key: string; label: string }[]; units: { key: string; label: string }[]; canRaise: boolean }) {
     const [adding, setAdding] = useState(false);
     const blank: Line = { description: '', quantity: '1', unit: 'each', estimated_unit_price: '' };
     const form = useForm<{ project: string; title: string; needed_by: string; notes: string; lines: Line[]; submit: boolean }>({ project: '', title: '', needed_by: '', notes: '', lines: [blank], submit: true });
@@ -42,7 +42,7 @@ export default function Requisitions({ requisitions, filter, projects, canRaise 
                                 <div key={i} className="grid items-end gap-2 sm:grid-cols-[1fr_100px_100px_160px_auto]">
                                     <Field label={i === 0 ? 'Item' : ''} aria-label="Item" name={`lines.${i}.description`} value={l.description} onChange={(e) => setLine(i, { description: e.target.value })} error={form.errors[`lines.${i}.description` as 'title']} />
                                     <Field label={i === 0 ? 'Qty' : ''} aria-label="Quantity" name={`lines.${i}.quantity`} type="number" value={l.quantity} onChange={(e) => setLine(i, { quantity: e.target.value })} />
-                                    <Field label={i === 0 ? 'Unit' : ''} aria-label="Unit" name={`lines.${i}.unit`} value={l.unit} onChange={(e) => setLine(i, { unit: e.target.value })} />
+                                    <SelectField label={i === 0 ? 'Unit' : ''} name={`lines.${i}.unit`} value={l.unit} onChange={(v) => setLine(i, { unit: v })} options={units} />
                                     <Field label={i === 0 ? 'Estimated price (R)' : ''} aria-label="Estimated unit price" name={`lines.${i}.estimated_unit_price`} type="number" value={l.estimated_unit_price} onChange={(e) => setLine(i, { estimated_unit_price: e.target.value })} />
                                     <button type="button" className="mb-2 p-1 text-ink-soft hover:text-brick disabled:opacity-30" disabled={form.data.lines.length === 1} onClick={() => form.setData('lines', form.data.lines.filter((_, j) => j !== i))} aria-label="Remove line"><Trash2 className="size-4" /></button>
                                 </div>

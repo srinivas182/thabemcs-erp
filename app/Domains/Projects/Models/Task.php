@@ -17,6 +17,8 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property string $ulid
  * @property int|null $project_id
+ * @property int|null $meeting_id
+ * @property Carbon|null $escalated_at
  * @property string $title
  * @property string|null $description
  * @property int|null $assignee_id
@@ -32,7 +34,7 @@ class Task extends Model
 {
     use BelongsToCompany, HasUlids;
 
-    protected $fillable = ['project_id', 'title', 'description', 'assignee_id', 'due_date', 'status', 'priority', 'created_by'];
+    protected $fillable = ['project_id', 'meeting_id', 'title', 'description', 'assignee_id', 'due_date', 'status', 'priority', 'created_by'];
 
     protected $attributes = ['status' => 'open', 'priority' => 'normal'];
 

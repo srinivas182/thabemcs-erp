@@ -118,6 +118,11 @@ class AppServiceProvider extends ServiceProvider
             Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::ProjectManager->value, Role::SiteManager->value, Role::Procurement->value,
         ]));
 
+        // Company master data (cost code library, units).
+        Gate::define('manage-master-data', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Finance->value, Role::QuantitySurveyor->value,
+        ]));
+
         // Reports and dashboards.
         Gate::define('view-financial-reports', static fn (User $user): bool => $user->hasAnyRole([
             Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::Finance->value,

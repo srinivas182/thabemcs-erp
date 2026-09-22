@@ -1,7 +1,8 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Button, Field } from '@thabekhulu/ui';
 import { Plus, Trash2 } from 'lucide-react';
-import { type FormEvent, type ReactNode, useState } from 'react';
+import QRCode from 'qrcode';
+import { type FormEvent, type ReactNode, useEffect, useState } from 'react';
 import { ApprovalTrail, type ApprovalTrailData, STATUS_LABEL } from '@/components/approval-trail';
 import { formatDate, formatDateTime, formatRand, SelectField, tableClass } from '@/components/data';
 import AppLayout from '@/layouts/app-layout';
@@ -50,6 +51,8 @@ export default function OrderShow({ order: o, lines, receipts, approval, blocker
                 </div>
 
                 {['issued', 'partially_received'].includes(o.status) && can.receive && <Receive order={o} lines={lines} deliveries={deliveries} />}
+
+                {['approved', 'issued', 'partially_received'].includes(o.status) && <OrderQr reference={o.reference} id={o.id} />}
 
                 {receipts.length > 0 && (
                     <section className="grid gap-2">
@@ -145,6 +148,20 @@ function Receive({ order, lines, deliveries }: { order: Props['order']; lines: P
             </div>
             <div><Button type="submit" disabled={form.processing}>Record goods received</Button></div>
         </form>
+    );
+}
+
+/** QR code for the delivery note: site teams scan it in the site app to receive against this order. */
+function OrderQr({ reference, id }: { reference: string; id: string }) {
+    const [svg, setSvg] = useState('');
+    useEffect(() => {
+        void QRCode.toString(`PO:${id}`, { type: 'svg', margin: 1, width: 140 }).then(setSvg);
+    }, [id]);
+    return (
+        <section className="flex flex-wrap items-center gap-4 rounded-[var(--radius-panel)] border border-concrete bg-surface p-4">
+            <span className="size-[140px] shrink-0" dangerouslySetInnerHTML={{ __html: svg }} aria-label={`QR code for ${reference}`} />
+            <p className="max-w-md text-sm text-ink-soft">Print this with the order. When the delivery arrives, site staff scan it in the site app (Goods received) to record what came, with a photo of the delivery note.</p>
+        </section>
     );
 }
 

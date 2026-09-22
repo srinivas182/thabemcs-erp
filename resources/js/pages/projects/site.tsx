@@ -16,6 +16,7 @@ interface Props {
     instructions: { id: string; number: number; subject: string; instruction: string; cost: boolean; time: boolean; status: string; at: string; by: string | null; supplier: string | null }[];
     inspections: { id: string; title: string; location: string | null; result: string; findings: string | null; on: string }[];
     snags: { id: string; location: string | null; description: string; status: string; dueOn: string | null; supplier: string | null }[];
+    crew: { date: string; present: number; absent: number }[];
     suppliers: Option[];
     canManage: boolean;
 }
@@ -89,9 +90,12 @@ function Diary({ diaries }: Props) {
     );
 }
 
-function Attendance({ attendance }: Props) {
-    if (!attendance.length) return <Empty>No sign-ins in the last 7 days.</Empty>;
-    return (
+function Attendance({ attendance, crew }: Props) {
+    const register = crew.length > 0 && (
+        <p className="mb-3 text-sm">Crew register: {crew.map((c) => `${formatDate(c.date)} ${c.present} present${c.absent ? `, ${c.absent} absent` : ''}`).join('; ')}.</p>
+    );
+    if (!attendance.length) return <>{register}<Empty>No staff sign-ins in the last 7 days.</Empty></>;
+    return (<>{register}
         <ul className="divide-y divide-concrete rounded-[var(--radius-panel)] border border-concrete bg-surface text-sm">
             {attendance.map((a) => (
                 <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 p-3">
@@ -103,7 +107,7 @@ function Attendance({ attendance }: Props) {
                 </li>
             ))}
         </ul>
-    );
+    </>);
 }
 
 function Photos({ photos }: Props) {

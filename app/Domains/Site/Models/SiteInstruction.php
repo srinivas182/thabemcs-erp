@@ -34,7 +34,7 @@ class SiteInstruction extends Model
 {
     use BelongsToCompany, HasPublicUlid;
 
-    protected $fillable = ['project_id', 'number', 'supplier_id', 'subject', 'instruction', 'cost_implication', 'time_implication', 'status', 'issued_by', 'issued_at'];
+    protected $fillable = ['client_id', 'project_id', 'number', 'supplier_id', 'subject', 'instruction', 'cost_implication', 'time_implication', 'status', 'issued_by', 'issued_at'];
 
     protected function casts(): array
     {

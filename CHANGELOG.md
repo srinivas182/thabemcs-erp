@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.13.0] — Programme and site completion (Sprint 13)
+
+### Added
+- Programme per project: activities with WBS, durations, earliest start, responsible person and contractor; finish-to-start links with lag; critical path on working days excluding SA public holidays; Gantt chart with progress, links and a today line; loops refused; forecast completion against planned.
+- Progress updates stamp actual start and finish automatically.
+- Daily escalation of tasks more than two working days overdue to the project manager.
+- Company master data: cost code library and units, with a standard South African starting set; budgets pick cost codes from the library and requisitions pick units.
+- Meetings and minutes (site, progress, design, safety, client): numbered, printable, locked when issued; action items become tasks and owners are notified.
+- H&S legal appointments register (OHS Act and Construction Regulations 2014) with gaps and competency expiry; safety file checklist.
+- Site app: automatic weather in the diary; crew register for workers without logins; goods received against purchase orders with QR scanning and a delivery-note photo; snags with photos; quality and safety inspections; site instructions. All work offline.
+- QR code on purchase orders for receiving on site; crew register summary on the project Site page.
+
 ## [0.12.1] — Sign-in page polish
 
 ### Added

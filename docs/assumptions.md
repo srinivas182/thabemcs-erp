@@ -134,6 +134,20 @@ Everything marked **configurable** can be changed in settings without code chang
 | RE5 | Plant utilisation = days on site and working ÷ days in the period, from the movement history | No |
 | RE6 | Scheduled reports go out at 06:00 SAST; weekly cover the previous Monday to Sunday, monthly the previous month; recipients who can no longer see a report are skipped | Yes |
 
+## Programme, meetings, master data, site operations and H&S compliance (Sprint 13)
+| # | Assumption | Configurable |
+|---|---|---|
+| PG1 | Programme uses working days (Monday to Friday) excluding SA public holidays; the builders' December shutdown is not yet excluded | Yes (later) |
+| PG2 | Links are finish-to-start with an optional lag; an activity starts no earlier than its "earliest start" date; zero-float activities are critical | No |
+| PG3 | Tasks more than two working days overdue are escalated once to the project manager at 07:30 on weekdays | Yes |
+| MD1 | Each company starts with a standard cost code library (01 Land to 09 Other) and a list of units, which Company Admins, Finance and QSs can change | Yes |
+| MT1 | Meeting minutes are locked once issued; action items become tasks and their owners are notified on issue | No |
+| SO1 | Weather in the site diary is suggested from Open-Meteo using the site location; staff can change it | No |
+| SO2 | Crew register: one record per worker per day, marked by the supervisor; workers need no login | No |
+| SO3 | Goods received on the phone against a purchase order (QR code on the order), with a photo of the signed delivery note | No |
+| HS4 | Legal appointment types and references follow the OHS Act and Construction Regulations 2014; confirm the list with the client's registered H&S practitioner | Yes |
+| HS5 | Safety file checklist has 16 standard items; confirm with the client's H&S practitioner | Yes |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.

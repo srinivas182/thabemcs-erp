@@ -36,7 +36,7 @@ final class SiteCaptureService
     /**
      * One diary per project per day: a later submission for the same day replaces the earlier one.
      *
-     * @param  array{client_id: string, diary_date: string, weather: string, workers_on_site: int, work_completed: string, delays?: string|null, captured_at: string}  $data
+     * @param  array{client_id: string, diary_date: string, weather: string, temperature_max?: float|null, rain_mm?: float|null, weather_auto?: bool, workers_on_site: int, work_completed: string, delays?: string|null, captured_at: string}  $data
      * @return array{0: SiteDiary, 1: bool} The diary and whether it was newly created
      */
     public function diary(Project $project, array $data, User $by): array

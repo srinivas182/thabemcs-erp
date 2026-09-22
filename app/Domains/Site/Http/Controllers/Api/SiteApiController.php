@@ -62,10 +62,14 @@ final class SiteApiController
             'workCompleted' => ['required', 'string', 'min:3', 'max:4000'],
             'delays' => ['nullable', 'string', 'max:2000'],
             'capturedAt' => ['required', 'date'],
+            'temperatureMax' => ['nullable', 'numeric', 'between:-20,60'],
+            'rainMm' => ['nullable', 'numeric', 'between:0,1000'],
+            'weatherAuto' => ['nullable', 'boolean'],
         ]);
 
         [$diary, $created] = $this->capture->diary($project, [
             'client_id' => $data['clientId'], 'diary_date' => $data['date'], 'weather' => $data['weather'],
+            'temperature_max' => $data['temperatureMax'] ?? null, 'rain_mm' => $data['rainMm'] ?? null, 'weather_auto' => (bool) ($data['weatherAuto'] ?? false),
             'workers_on_site' => (int) $data['workersOnSite'], 'work_completed' => $data['workCompleted'],
             'delays' => $data['delays'] ?? null, 'captured_at' => $data['capturedAt'],
         ], $this->user($request));

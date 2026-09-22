@@ -32,7 +32,7 @@ class Inspection extends Model
 {
     use BelongsToCompany, HasPublicUlid;
 
-    protected $fillable = ['project_id', 'kind', 'title', 'location', 'result', 'findings', 'inspected_on', 'inspected_by'];
+    protected $fillable = ['client_id', 'project_id', 'kind', 'title', 'location', 'result', 'findings', 'inspected_on', 'inspected_by'];
 
     protected function casts(): array
     {

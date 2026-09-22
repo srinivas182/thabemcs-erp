@@ -13,6 +13,8 @@ use App\Domains\Finance\Http\Controllers\ReportsExportController;
 use App\Domains\Funding\Http\Controllers\FundingController;
 use App\Domains\Funding\Http\Controllers\InvestorController;
 use App\Domains\Land\Http\Controllers\LandController;
+use App\Domains\MasterData\Http\Controllers\MasterDataController;
+use App\Domains\Meetings\Http\Controllers\MeetingController;
 use App\Domains\Plant\Http\Controllers\PlantController;
 use App\Domains\Platform\Http\Controllers\ActingCompanyController;
 use App\Domains\Platform\Http\Controllers\CompanyController;
@@ -24,12 +26,14 @@ use App\Domains\Platform\Http\Controllers\Settings\CompanyUserController;
 use App\Domains\Platform\Http\Controllers\Settings\ProfileController;
 use App\Domains\Procurement\Http\Controllers\PurchaseOrderController;
 use App\Domains\Procurement\Http\Controllers\RequisitionController;
+use App\Domains\Programme\Http\Controllers\ProgrammeController;
 use App\Domains\Projects\Http\Controllers\MilestoneController;
 use App\Domains\Projects\Http\Controllers\ProjectController;
 use App\Domains\Projects\Http\Controllers\RiskController;
 use App\Domains\Projects\Http\Controllers\StageGateController;
 use App\Domains\Projects\Http\Controllers\TaskController;
 use App\Domains\Reporting\Http\Controllers\ReportController;
+use App\Domains\Safety\Http\Controllers\SafetyComplianceController;
 use App\Domains\Safety\Http\Controllers\SafetyController;
 use App\Domains\Site\Http\Controllers\SiteController;
 use App\Domains\Suppliers\Http\Controllers\SupplierController;
@@ -70,6 +74,22 @@ Route::middleware(['auth'])->group(function (): void {
         Route::delete('milestones/{milestone}', [MilestoneController::class, 'destroy'])->name('milestones.destroy');
 
         Route::post('projects/{project}/tasks', [TaskController::class, 'store'])->name('projects.tasks.store');
+
+        // Programme (Gantt) with dependencies and critical path.
+        Route::get('projects/{project}/programme', [ProgrammeController::class, 'show'])->name('projects.programme');
+        Route::post('projects/{project}/programme', [ProgrammeController::class, 'store'])->name('projects.programme.store');
+        Route::patch('programme-activities/{activity}', [ProgrammeController::class, 'update'])->name('programme.update');
+        Route::delete('programme-activities/{activity}', [ProgrammeController::class, 'destroy'])->name('programme.destroy');
+        Route::post('programme-activities/{activity}/links', [ProgrammeController::class, 'link'])->name('programme.link');
+        Route::delete('programme-links/{dependency}', [ProgrammeController::class, 'unlink'])->name('programme.unlink');
+
+        // Meetings and minutes; action items become tasks.
+        Route::get('projects/{project}/meetings', [MeetingController::class, 'index'])->name('projects.meetings');
+        Route::post('projects/{project}/meetings', [MeetingController::class, 'store'])->name('projects.meetings.store');
+        Route::get('projects/{project}/meetings/{meeting}', [MeetingController::class, 'show'])->name('projects.meetings.show');
+        Route::put('projects/{project}/meetings/{meeting}', [MeetingController::class, 'update'])->name('projects.meetings.update');
+        Route::post('projects/{project}/meetings/{meeting}/actions', [MeetingController::class, 'action'])->name('projects.meetings.actions');
+        Route::post('projects/{project}/meetings/{meeting}/issue', [MeetingController::class, 'issue'])->name('projects.meetings.issue');
         Route::patch('tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
         Route::delete('tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 
@@ -163,6 +183,9 @@ Route::middleware(['auth'])->group(function (): void {
         Route::get('projects/{project}/safety', [SafetyController::class, 'show'])->name('projects.safety');
         Route::patch('safety-incidents/{incident}', [SafetyController::class, 'updateIncident'])->name('safety-incidents.update');
         Route::post('projects/{project}/toolbox-talks', [SafetyController::class, 'storeTalk'])->name('projects.toolbox-talks.store');
+        Route::post('projects/{project}/safety-appointments', [SafetyComplianceController::class, 'appoint'])->name('projects.safety-appointments.store');
+        Route::post('safety-appointments/{appointment}/end', [SafetyComplianceController::class, 'endAppointment'])->name('safety-appointments.end');
+        Route::post('projects/{project}/safety-file', [SafetyComplianceController::class, 'fileItem'])->name('projects.safety-file.update');
     });
 
     // Portfolio dashboard (group view for the Super Admin with no company selected).
@@ -176,6 +199,13 @@ Route::middleware(['auth'])->group(function (): void {
         Route::get('reports/{key}', [ReportController::class, 'show'])->name('reports.show');
         Route::get('reports/{key}/download/{format}', [ReportController::class, 'download'])->name('reports.download');
     });
+
+    // Company master data: cost code library and units.
+    Route::get('settings/master-data', [MasterDataController::class, 'index'])->name('master-data.index');
+    Route::post('settings/master-data/cost-codes', [MasterDataController::class, 'storeCostCode'])->name('master-data.cost-codes.store');
+    Route::patch('settings/master-data/cost-codes/{costCode}', [MasterDataController::class, 'toggleCostCode'])->name('master-data.cost-codes.toggle');
+    Route::post('settings/master-data/units', [MasterDataController::class, 'storeUnit'])->name('master-data.units.store');
+    Route::delete('settings/master-data/units/{unit}', [MasterDataController::class, 'destroyUnit'])->name('master-data.units.destroy');
 
     // Approvals inbox and delegation while away.
     Route::get('inbox', [InboxController::class, 'index'])->name('inbox');

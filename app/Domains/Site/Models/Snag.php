@@ -32,7 +32,7 @@ class Snag extends Model
 {
     use BelongsToCompany, HasPublicUlid;
 
-    protected $fillable = ['project_id', 'inspection_id', 'location', 'description', 'supplier_id', 'due_on', 'status'];
+    protected $fillable = ['client_id', 'project_id', 'inspection_id', 'location', 'description', 'supplier_id', 'due_on', 'status'];
 
     protected function casts(): array
     {

@@ -21,6 +21,8 @@ use Illuminate\Support\Carbon;
  * @property string $ulid
  * @property int $purchase_order_id
  * @property int|null $delivery_id
+ * @property string|null $client_id
+ * @property string|null $photo_path
  * @property int $number
  * @property Carbon $received_on
  * @property string|null $notes
@@ -33,7 +35,7 @@ class GoodsReceipt extends Model
 {
     use BelongsToCompany, HasPublicUlid;
 
-    protected $fillable = ['purchase_order_id', 'delivery_id', 'number', 'received_on', 'notes', 'received_by'];
+    protected $fillable = ['purchase_order_id', 'delivery_id', 'client_id', 'photo_path', 'number', 'received_on', 'notes', 'received_by'];
 
     protected function casts(): array
     {

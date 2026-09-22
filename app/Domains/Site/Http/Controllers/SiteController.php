@@ -13,6 +13,7 @@ use App\Domains\Site\Models\SiteInstruction;
 use App\Domains\Site\Models\SitePhoto;
 use App\Domains\Site\Models\Snag;
 use App\Domains\Suppliers\Models\Supplier;
+use App\Domains\Workforce\Models\CrewAttendance;
 use App\Models\User;
 use App\Support\Tenancy\CurrentCompany;
 use Illuminate\Http\RedirectResponse;
@@ -42,7 +43,9 @@ final class SiteController
             'project' => ['id' => $project->ulid, 'name' => $project->name, 'code' => $project->code, 'hasLocation' => $project->getAttribute('latitude') !== null],
             'diaries' => SiteDiary::query()->with('author:id,name')->where('project_id', $project->id)->orderByDesc('diary_date')->limit(30)->get()
                 ->map(static fn (SiteDiary $d): array => [
-                    'id' => $d->id, 'date' => $d->diary_date->toDateString(), 'weather' => $d->weather->label(), 'workers' => $d->workers_on_site,
+                    'id' => $d->id, 'date' => $d->diary_date->toDateString(), 'weather' => $d->weather->label()
+                        .($d->temperature_max !== null ? ', '.(float) $d->temperature_max.'°C' : '').($d->rain_mm !== null && (float) $d->rain_mm > 0 ? ', '.(float) $d->rain_mm.' mm rain' : ''),
+                    'workers' => $d->workers_on_site,
                     'work' => $d->work_completed, 'delays' => $d->delays, 'by' => $d->author?->name,
                 ]),
             'attendance' => SiteAttendance::query()->with('user:id,name')->where('project_id', $project->id)
@@ -72,6 +75,11 @@ final class SiteController
                     'id' => $s->ulid, 'location' => $s->location, 'description' => $s->description, 'status' => $s->status,
                     'dueOn' => $s->due_on?->toDateString(), 'supplier' => $s->supplier_id ? Supplier::query()->whereKey($s->supplier_id)->value('name') : null,
                 ]),
+            'crew' => CrewAttendance::query()->with('employee')->where('project_id', $project->id)
+                ->whereDate('worked_on', '>=', $today->copy()->subDays(6)->toDateString())->orderByDesc('worked_on')->get()
+                ->groupBy(static fn ($c) => $c->worked_on->toDateString())
+                ->map(static fn ($rows, $date): array => ['date' => $date, 'present' => $rows->where('status', 'present')->count(), 'absent' => $rows->where('status', '!=', 'present')->count()])
+                ->values(),
             'suppliers' => Supplier::query()->where('status', 'active')->orderBy('name')->get(['ulid', 'name'])->map(static fn (Supplier $s): array => ['key' => $s->ulid, 'label' => $s->name])->values(),
             'canManage' => $request->user()?->can('manage-site') ?? false,
         ]);

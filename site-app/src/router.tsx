@@ -14,6 +14,11 @@ const routeTree = rootRoute.addChildren([
     page('/photo', () => import('./pages/photo'), 'PhotoPage'),
     page('/delivery', () => import('./pages/delivery'), 'DeliveryPage'),
     page('/incident', () => import('./pages/incident'), 'IncidentPage'),
+    page('/crew', () => import('./pages/crew'), 'CrewPage'),
+    page('/receive', () => import('./pages/receive'), 'ReceivePage'),
+    page('/snag', () => import('./pages/snag'), 'SnagPage'),
+    page('/inspection', () => import('./pages/inspection'), 'InspectionPage'),
+    page('/instruction', () => import('./pages/instruction'), 'InstructionPage'),
 ]);
 
 export const router = createRouter({ routeTree, basepath: '/site' });

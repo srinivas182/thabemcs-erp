@@ -8,6 +8,8 @@ use App\Domains\Finance\Exceptions\FinanceException;
 use App\Domains\Finance\Models\BudgetLine;
 use App\Domains\Finance\Models\VariationOrder;
 use App\Domains\Finance\Services\BudgetService;
+use App\Domains\MasterData\Models\CostCode;
+use App\Domains\MasterData\Services\MasterDataService;
 use App\Domains\Projects\Models\Project;
 use App\Domains\Site\Models\SiteInstruction;
 use App\Domains\Workflow\Exceptions\ApprovalException;
@@ -44,6 +46,14 @@ final class BudgetController
                 ]),
             'instructions' => SiteInstruction::query()->where('project_id', $project->id)->where('cost_implication', true)->orderByDesc('number')->get(['id', 'number', 'subject'])
                 ->map(static fn (SiteInstruction $i): array => ['key' => (string) $i->id, 'label' => "SI-{$i->number} {$i->subject}"])->values(),
+            'library' => (function () use ($lines): array {
+                app(MasterDataService::class)->ensureDefaults();
+                $used = array_column($lines, 'code');
+
+                return array_values(CostCode::query()->where('active', true)->orderBy('code')->get()
+                    ->reject(static fn ($c): bool => in_array($c->code, $used, true))
+                    ->map(static fn ($c): array => ['key' => (string) $c->id, 'label' => "{$c->code} {$c->description}"])->all());
+            })(),
             'can' => [
                 'manage' => $request->user()?->can('manage-budget') ?? false,
                 'vary' => $request->user()?->can('raise-variations') ?? false,
@@ -85,11 +95,17 @@ final class BudgetController
     public function storeLine(Request $request, Project $project): RedirectResponse
     {
         Gate::authorize('manage-budget');
+        // Either pick from the company cost code library or type a project-specific code.
+        if ($request->filled('cost_code_id')) {
+            $library = CostCode::query()->findOrFail((int) $request->input('cost_code_id'));
+            $request->merge(['code' => $library->code, 'description' => $library->description, 'category' => $library->category]);
+        }
         $data = $request->validate([
             'code' => ['required', 'string', 'max:20', Rule::unique('budget_lines')->where('project_id', $project->id)],
             'description' => ['required', 'string', 'max:255'],
+            'category' => ['nullable', 'string', 'max:24'],
             'original_amount' => ['required', 'numeric', 'min:0'],
-        ]);
+        ], ['code.unique' => 'That cost code is already on this budget.']);
 
         BudgetLine::query()->create([...$data, 'project_id' => $project->id, 'sort' => (int) BudgetLine::query()->where('project_id', $project->id)->max('sort') + 1]);
 
