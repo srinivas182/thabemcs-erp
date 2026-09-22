@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Domains\Platform\Http\Middleware\EnsureModuleEnabled;
 use App\Domains\Platform\Http\Middleware\SetCurrentCompany;
 use App\Http\Middleware\HandleInertiaRequests;
