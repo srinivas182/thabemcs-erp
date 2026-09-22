@@ -124,6 +124,16 @@ Everything marked **configurable** can be changed in settings without code chang
 | WF4 | Employee ID numbers are encrypted and shown masked (POPIA); pay rates stay in the payroll system | No |
 | EX1 | Export column layouts target Sage Business Cloud (invoices) and a generic payroll input layout (SimplePay maps columns); confirm with the client's accountant | Yes |
 
+## Reports and dashboards (Sprint 12)
+| # | Assumption | Configurable |
+|---|---|---|
+| RE1 | Portfolio dashboard for Company Admins, Directors, Development Managers, Finance, QS and PMs; the Super Admin sees a group view across companies | Yes |
+| RE2 | "High risk" means likelihood × impact of 10 or more on the 5×5 matrix | Yes |
+| RE3 | Financial reports (cost, commitments, age analysis, retention) for the same roles as RE1; safety statistics also for Site Managers and Safety Officers; leave register for workforce managers; plant utilisation for plant managers | Yes |
+| RE4 | PDF is produced from the browser's print (clean print layout); Excel and CSV are downloaded directly | No |
+| RE5 | Plant utilisation = days on site and working ÷ days in the period, from the movement history | No |
+| RE6 | Scheduled reports go out at 06:00 SAST; weekly cover the previous Monday to Sunday, monthly the previous month; recipients who can no longer see a report are skipped | Yes |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.

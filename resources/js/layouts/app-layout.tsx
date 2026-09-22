@@ -1,6 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { cn } from '@thabekhulu/ui';
-import { Bell, Building2, CalendarCheck, History, Inbox, LogOut, Menu, Search, Users, X } from 'lucide-react';
+import { Bell, Building2, CalendarCheck, Gauge, History, Inbox, LogOut, Menu, Search, Users, X } from 'lucide-react';
 import CommandPalette from '@/components/command-palette';
 import { type ReactNode, useEffect, useState } from 'react';
 import { MODULE_ROUTES, NAV_GROUPS } from '@/components/navigation';
@@ -35,6 +35,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 <NavLink href="/" active={url === '/'} icon={<CalendarCheck className="size-4" aria-hidden />}>
                     My day
                 </NavLink>
+                {can.viewPortfolio && (
+                    <NavLink href="/dashboard/portfolio" active={url.startsWith('/dashboard/portfolio')} icon={<Gauge className="size-4" aria-hidden />}>
+                        {company ? 'Portfolio' : 'Group portfolio'}
+                    </NavLink>
+                )}
                 {company && (
                     <NavLink href="/inbox" active={url.startsWith('/inbox')} icon={<Inbox className="size-4" aria-hidden />}>
                         Approvals
@@ -92,17 +97,17 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
     return (
         <div className="min-h-dvh lg:grid lg:grid-cols-[248px_1fr]">
-            <aside className="hidden border-r border-concrete bg-surface lg:block">{sidebar}</aside>
+            <aside className="print:hidden hidden border-r border-concrete bg-surface lg:block">{sidebar}</aside>
 
             {open && (
                 <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
                     <button className="absolute inset-0 bg-ink/30" onClick={() => setOpen(false)} aria-label="Close menu" />
-                    <aside className="absolute inset-y-0 left-0 w-72 overflow-y-auto bg-surface shadow-xl">{sidebar}</aside>
+                    <aside className="print:hidden absolute inset-y-0 left-0 w-72 overflow-y-auto bg-surface shadow-xl">{sidebar}</aside>
                 </div>
             )}
 
             <div className="flex min-w-0 flex-col">
-                <header className="flex h-14 items-center justify-between gap-3 border-b border-concrete bg-surface px-4 lg:px-8">
+                <header className="print:hidden flex h-14 items-center justify-between gap-3 border-b border-concrete bg-surface px-4 lg:px-8">
                     <button className="rounded p-1.5 lg:hidden" onClick={() => setOpen(!open)} aria-label="Open menu">
                         {open ? <X className="size-5" /> : <Menu className="size-5" />}
                     </button>

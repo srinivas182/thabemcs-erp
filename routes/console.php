@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domains\Platform\Models\Company;
+use App\Domains\Reporting\Services\ScheduledReportSender;
 use App\Domains\Suppliers\Services\ComplianceAlerts;
 use App\Domains\Workflow\Services\ApprovalEngine;
 use App\Support\Tenancy\CurrentCompany;
@@ -31,3 +32,10 @@ Artisan::command('approvals:escalate', function (ApprovalEngine $engine, Current
 })->purpose('Escalate overdue approval steps');
 
 Schedule::command('approvals:escalate')->hourly();
+
+// Scheduled reports go out at 06:00 SAST on their day.
+Artisan::command('reports:send-scheduled', function (ScheduledReportSender $sender): void {
+    $this->info('Sent '.$sender->sendDue().' scheduled report emails.');
+})->purpose('Email scheduled reports that are due today');
+
+Schedule::command('reports:send-scheduled')->dailyAt('06:00')->timezone('Africa/Johannesburg');

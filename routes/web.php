@@ -29,6 +29,7 @@ use App\Domains\Projects\Http\Controllers\ProjectController;
 use App\Domains\Projects\Http\Controllers\RiskController;
 use App\Domains\Projects\Http\Controllers\StageGateController;
 use App\Domains\Projects\Http\Controllers\TaskController;
+use App\Domains\Reporting\Http\Controllers\ReportController;
 use App\Domains\Safety\Http\Controllers\SafetyController;
 use App\Domains\Site\Http\Controllers\SiteController;
 use App\Domains\Suppliers\Http\Controllers\SupplierController;
@@ -162,6 +163,18 @@ Route::middleware(['auth'])->group(function (): void {
         Route::get('projects/{project}/safety', [SafetyController::class, 'show'])->name('projects.safety');
         Route::patch('safety-incidents/{incident}', [SafetyController::class, 'updateIncident'])->name('safety-incidents.update');
         Route::post('projects/{project}/toolbox-talks', [SafetyController::class, 'storeTalk'])->name('projects.toolbox-talks.store');
+    });
+
+    // Portfolio dashboard (group view for the Super Admin with no company selected).
+    Route::get('dashboard/portfolio', [ReportController::class, 'dashboard'])->name('dashboard.portfolio');
+
+    // Standard reports: view, print, Excel/CSV download, schedule by email.
+    Route::middleware('module:reporting')->group(function (): void {
+        Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::post('reports/schedules', [ReportController::class, 'schedule'])->name('reports.schedules.store');
+        Route::delete('reports/schedules/{schedule}', [ReportController::class, 'unschedule'])->name('reports.schedules.destroy');
+        Route::get('reports/{key}', [ReportController::class, 'show'])->name('reports.show');
+        Route::get('reports/{key}/download/{format}', [ReportController::class, 'download'])->name('reports.download');
     });
 
     // Approvals inbox and delegation while away.

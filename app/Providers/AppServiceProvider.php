@@ -118,6 +118,19 @@ class AppServiceProvider extends ServiceProvider
             Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::ProjectManager->value, Role::SiteManager->value, Role::Procurement->value,
         ]));
 
+        // Reports and dashboards.
+        Gate::define('view-financial-reports', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::Finance->value,
+            Role::QuantitySurveyor->value, Role::ProjectManager->value,
+        ]));
+        Gate::define('view-safety-reports', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::ProjectManager->value,
+            Role::SiteManager->value, Role::SafetyOfficer->value,
+        ]));
+        Gate::define('manage-report-schedules', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::Finance->value,
+        ]));
+
         // Company Admins and Directors can read their company's audit trail.
         Gate::define('view-audit-log', static fn (User $user): bool => $user->hasAnyRole([Role::CompanyAdmin->value, Role::Director->value]));
 

@@ -21,6 +21,7 @@ export const MODULE_ROUTES: Record<string, string> = {
     procurement: '/requisitions',
     finance: '/invoices',
     workforce: '/workforce',
+    reporting: '/reports',
     plant: '/plant',
     documents: '/documents',
 };

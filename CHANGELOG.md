@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.12.0] — Reports and dashboards (Sprint 12)
+
+### Added
+- Portfolio dashboard: live projects with stage, budget used, payments, high risks, open incidents and snags; company totals incl. amounts owed to suppliers, approvals waiting and days since a lost-time injury.
+- Group portfolio for the Super Admin across all companies.
+- Standard reports: cost report, commitments, supplier age analysis, retention schedule, safety statistics, leave register, plant utilisation.
+- Report filters (project, period, as at), print-ready layout for PDF, Excel (.xlsx with rand, percent and date formats) and CSV downloads; downloads are audit-logged.
+- Scheduled reports emailed weekly or monthly as Excel or CSV, only to recipients allowed to see them.
+
 ## [0.11.0] — Certificates, cash flow, workforce, plant and exports: Release 2 complete (Sprint 11)
 
 ### Added

@@ -23,7 +23,7 @@ export interface SharedProps {
     [key: string]: unknown;
     app: { name: string; timezone: string };
     auth: { user: AuthUser | null };
-    can: { manageCompanies: boolean; manageUsers: boolean; viewAuditLog: boolean };
+    can: { manageCompanies: boolean; viewPortfolio: boolean; manageUsers: boolean; viewAuditLog: boolean };
     notifications: { unread: number };
     company: CurrentCompany | null;
     flash: { success: string | null; error: string | null };
