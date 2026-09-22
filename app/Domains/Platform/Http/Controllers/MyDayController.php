@@ -82,7 +82,7 @@ final class MyDayController
             ->distinct()
             ->pluck('stage_gate_items.project_id');
 
-        return Project::query()
+        return array_values(Project::query()
             ->where('status', ProjectStatus::Active)
             ->where('stage', '!=', ProjectStage::Close)
             ->whereNotIn('id', $blocked)
@@ -94,8 +94,7 @@ final class MyDayController
                 'detail' => 'Checklist complete. Approve to move to '.($p->stage->next()?->label() ?? 'the next stage').'.',
                 'url' => route('projects.show', $p),
             ])
-            ->values()
-            ->all();
+            ->all());
     }
 
     /**

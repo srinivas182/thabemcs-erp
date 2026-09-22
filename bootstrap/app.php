@@ -11,6 +11,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\RateLimiter;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -30,6 +31,10 @@ return Application::configure(basePath: dirname(__DIR__))
             SetCurrentCompany::class,
             HandleInertiaRequests::class,
         ]);
+
+        // The company context must be set before route-model binding, otherwise company-owned
+        // records in the URL (e.g. /projects/{project}) resolve with no company and return 404.
+        $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: SetCurrentCompany::class);
 
         $middleware->alias([
             'company' => SetCurrentCompany::class,

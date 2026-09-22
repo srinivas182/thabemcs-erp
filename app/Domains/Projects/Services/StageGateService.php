@@ -34,7 +34,7 @@ final class StageGateService
      */
     public function blockers(Project $project): array
     {
-        return StageGateItem::query()
+        $titles = StageGateItem::query()
             ->where('project_id', $project->id)
             ->where('stage', $project->stage)
             ->where('is_required', true)
@@ -42,6 +42,8 @@ final class StageGateService
             ->orderBy('sort')
             ->pluck('title')
             ->all();
+
+        return array_values(array_map(strval(...), $titles));
     }
 
     /**

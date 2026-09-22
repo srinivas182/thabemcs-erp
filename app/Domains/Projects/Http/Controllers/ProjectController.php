@@ -236,13 +236,12 @@ final class ProjectController
      */
     private function people(): array
     {
-        return User::query()
+        return array_values(User::query()
             ->where('company_id', $this->context->id())
             ->where('is_active', true)
             ->orderBy('name')
             ->get(['ulid', 'name', 'job_title'])
             ->map(static fn (User $u): array => ['key' => $u->ulid, 'label' => $u->job_title ? "{$u->name} ({$u->job_title})" : $u->name])
-            ->values()
-            ->all();
+            ->all());
     }
 }

@@ -25,8 +25,7 @@ final class ProjectService
             }
 
             $project = new Project($attributes);
-            $project->created_by = $createdBy->id;
-            $project->save();
+            $project->forceFill(['created_by' => $createdBy->id])->save();
 
             $this->seedGateItems($project);
 
