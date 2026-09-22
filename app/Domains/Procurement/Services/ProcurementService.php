@@ -15,6 +15,7 @@ use App\Domains\Procurement\Models\RequisitionQuote;
 use App\Domains\Projects\Models\Project;
 use App\Domains\Suppliers\Exceptions\SupplierNotCompliantException;
 use App\Domains\Suppliers\Services\ComplianceService;
+use App\Domains\Workflow\Exceptions\ApprovalException;
 use App\Domains\Workflow\Services\ApprovalEngine;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -58,6 +59,10 @@ final class ProcurementService
         });
     }
 
+    /**
+     * @throws ProcurementException
+     * @throws ApprovalException
+     */
     public function submitRequisition(Requisition $requisition, User $by): void
     {
         if ($requisition->status !== 'draft') {
@@ -75,6 +80,9 @@ final class ProcurementService
      *
      * Rules: at least three quotes above the threshold unless a single-source reason is given,
      * and a written reason when the lowest quote is not chosen.
+     *
+     * @throws ProcurementException
+     * @throws SupplierNotCompliantException
      */
     public function award(Requisition $requisition, RequisitionQuote $quote, ?string $reason, ?string $singleSourceReason, User $by): PurchaseOrder
     {
@@ -124,6 +132,8 @@ final class ProcurementService
     }
 
     /**
+     * @throws ProcurementException
+     * @throws ApprovalException
      * @throws SupplierNotCompliantException
      */
     public function submitOrder(PurchaseOrder $order, User $by): void
@@ -143,6 +153,10 @@ final class ProcurementService
         });
     }
 
+    /**
+     * @throws ProcurementException
+     * @throws SupplierNotCompliantException
+     */
     public function issue(PurchaseOrder $order): void
     {
         if ($order->status !== 'approved') {
@@ -155,6 +169,8 @@ final class ProcurementService
 
     /**
      * @param  array<int, float>  $quantities  purchase_order_line_id => quantity received now
+     *
+     * @throws ProcurementException
      */
     public function receive(PurchaseOrder $order, array $quantities, string $receivedOn, ?int $deliveryId, ?string $notes, User $by): GoodsReceipt
     {

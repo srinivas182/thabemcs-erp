@@ -80,7 +80,7 @@ final class PurchaseOrderController
                 : [],
             'can' => [
                 'procure' => $request->user()?->can('manage-procurement') ?? false,
-                'receive' => ($request->user()?->can('manage-procurement') || $request->user()?->can('manage-site')) ?? false,
+                'receive' => $request->user()?->can('manage-procurement') === true || $request->user()?->can('manage-site') === true,
             ],
         ]);
     }

@@ -29,6 +29,8 @@ final class ApprovalEngine
      * Roles required for a policy and amount (excl. VAT).
      *
      * @return list<string>
+     *
+     * @throws ApprovalException
      */
     public function stepsFor(string $policy, float $amount): array
     {
@@ -44,6 +46,9 @@ final class ApprovalEngine
         throw new ApprovalException("No approval band covers R{$amount} for [{$policy}].");
     }
 
+    /**
+     * @throws ApprovalException
+     */
     public function submit(Model&Approvable $approvable, string $policy, float $amount, User $requester): ApprovalRequest
     {
         $pending = ApprovalRequest::query()->where('approvable_type', $approvable->getMorphClass())
@@ -119,6 +124,9 @@ final class ApprovalEngine
         return [false, 'This step needs a '.$this->roleLabel($step->role).'.', null];
     }
 
+    /**
+     * @throws ApprovalException
+     */
     public function decide(ApprovalRequest $request, User $user, bool $approve, ?string $comment = null): void
     {
         [$allowed, $reason, $principal] = $this->eligibility($request, $user);
