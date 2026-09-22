@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domains\Platform\Http\Middleware\EnsureModuleEnabled;
+use App\Domains\Platform\Http\Middleware\EnsureSuperAdmin;
 use App\Domains\Platform\Http\Middleware\SetCurrentCompany;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -33,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'company' => SetCurrentCompany::class,
             'module' => EnsureModuleEnabled::class,
+            'super-admin' => EnsureSuperAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
