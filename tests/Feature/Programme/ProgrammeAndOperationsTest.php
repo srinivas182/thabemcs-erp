@@ -144,7 +144,7 @@ it('takes the crew register, goods received with a photo, snags and site instruc
         return $o;
     });
     $line = $order->lines()->firstOrFail();
-    $this->actingAs($this->siteManager)->getJson("/api/v1/site/orders?projectId={$this->project->ulid}")->assertJsonPath('data.0.lines.0.outstanding', 400.0);
+    $this->actingAs($this->siteManager)->getJson("/api/v1/site/orders?projectId={$this->project->ulid}")->assertJsonPath('data.0.lines.0.outstanding', 400);
 
     $clientId = (string) Str::uuid();
     $payload = ['projectId' => $this->project->ulid, 'clientId' => $clientId, 'orderId' => $order->ulid, 'receivedOn' => now()->toDateString(), 'quantities' => json_encode([$line->id => 150]), 'photo' => UploadedFile::fake()->image('dn.jpg')];
