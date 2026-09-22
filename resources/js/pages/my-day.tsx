@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { cn } from '@thabekhulu/ui';
 import type { ReactNode } from 'react';
 import AppLayout from '@/layouts/app-layout';
@@ -9,13 +9,31 @@ interface Stage {
     count: number;
 }
 
+interface MyTask {
+    id: string;
+    title: string;
+    project: string | null;
+    projectId: string | null;
+    dueDate: string | null;
+    overdue: boolean;
+}
+
+interface Item {
+    title: string;
+    detail: string;
+    url: string | null;
+    level?: string;
+}
+
 interface Props {
     greetingName: string;
     pipeline: Stage[];
-    approvals: unknown[];
-    tasks: unknown[];
-    alerts: unknown[];
+    approvals: Item[];
+    tasks: MyTask[];
+    alerts: Item[];
 }
+
+const shortDate = (d: string) => new Intl.DateTimeFormat('en-ZA', { day: 'numeric', month: 'short' }).format(new Date(d));
 
 function greeting(): string {
     const hour = Number(
@@ -47,7 +65,8 @@ function DevelopmentLine({ stages }: { stages: Stage[] }) {
                 {stages.map((stage) => {
                     const active = stage.count > 0;
                     return (
-                        <li key={stage.key} className="relative flex flex-col items-center text-center">
+                        <li key={stage.key} className="relative">
+                            <Link href={`/projects?stage=${stage.key}`} className="flex flex-col items-center rounded-[var(--radius-control)] text-center hover:bg-plaster">
                             <span
                                 className={cn(
                                     'z-10 grid size-9 place-items-center rounded-full border-[3px] text-sm font-bold tabular-nums',
@@ -59,6 +78,7 @@ function DevelopmentLine({ stages }: { stages: Stage[] }) {
                             <span className={cn('mt-2 text-xs leading-tight sm:text-sm', active ? 'font-semibold text-ink' : 'text-ink-soft')}>
                                 {stage.label}
                             </span>
+                            </Link>
                         </li>
                     );
                 })}
@@ -67,13 +87,25 @@ function DevelopmentLine({ stages }: { stages: Stage[] }) {
     );
 }
 
-function Panel({ title, empty, items }: { title: string; empty: string; items: unknown[] }) {
+function Panel({ title, empty, children, count }: { title: string; empty: string; children: ReactNode; count: number }) {
     return (
         <section className="border-t-2 border-ink pt-3">
-            <h2 className="font-bold">{title}</h2>
-            {items.length === 0 ? <p className="mt-2 text-sm text-ink-soft">{empty}</p> : null}
+            <h2 className="font-bold">
+                {title} {count > 0 && <span className="font-normal text-ink-soft">({count})</span>}
+            </h2>
+            {count === 0 ? <p className="mt-2 text-sm text-ink-soft">{empty}</p> : <ul className="mt-2 divide-y divide-concrete">{children}</ul>}
         </section>
     );
+}
+
+function ItemRow({ item }: { item: Item }) {
+    const body = (
+        <>
+            <span className={cn('block text-sm font-medium', item.level === 'danger' && 'text-brick')}>{item.title}</span>
+            <span className="block text-sm text-ink-soft">{item.detail}</span>
+        </>
+    );
+    return <li className="py-2">{item.url ? <Link href={item.url} className="block hover:underline">{body}</Link> : body}</li>;
 }
 
 export default function MyDay({ greetingName, pipeline, approvals, tasks, alerts }: Props) {
@@ -98,9 +130,29 @@ export default function MyDay({ greetingName, pipeline, approvals, tasks, alerts
                 <DevelopmentLine stages={pipeline} />
 
                 <div className="grid gap-8 md:grid-cols-3">
-                    <Panel title="Waiting for your approval" items={approvals} empty="Nothing needs your approval. Purchase orders, variations and payments will appear here." />
-                    <Panel title="Your tasks" items={tasks} empty="No tasks assigned to you. Tasks from projects and meetings will appear here." />
-                    <Panel title="Alerts" items={alerts} empty="No alerts. Expiring supplier documents, overdue approvals and budget warnings will appear here." />
+                    <Panel title="Waiting for your approval" count={approvals.length} empty="Nothing needs your approval right now.">
+                        {approvals.map((a) => (
+                            <ItemRow key={a.title} item={a} />
+                        ))}
+                    </Panel>
+                    <Panel title="Your tasks" count={tasks.length} empty="No open tasks assigned to you.">
+                        {tasks.map((t) => (
+                            <li key={t.id} className="py-2">
+                                <Link href={t.projectId ? `/projects/${t.projectId}#tasks` : '/'} className="block hover:underline">
+                                    <span className="block text-sm font-medium">{t.title}</span>
+                                    <span className="block text-sm text-ink-soft">
+                                        {t.project}
+                                        {t.dueDate && <span className={cn(t.overdue && 'font-semibold text-brick')}>{`${t.project ? ', ' : ''}${t.overdue ? 'was due' : 'due'} ${shortDate(t.dueDate)}`}</span>}
+                                    </span>
+                                </Link>
+                            </li>
+                        ))}
+                    </Panel>
+                    <Panel title="Alerts" count={alerts.length} empty="No alerts. Overdue tasks and high risks you own appear here.">
+                        {alerts.map((a) => (
+                            <ItemRow key={a.title} item={a} />
+                        ))}
+                    </Panel>
                 </div>
             </div>
         </>

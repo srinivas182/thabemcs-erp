@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
@@ -120,5 +121,45 @@ class Project extends Model
     public function projectManager(): BelongsTo
     {
         return $this->belongsTo(User::class, 'project_manager_id');
+    }
+
+    /**
+     * @return HasMany<StageGateItem, $this>
+     */
+    public function gateItems(): HasMany
+    {
+        return $this->hasMany(StageGateItem::class)->orderBy('sort');
+    }
+
+    /**
+     * @return HasMany<StageTransition, $this>
+     */
+    public function transitions(): HasMany
+    {
+        return $this->hasMany(StageTransition::class)->latest('created_at');
+    }
+
+    /**
+     * @return HasMany<Milestone, $this>
+     */
+    public function milestones(): HasMany
+    {
+        return $this->hasMany(Milestone::class)->orderBy('planned_date');
+    }
+
+    /**
+     * @return HasMany<Task, $this>
+     */
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class);
+    }
+
+    /**
+     * @return HasMany<Risk, $this>
+     */
+    public function risks(): HasMany
+    {
+        return $this->hasMany(Risk::class);
     }
 }

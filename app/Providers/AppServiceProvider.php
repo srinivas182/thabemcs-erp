@@ -33,6 +33,14 @@ class AppServiceProvider extends ServiceProvider
         // Company Admins manage the people in their own company.
         Gate::define('manage-company-users', static fn (User $user): bool => $user->hasRole(Role::CompanyAdmin->value));
 
+        // Projects: who can create and run projects, and who can approve stage gates.
+        Gate::define('manage-projects', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::ProjectManager->value,
+        ]));
+        Gate::define('approve-stage-gate', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value,
+        ]));
+
         // Company Admins and Directors can read their company's audit trail.
         Gate::define('view-audit-log', static fn (User $user): bool => $user->hasAnyRole([Role::CompanyAdmin->value, Role::Director->value]));
 

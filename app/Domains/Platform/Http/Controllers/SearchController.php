@@ -40,7 +40,7 @@ final class SearchController
                 'type' => 'project',
                 'title' => $project->name,
                 'subtitle' => "{$project->code}, {$project->stage->label()}",
-                'url' => null,
+                'url' => route('projects.show', $project),
             ];
         }
 

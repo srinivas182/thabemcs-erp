@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0] — Projects and stage gates (Sprint 4)
+
+### Added
+- Project register: create and edit projects (type, province, town, region, value, dates, project manager), automatic PRJ codes, stage filters and search.
+- Project page with the development-cycle stage track and four sections: stage gate, programme, tasks, risks and issues.
+- Stage gates: SA-based checklist per stage; approvers sign off to move a project on; approval history with comments; earlier stages locked; project manager notified.
+- Programme milestones with planned and actual dates and days-late tracking.
+- Tasks with assignee, due date, priority and status; assignees notified and can complete their own tasks.
+- Risk and issue register on a 5 x 5 matrix with owners and status.
+- My Day now shows your open tasks, gates waiting for your approval, overdue-task and high-risk alerts; development line links to filtered projects.
+- Search results open the project; Projects appears in the sidebar.
+
 ## [0.3.0] — Platform foundation complete (Sprint 3)
 
 ### Added

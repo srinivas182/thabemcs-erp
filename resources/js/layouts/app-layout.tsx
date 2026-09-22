@@ -3,7 +3,7 @@ import { cn } from '@thabekhulu/ui';
 import { Bell, Building2, CalendarCheck, History, LogOut, Menu, Search, Users, X } from 'lucide-react';
 import CommandPalette from '@/components/command-palette';
 import { type ReactNode, useEffect, useState } from 'react';
-import { NAV_GROUPS } from '@/components/navigation';
+import { MODULE_ROUTES, NAV_GROUPS } from '@/components/navigation';
 import type { SharedProps } from '@/types';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
@@ -59,10 +59,15 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 return (
                     <div key={group.title}>
                         <p className="mb-1.5 px-3 text-xs font-semibold text-ink-soft">{group.title}</p>
+                        {/* Module screens are delivered sprint by sprint; items become links as they ship. */}
                         <ul className="grid gap-0.5">
                             {items.map((key) => (
                                 <li key={key}>
-                                    {/* Module screens are delivered sprint by sprint; items become links as they ship. */}
+                                    {MODULE_ROUTES[key] ? (
+                                        <NavLink href={MODULE_ROUTES[key]} active={url.startsWith(MODULE_ROUTES[key])} icon={null}>
+                                            {enabled.get(key)}
+                                        </NavLink>
+                                    ) : (
                                     <span
                                         aria-disabled="true"
                                         title="Being built in an upcoming sprint"
@@ -70,6 +75,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                                     >
                                         {enabled.get(key)}
                                     </span>
+                                    )}
                                 </li>
                             ))}
                         </ul>

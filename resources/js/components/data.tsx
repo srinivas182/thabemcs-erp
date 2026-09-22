@@ -62,3 +62,52 @@ export function formatDateTime(iso: string | null): string {
     if (!iso) return '';
     return new Intl.DateTimeFormat('en-ZA', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Africa/Johannesburg' }).format(new Date(iso));
 }
+
+const zar = new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR', maximumFractionDigits: 0 });
+
+/** Rand amount, e.g. "R 12 500 000". */
+export function formatRand(value: string | number | null): string {
+    if (value === null || value === '') return '';
+    return zar.format(Number(value));
+}
+
+export function formatDate(date: string | null): string {
+    if (!date) return '';
+    return new Intl.DateTimeFormat('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(date));
+}
+
+/** Labelled native select, matching Field styling. */
+export function SelectField({
+    label,
+    name,
+    value,
+    onChange,
+    options,
+    error,
+    placeholder,
+}: {
+    label: string;
+    name: string;
+    value: string | number | null;
+    onChange: (value: string) => void;
+    options: { key: string | number; label: string }[];
+    error?: string;
+    placeholder?: string;
+}) {
+    return (
+        <div className="grid gap-1.5">
+            <label htmlFor={name} className="text-sm font-medium">
+                {label}
+            </label>
+            <select id={name} name={name} className={selectClass} value={value ?? ''} onChange={(e) => onChange(e.target.value)} aria-invalid={error ? true : undefined}>
+                {placeholder !== undefined && <option value="">{placeholder}</option>}
+                {options.map((o) => (
+                    <option key={o.key} value={o.key}>
+                        {o.label}
+                    </option>
+                ))}
+            </select>
+            {error && <p className="text-sm text-brick">{error}</p>}
+        </div>
+    );
+}

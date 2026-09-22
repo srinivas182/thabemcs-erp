@@ -10,3 +10,8 @@ export const NAV_GROUPS: { title: string; modules: string[] }[] = [
     { title: 'Sell & rent', modules: ['sales', 'rentals'] },
     { title: 'Records', modules: ['documents', 'reporting'] },
 ];
+
+/** Modules that have screens so far. Others show as "coming soon" until their sprint ships. */
+export const MODULE_ROUTES: Record<string, string> = {
+    projects: '/projects',
+};
