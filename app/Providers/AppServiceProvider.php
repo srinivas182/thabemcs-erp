@@ -60,6 +60,15 @@ class AppServiceProvider extends ServiceProvider
             Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::QuantitySurveyor->value,
         ]));
 
+        // Supplier registry and document management.
+        Gate::define('manage-suppliers', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::Procurement->value,
+        ]));
+        Gate::define('manage-documents', static fn (User $user): bool => $user->hasAnyRole(array_values(array_map(
+            static fn (Role $r): string => $r->value,
+            array_filter(Role::cases(), static fn (Role $r): bool => $r !== Role::Contractor),
+        ))));
+
         // Company Admins and Directors can read their company's audit trail.
         Gate::define('view-audit-log', static fn (User $user): bool => $user->hasAnyRole([Role::CompanyAdmin->value, Role::Director->value]));
 

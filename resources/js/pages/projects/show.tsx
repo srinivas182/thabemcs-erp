@@ -145,6 +145,11 @@ export default function ProjectShow(props: Props) {
                             Approvals
                         </Link>
                     )}
+                    {modules.has('documents') && (
+                        <Link href={`/documents?project=${project.id}`} className="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink">
+                            Documents
+                        </Link>
+                    )}
                     <Link href={`/projects/${project.id}/team`} className="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink">
                         Team
                     </Link>

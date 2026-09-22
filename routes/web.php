@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domains\Approvals\Http\Controllers\ApprovalController;
+use App\Domains\Documents\Http\Controllers\DocumentController;
 use App\Domains\Feasibility\Http\Controllers\FeasibilityController;
 use App\Domains\Funding\Http\Controllers\FundingController;
 use App\Domains\Funding\Http\Controllers\InvestorController;
@@ -20,6 +21,7 @@ use App\Domains\Projects\Http\Controllers\ProjectController;
 use App\Domains\Projects\Http\Controllers\RiskController;
 use App\Domains\Projects\Http\Controllers\StageGateController;
 use App\Domains\Projects\Http\Controllers\TaskController;
+use App\Domains\Suppliers\Http\Controllers\SupplierController;
 use App\Domains\Team\Http\Controllers\TeamController;
 use Illuminate\Support\Facades\Route;
 
@@ -109,6 +111,27 @@ Route::middleware(['auth'])->group(function (): void {
         Route::post('appointments/{appointment}/verify', [TeamController::class, 'verify'])->name('appointments.verify');
         Route::post('appointments/{appointment}/claims', [TeamController::class, 'storeClaim'])->name('appointments.claims.store');
         Route::patch('fee-claims/{claim}', [TeamController::class, 'updateClaim'])->name('fee-claims.update');
+    });
+
+    // Contractor and supplier registry with compliance.
+    Route::middleware('module:suppliers')->group(function (): void {
+        Route::get('suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
+        Route::post('suppliers', [SupplierController::class, 'store'])->name('suppliers.store');
+        Route::get('suppliers/{supplier}', [SupplierController::class, 'show'])->name('suppliers.show');
+        Route::put('suppliers/{supplier}', [SupplierController::class, 'update'])->name('suppliers.update');
+        Route::patch('suppliers/{supplier}/status', [SupplierController::class, 'status'])->name('suppliers.status');
+        Route::post('suppliers/{supplier}/documents', [SupplierController::class, 'storeDocument'])->name('suppliers.documents.store');
+        Route::post('suppliers/{supplier}/documents/{document}/verify', [SupplierController::class, 'verifyDocument'])->name('suppliers.documents.verify');
+        Route::post('suppliers/{supplier}/ratings', [SupplierController::class, 'rate'])->name('suppliers.ratings.store');
+    });
+
+    // Document management: private, versioned, permission-checked downloads.
+    Route::middleware('module:documents')->group(function (): void {
+        Route::get('documents', [DocumentController::class, 'index'])->name('documents.index');
+        Route::post('documents', [DocumentController::class, 'store'])->middleware('throttle:60,1')->name('documents.store');
+        Route::post('documents/{document}/versions', [DocumentController::class, 'addVersion'])->middleware('throttle:60,1')->name('documents.versions.store');
+        Route::get('documents/{document}/versions/{version}/download', [DocumentController::class, 'download'])->name('documents.download');
+        Route::delete('documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
     });
 
     // Company settings (Company Admin).

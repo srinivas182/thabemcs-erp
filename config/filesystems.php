@@ -32,6 +32,16 @@ return [
 
     'disks' => [
 
+        // Project documents and compliance files. Private: files are only served through
+        // the app after a permission check. Point DOCUMENTS_DISK at 's3' in production.
+        'documents' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/documents'),
+            'serve' => false,
+            'throw' => true,
+            'report' => false,
+        ],
+
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),

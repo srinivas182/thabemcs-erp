@@ -11,6 +11,7 @@ enum QuotaType: string
 {
     case Projects = 'projects';
     case Users = 'users';
+    case StorageMb = 'storage_mb';
 
     /**
      * Column on the companies table that holds the limit (null = unlimited).

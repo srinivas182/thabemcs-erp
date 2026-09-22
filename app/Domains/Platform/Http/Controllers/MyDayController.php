@@ -14,6 +14,7 @@ use App\Domains\Projects\Models\Project;
 use App\Domains\Projects\Models\Risk;
 use App\Domains\Projects\Models\StageGateItem;
 use App\Domains\Projects\Models\Task;
+use App\Domains\Suppliers\Models\SupplierDocument;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -122,6 +123,24 @@ final class MyDayController
                     'level' => 'warning',
                 ];
             });
+
+        if ($user->can('manage-suppliers')) {
+            $expiring = SupplierDocument::query()->whereBetween('expires_on', [Carbon::today(), Carbon::today()->addDays(30)])->count();
+            $expired = SupplierDocument::query()->whereDate('expires_on', '<', Carbon::today())
+                ->whereNotExists(fn ($q) => $q->selectRaw('1')->from('supplier_documents as newer')
+                    ->whereColumn('newer.supplier_id', 'supplier_documents.supplier_id')
+                    ->whereColumn('newer.type', 'supplier_documents.type')
+                    ->whereColumn('newer.id', '>', 'supplier_documents.id'))
+                ->count();
+            if ($expired + $expiring > 0) {
+                $alerts[] = [
+                    'title' => trim(($expired ? "{$expired} supplier documents expired" : '').($expired && $expiring ? ', ' : '').($expiring ? "{$expiring} expire within 30 days" : '')),
+                    'detail' => 'Expired documents block appointments and payments.',
+                    'url' => route('suppliers.index'),
+                    'level' => $expired ? 'danger' : 'warning',
+                ];
+            }
+        }
 
         if ($user->can('manage-projects')) {
             StatutoryApplication::query()->with('project:id,ulid,name')

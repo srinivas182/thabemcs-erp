@@ -14,4 +14,15 @@ return [
         'password' => env('SUPER_ADMIN_PASSWORD', 'ChangeMe!2026'),
     ],
 
+    /*
+     | Disk for project documents and compliance files ('documents' locally, 's3' in production).
+     */
+    'documents_disk' => env('DOCUMENTS_DISK', 'documents'),
+
+    /*
+     | Allowed upload types and size limit (KB).
+     */
+    'upload_mimes' => ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'jpg', 'jpeg', 'png', 'webp', 'heic', 'dwg', 'dxf', 'zip', 'txt'],
+    'upload_max_kb' => 51200,
+
 ];

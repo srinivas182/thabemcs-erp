@@ -54,6 +54,20 @@ Everything marked **configurable** can be changed in settings without code chang
 | PT3 | Fee claims are approved by the QS, Development Manager, Director or Company Admin, and marked paid by Finance | Yes (later sprint) |
 | PT4 | Approved claims above the agreed fee are flagged, not blocked | Yes |
 
+## Suppliers and documents (Sprint 7)
+| # | Assumption | Configurable |
+|---|---|---|
+| SU1 | Required compliance documents per supplier type, and which ones block appointment and payment, per `config/supplier_compliance.php` | Yes |
+| SU2 | CIDB grade limits (R500k for grade 1 up to no limit for grade 9) must be confirmed against the current CIDB Regulations before go-live | Yes |
+| SU3 | Expiry warnings at 30, 14 and 7 days go to Procurement and Company Admins at 07:00 SAST; My Day shows expired and expiring counts | Yes |
+| SU4 | B-BBEE is recorded but does not block (it affects preferential procurement scoring, not eligibility) | Yes |
+| SU5 | Suppliers are managed by Company Admins, Directors, Development Managers and Procurement; Project roles can rate performance | Yes (later sprint) |
+| DO1 | Documents are private; every download goes through a permission check and is recorded in the audit log | No |
+| DO2 | Every upload creates a new version; older versions are kept and can still be downloaded | No |
+| DO3 | Allowed types: PDF, Office, CSV, images (incl. HEIC), DWG/DXF, ZIP, TXT; maximum 50 MB per file | Yes |
+| DO4 | Restricted documents are visible to the chosen roles plus Company Admins and Directors | No |
+| DO5 | Virus scanning of uploads is recommended in production (e.g. ClamAV) and will be added with the hosting set-up | n/a |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.

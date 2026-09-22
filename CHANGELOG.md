@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.7.0] — Suppliers and documents: Release 1 complete (Sprint 7)
+
+### Added
+- Contractor and supplier registry: type, CIPC, VAT, CIDB CRS number, grade and class, B-BBEE level, contacts; suspend with reason.
+- Compliance documents per supplier type (tax compliance PIN, CIDB, COIDA, B-BBEE, bank confirmation, insurance, H&S file and more) with expiry dates, uploaded copies and verification.
+- Suppliers with missing or expired blocking documents are shown as blocked; `ComplianceService::ensureCanTransact()` is ready for procurement and payments.
+- CIDB grade check against contract value.
+- Daily expiry notifications at 30, 14 and 7 days, and on expiry; My Day alert for expired and expiring documents.
+- Supplier performance ratings (quality, time, safety) per project.
+- Document management: folders per project, upload with progress, version history, drawing register with numbers, disciplines and revisions.
+- Role-restricted documents; private storage with permission-checked, audited downloads.
+- Company storage limit enforced on uploads.
+
 ## [0.6.0] — Land, statutory approvals and professional team (Sprint 6)
 
 ### Added
