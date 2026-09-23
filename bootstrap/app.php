@@ -18,6 +18,8 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\RateLimiter;
 
 return Application::configure(basePath: dirname(__DIR__))
+    // Commands live with the domain they belong to, not in app/Console.
+    ->withCommands([__DIR__.'/../app/Domains/Platform/Console'])
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',

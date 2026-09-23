@@ -79,6 +79,9 @@ final class SeedScaleCommand extends Command
         return $ids;
     }
 
+    /**
+     * @param  list<int>  $companyIds
+     */
     private function users(array $companyIds, int $wanted, int $chunk): void
     {
         $have = DB::table('users')->count();
@@ -207,7 +210,7 @@ final class SeedScaleCommand extends Command
                     'type' => ['supplier', 'contractor', 'subcontractor'][$i % 3], 'status' => 'active', 'created_at' => now(), 'updated_at' => now(),
                 ]);
             }
-            $byCompany[$companyId] = array_map('intval', $existing);
+            $byCompany[$companyId] = array_values(array_map('intval', $existing));
         }
 
         return $byCompany;
