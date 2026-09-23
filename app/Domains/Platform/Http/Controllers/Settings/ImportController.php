@@ -22,7 +22,7 @@ final class ImportController
 
     public function index(): Response
     {
-        Gate::authorize('manage-company');
+        Gate::authorize('import-data');
 
         return Inertia::render('settings/import', [
             'types' => collect($this->imports->types())->map(static fn (array $d, string $key): array => [
@@ -38,7 +38,7 @@ final class ImportController
 
     public function template(string $type): HttpResponse
     {
-        Gate::authorize('manage-company');
+        Gate::authorize('import-data');
 
         return response($this->imports->template($type), 200, [
             'Content-Type' => 'text/csv',
@@ -48,7 +48,7 @@ final class ImportController
 
     public function upload(Request $request): RedirectResponse
     {
-        Gate::authorize('manage-company');
+        Gate::authorize('import-data');
         $data = $request->validate([
             'type' => [Rule::in(array_keys($this->imports->types()))],
             'project' => ['nullable', 'string', Rule::exists('projects', 'ulid')],

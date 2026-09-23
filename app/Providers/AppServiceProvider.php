@@ -165,6 +165,11 @@ class AppServiceProvider extends ServiceProvider
             Role::CompanyAdmin->value, Role::Director->value,
         ]));
 
+        // Loading opening data from spreadsheets.
+        Gate::define('import-data', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value,
+        ]));
+
         // Sales.
         Gate::define('view-sales', static fn (User $user): bool => $user->hasAnyRole([
             Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::SalesAndLeasing->value, Role::Finance->value,
