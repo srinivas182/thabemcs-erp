@@ -52,6 +52,7 @@ class HandleInertiaRequests extends Middleware
                     'roles' => $user->is_super_admin ? ['super-admin'] : $user->getRoleNames()->all(),
                 ] : null,
             ],
+            'help' => $this->helpFor($request),
             'can' => [
                 'manageCompanies' => $user instanceof User && $user->is_super_admin,
                 'manageForms' => $user instanceof User && $user->can('manage-forms'),
@@ -82,5 +83,25 @@ class HandleInertiaRequests extends Middleware
                 'error' => $request->session()->get('error'),
             ],
         ];
+    }
+
+    /**
+     * Help for the page being shown, matched on the first part of the path.
+     *
+     * @return array{title: string, body: string, steps: list<string>}|null
+     */
+    private function helpFor(Request $request): ?array
+    {
+        /** @var array<string, array{title: string, body: string, steps: list<string>}> $help */
+        $help = (array) config('help');
+        $path = trim($request->path(), '/');
+
+        foreach ($help as $prefix => $entry) {
+            if ($path === $prefix || str_starts_with($path, $prefix.'/')) {
+                return $entry;
+            }
+        }
+
+        return null;
     }
 }

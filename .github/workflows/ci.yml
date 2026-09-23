@@ -42,6 +42,11 @@ jobs:
           cp .env.example .env
           php artisan key:generate
 
+      - name: Known vulnerabilities in dependencies
+        run: |
+          composer audit --no-interaction --format=plain 2>&1 | tee /tmp/ci-audit.txt || echo "composer audit reported findings"
+          npm audit --omit=dev --audit-level=high 2>&1 | tee -a /tmp/ci-audit.txt || echo "npm audit reported findings"
+
       - name: Code style (Pint)
         shell: bash
         run: vendor/bin/pint --test 2>&1 | tee /tmp/ci-pint.txt; exit ${PIPESTATUS[0]}

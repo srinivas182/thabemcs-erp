@@ -6,6 +6,7 @@ namespace App\Domains\Integrations\Services;
 
 use App\Domains\Finance\Models\SupplierInvoice;
 use App\Domains\Integrations\Models\Integration;
+use App\Domains\Rentals\Models\LeaseInvoice;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
@@ -117,6 +118,68 @@ final class SageZaConnector
         $saved = $response->json() ?? [];
 
         return (string) ($saved['ID'] ?? '');
+    }
+
+    /**
+     * Send rental invoices to Sage as customer invoices. Tenants need their Sage customer ID recorded.
+     *
+     * @return array{sent: int, failed: int, skipped: list<string>}
+     */
+    public function pushRentalInvoices(Integration $integration): array
+    {
+        $this->assertReady($integration);
+        $settings = $integration->settings ?? [];
+        $sent = 0;
+        $failed = 0;
+        $skipped = [];
+
+        LeaseInvoice::query()->with(['lease.tenant', 'lease.unit'])->orderBy('period_start')->each(
+            function (LeaseInvoice $invoice) use ($integration, $settings, &$sent, &$failed, &$skipped): void {
+                if ($this->repo->alreadySent(self::PROVIDER, 'lease_invoice', $invoice->id)) {
+                    return;
+                }
+                $tenant = $invoice->lease->tenant;
+                if ($tenant->accounting_ref === null) {
+                    $skipped[] = "{$tenant->name} has no Sage customer ID";
+
+                    return;
+                }
+                $account = $settings['rental_income_account_id'] ?? null;
+                if ($account === null || $account === '') {
+                    $skipped[] = 'No Sage account is set for rental income';
+
+                    return;
+                }
+
+                try {
+                    $body = [
+                        'CustomerId' => (int) $tenant->accounting_ref,
+                        'Date' => $invoice->period_start->toDateString(),
+                        'DueDate' => $invoice->due_on->toDateString(),
+                        'Reference' => $invoice->reference(),
+                        'Inclusive' => false,
+                        'Lines' => array_map(static fn (array $line): array => [
+                            'LineType' => 1,
+                            'SelectionId' => (int) $account,
+                            'TaxTypeId' => $line['vat'] > 0 ? (int) ($settings['tax_type_vat'] ?? 0) : (int) ($settings['tax_type_none'] ?? 0),
+                            'Description' => mb_substr($invoice->lease->unit->reference.': '.$line['description'], 0, 100),
+                            'Quantity' => 1,
+                            'UnitPriceExclusive' => $line['amount'],
+                        ], $invoice->lines),
+                    ];
+                    $response = $this->http($integration)->post($this->url($integration, 'CustomerInvoice/Save'), $body)->throw();
+                    /** @var array{ID?: int|string} $saved */
+                    $saved = $response->json() ?? [];
+                    $this->repo->record(self::PROVIDER, 'lease_invoice', $invoice->id, true, (string) ($saved['ID'] ?? ''), null);
+                    $sent++;
+                } catch (Throwable $e) {
+                    $this->repo->record(self::PROVIDER, 'lease_invoice', $invoice->id, false, null, mb_substr($e->getMessage(), 0, 1000));
+                    $failed++;
+                }
+            },
+        );
+
+        return ['sent' => $sent, 'failed' => $failed, 'skipped' => array_values(array_unique($skipped))];
     }
 
     private function assertReady(Integration $integration): void

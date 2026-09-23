@@ -230,6 +230,16 @@ Everything marked **configurable** can be changed in settings without code chang
 | PP5 | People choose to be emailed as things happen or to get one daily summary at 07:15; everything always appears in the inbox | Yes |
 | PP6 | API tokens are read-only. Webhooks are signed with HMAC-SHA256 in X-Thabekhulu-Signature and retried up to five times with a growing delay | Yes |
 
+## Security and resilience (Sprint 22)
+| # | Assumption | Configurable |
+|---|---|---|
+| SE1 | Two-factor authentication is required for Company Admins, Directors, Finance and Development Managers, and for Super Admins | Yes |
+| SE2 | Content security policy allows scripts only from this site, map tiles from OpenStreetMap and weather from Open-Meteo; anything else must be added deliberately | No |
+| SE3 | Database backed up nightly at 01:00 and kept 30 days, plus point-in-time recovery from the managed database; uploaded files covered by object storage versioning | Yes |
+| SE4 | Restores are rehearsed monthly and before go-live, and the result recorded in docs/disaster-recovery.md | No |
+| SE5 | Proposed targets: at most 5 minutes of data lost (RPO) and 4 hours to be working again (RTO). Thabekhulu to agree | Yes |
+| SE6 | Dependency vulnerability scanning runs on every push; findings are reported, not silently ignored | No |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.

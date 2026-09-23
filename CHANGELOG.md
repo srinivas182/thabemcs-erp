@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.22.0] — Security and resilience (Sprint 22)
+
+### Added
+- Security headers on every response, including a content security policy that only allows scripts from this site, and a request id carried through the logs.
+- Two-factor authentication required for Company Admins, Directors, Finance and Development Managers; they are sent to set it up before they can work.
+- Sign out of every other device, with password confirmation.
+- Nightly encrypted database backup with 30-day retention, and `backup:verify`, which restores the latest backup into a scratch database, counts key tables and times it.
+- `docs/disaster-recovery.md`: what is backed up, how to restore, proposed recovery targets and a log for restore rehearsals.
+- Dependency vulnerability scanning (composer audit and npm audit) on every push.
+- In-app help for every page, opened with the button or the ? key.
+- Accessibility: skip-to-content link, live region for messages, focusable main content.
+- Rental invoices now go to Sage as customer invoices, alongside supplier invoices.
+
 ## [0.21.0] — Professional platform (Sprint 21)
 
 ### Added

@@ -113,3 +113,9 @@ Artisan::command('notifications:digest', function (): void {
 })->purpose('Send the daily notification digest');
 
 Schedule::command('notifications:digest')->dailyAt('07:15')->timezone('Africa/Johannesburg');
+
+// Nightly database backup, kept for 30 days.
+Schedule::command('backup:run')->dailyAt('01:00')->timezone('Africa/Johannesburg')->onOneServer();
+
+// Monthly restore rehearsal: a backup nobody has restored is not a backup.
+Schedule::command('backup:verify')->monthlyOn(2, '03:00')->timezone('Africa/Johannesburg')->onOneServer();

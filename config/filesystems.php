@@ -39,6 +39,18 @@ return [
         | application runs on more than one server, because a local disk is not shared between them.
         | Set DOCUMENTS_DISK=documents_s3 after installing league/flysystem-aws-s3-v3.
         */
+        // Encrypted, versioned bucket holding database backups. Never public.
+        'backups' => [
+            'driver' => env('BACKUP_DRIVER', 'local'),
+            'root' => storage_path('app/backups'),
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION', 'af-south-1'),
+            'bucket' => env('BACKUP_BUCKET'),
+            'throw' => true,
+            'visibility' => 'private',
+        ],
+
         'documents_s3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

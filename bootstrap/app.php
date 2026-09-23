@@ -29,8 +29,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             SetCurrentCompany::class,
+            RequireTwoFactor::class,
             HandleInertiaRequests::class,
         ]);
+
+        // Security headers and a request id on everything, including the API and public links.
+        $middleware->append([AddRequestId::class, SecurityHeaders::class]);
 
         // The company context must be set before route-model binding, otherwise company-owned
         // records in the URL (e.g. /projects/{project}) resolve with no company and return 404.

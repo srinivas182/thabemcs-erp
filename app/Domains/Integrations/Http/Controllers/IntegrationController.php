@@ -106,7 +106,9 @@ final class IntegrationController
         try {
             if ($provider === 'sage_za') {
                 $r = $this->sage->pushApprovedInvoices($integration);
-                $msg = "{$r['sent']} invoices sent to Sage".($r['failed'] ? ", {$r['failed']} failed (see the log below)" : '').'.';
+                $rent = $this->sage->pushRentalInvoices($integration);
+                $r = ['failed' => $r['failed'] + $rent['failed'], 'skipped' => [...$r['skipped'], ...$rent['skipped']]];
+                $msg = "Sent to Sage: supplier invoices and {$rent['sent']} rental invoices.".($r['failed'] ? " {$r['failed']} failed (see the log below)." : '');
             } else {
                 $data = $request->validate(['from' => ['required', 'date'], 'to' => ['required', 'date', 'after_or_equal:from']]);
                 $from = Carbon::parse((string) $data['from']);

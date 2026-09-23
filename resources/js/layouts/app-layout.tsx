@@ -1,5 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { cn } from '@thabekhulu/ui';
+import { HelpDrawer } from '@/components/help-drawer';
 import { Bell, Building2, CalendarCheck, ClipboardList, Handshake, KeyRound, Gauge, History, Inbox, ListTree, LogOut, Map as MapIcon, Menu, Plug, Search, ShieldCheck, Users, X } from 'lucide-react';
 import CommandPalette from '@/components/command-palette';
 import { type ReactNode, useEffect, useState } from 'react';
@@ -131,7 +132,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     );
 
     return (
-        <div className="min-h-dvh lg:grid lg:grid-cols-[248px_1fr]">
+        <>
+            <a href="#main" className="sr-only rounded-[var(--radius-control)] bg-ink px-4 py-2 text-white focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50">Skip to the main content</a>
+                    <div className="min-h-dvh lg:grid lg:grid-cols-[248px_1fr]">
             <aside className="print:hidden hidden border-r border-concrete bg-surface lg:block">{sidebar}</aside>
 
             {open && (
@@ -195,7 +198,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
                 {(flash.success || flash.error) && (
                     <div
-                        role="status"
+                        role="status" aria-live="polite"
                         className={cn(
                             'border-b px-4 py-2.5 text-sm lg:px-8',
                             flash.error ? 'border-brick/30 bg-brick-wash text-brick' : 'border-line/20 bg-line-wash text-line-deep',
@@ -205,10 +208,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                     </div>
                 )}
 
-                <main className="flex-1 px-4 py-6 lg:px-8 lg:py-8">{children}</main>
+                <main id="main" tabIndex={-1} className="flex-1 px-4 py-6 lg:px-8 lg:py-8">{children}</main>
                 {searching && <CommandPalette onClose={() => setSearching(false)} />}
             </div>
-        </div>
+            </div>
+            <HelpDrawer />
+        </>
     );
 }
 

@@ -3,6 +3,14 @@
 declare(strict_types=1);
 
 return [
+    // Where database backups are written (see config/filesystems.php and docs/disaster-recovery.md).
+    'backup_disk' => env('BACKUP_DISK', 'backups'),
+
+    /*
+    | Roles that must have two-factor authentication switched on: anyone who can approve work,
+    | move money or change what other people may do.
+    */
+    'two_factor_required_roles' => ['company-admin', 'director', 'finance', 'development-manager'],
 
     /*
      | Initial Super Admin, created by the PlatformSeeder on first install.
