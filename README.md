@@ -6,6 +6,16 @@ Thabekhulu Development Group, built by Mayura Consultancy Services.
 It manages the full development cycle — **plan, fund, secure land, approve, build,
 sell/rent, close out** — across companies, regions and projects nationwide.
 
+## Documentation
+
+| Document | What it covers |
+|---|---|
+| [docs/developer-guide.md](docs/developer-guide.md) | How the codebase is organised, the shared machinery, conventions and traps |
+| [docs/modules.md](docs/modules.md) | Every module: purpose, tables, business rules and permissions |
+| [docs/deployment.md](docs/deployment.md) | Hosting, queues, and packages installed at deployment |
+| [docs/adr/](docs/adr/) | The decisions behind the architecture |
+| [docs/assumptions.md](docs/assumptions.md) | Business assumptions awaiting the client's confirmation |
+
 ## Applications
 
 | App | Path | Users | Stack |
