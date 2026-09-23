@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class RequireTwoFactor
 {
-    private const array ALLOWED = ['profile', 'logout', 'user/two-factor*', 'user/confirmed-two-factor*', 'user/confirm-password', 'health'];
+    private const array ALLOWED = ['settings/profile', 'settings/profile/*', 'logout', 'user/two-factor*', 'user/confirmed-two-factor*', 'user/confirm-password', 'health'];
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -33,7 +33,7 @@ final class RequireTwoFactor
 
         return $request->expectsJson()
             ? response()->json(['message' => $message], 403)
-            : redirect()->to(route('profile'))->with('error', $message);
+            : redirect()->to(route('settings.profile'))->with('error', $message);
     }
 
     private function mustHaveIt(User $user): bool

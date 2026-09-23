@@ -40,7 +40,8 @@ final class VerifyBackupCommand extends Command
             return self::FAILURE;
         }
 
-        $scratch = (string) $this->option('database');
+        $option = $this->option('database');
+        $scratch = is_string($option) && $option !== '' ? $option : 'thabekhulu_restore_check';
         $local = storage_path('app/'.basename((string) $latest));
         file_put_contents($local, Storage::disk($disk)->get((string) $latest));
 

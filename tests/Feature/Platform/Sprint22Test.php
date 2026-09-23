@@ -42,8 +42,8 @@ it('sets security headers and a request id on every response', function (): void
 
 it('makes people who approve work and move money set up two-factor authentication', function (): void {
     // A Director without two-factor is sent to their profile, whatever they try to open.
-    $this->actingAs($this->director)->get('/projects')->assertRedirect('/profile');
-    $this->actingAs($this->director)->get('/profile')->assertOk()
+    $this->actingAs($this->director)->get('/projects')->assertRedirect('/settings/profile');
+    $this->actingAs($this->director)->get('/settings/profile')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('twoFactor.required', true)->where('twoFactor.confirmed', false));
 
     // A Site Manager is not affected.
@@ -55,10 +55,10 @@ it('makes people who approve work and move money set up two-factor authenticatio
 });
 
 it('lets someone sign out of every other device, with their password', function (): void {
-    $this->actingAs($this->siteManager)->post('/profile/sign-out-others', ['password' => 'wrong-password'])
+    $this->actingAs($this->siteManager)->post('/settings/profile/sign-out-others', ['password' => 'wrong-password'])
         ->assertSessionHasErrors('password');
 
-    $this->actingAs($this->siteManager)->post('/profile/sign-out-others', ['password' => 'password'])
+    $this->actingAs($this->siteManager)->post('/settings/profile/sign-out-others', ['password' => 'password'])
         ->assertSessionHas('success');
 });
 
