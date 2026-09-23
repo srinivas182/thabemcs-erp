@@ -12,6 +12,7 @@ use App\Domains\Projects\Models\Project;
 use App\Domains\Reporting\Models\CustomReport;
 use App\Domains\Reporting\Models\ProjectMetric;
 use App\Domains\Suppliers\Models\Supplier;
+use App\Support\Cache\CompanyCache;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -83,25 +84,25 @@ it('stores the critical path on the activities for cross-project reporting', fun
 });
 
 it('costs the same number of queries whatever the size of the portfolio', function (): void {
+    // Measures the real work: caches are warm for permissions and settings, but the portfolio figures
+    // are cleared before each reading, exactly as they are when a project's metrics change.
+    $measure = function (string $url): int {
+        $this->actingAs($this->director)->get($url)->assertOk();
+        inCompany($this->company, fn () => app(CompanyCache::class)->flush('portfolio'));
+
+        return queryCount(fn () => $this->actingAs($this->director)->get($url)->assertOk());
+    };
+
     foreach (range(1, 3) as $i) {
         projectWithSpend($this, sprintf('P-%04d', $i), 500_000, 100_000 * $i);
     }
-    // Warm up first: permissions and settings are cached, so the readings compare like with like.
-    $this->actingAs($this->director)->get('/dashboard/portfolio')->assertOk();
-    $this->actingAs($this->director)->get('/dashboard/map')->assertOk();
-    $this->actingAs($this->director)->get('/projects')->assertOk();
-
-    $dashboard = queryCount(fn () => $this->actingAs($this->director)->get('/dashboard/portfolio')->assertOk());
-    $map = queryCount(fn () => $this->actingAs($this->director)->get('/dashboard/map')->assertOk());
-    $projects = queryCount(fn () => $this->actingAs($this->director)->get('/projects')->assertOk());
+    $before = array_map($measure, ['/dashboard/portfolio', '/dashboard/map', '/projects']);
 
     foreach (range(4, 12) as $i) {
         projectWithSpend($this, sprintf('P-%04d', $i), 500_000, 100_000);
     }
 
-    expect(queryCount(fn () => $this->actingAs($this->director)->get('/dashboard/portfolio')->assertOk()))->toBe($dashboard)
-        ->and(queryCount(fn () => $this->actingAs($this->director)->get('/dashboard/map')->assertOk()))->toBe($map)
-        ->and(queryCount(fn () => $this->actingAs($this->director)->get('/projects')->assertOk()))->toBe($projects);
+    expect(array_map($measure, ['/dashboard/portfolio', '/dashboard/map', '/projects']))->toBe($before);
 });
 
 it('never serves one company figures from another company cache', function (): void {
