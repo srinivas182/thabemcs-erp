@@ -16,6 +16,7 @@ use App\Domains\Suppliers\Models\Supplier;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -160,7 +161,7 @@ final class SalesController
         $user = $request->user();
         $buyer = Buyer::query()->where('ulid', $data['buyer'])->firstOrFail();
 
-        $fields = collect($data)->except(['buyer', 'conditions', 'agent_supplier', 'conveyancer_supplier'])->all();
+        $fields = Arr::except($data, ['buyer', 'conditions', 'agent_supplier', 'conveyancer_supplier']);
         $fields['agent_supplier_id'] = isset($data['agent_supplier']) ? Supplier::query()->where('ulid', $data['agent_supplier'])->value('id') : null;
         $fields['conveyancer_supplier_id'] = isset($data['conveyancer_supplier']) ? Supplier::query()->where('ulid', $data['conveyancer_supplier'])->value('id') : null;
 

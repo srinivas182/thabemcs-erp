@@ -9,6 +9,7 @@ use App\Domains\Suppliers\Models\Supplier;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -90,7 +91,7 @@ final class BuyerController
         ]);
 
         return [
-            ...collect($data)->except(['owner', 'agent_supplier'])->all(),
+            ...Arr::except($data, ['owner', 'agent_supplier']),
             'owner_id' => isset($data['owner']) ? User::query()->where('ulid', $data['owner'])->value('id') : null,
             'agent_supplier_id' => isset($data['agent_supplier']) ? Supplier::query()->where('ulid', $data['agent_supplier'])->value('id') : null,
         ];
