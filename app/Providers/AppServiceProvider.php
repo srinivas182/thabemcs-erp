@@ -176,6 +176,11 @@ class AppServiceProvider extends ServiceProvider
             Role::Director->value, Role::Finance->value,
         ]));
 
+        // Closing a project out and approving investor distributions.
+        Gate::define('close-projects', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value,
+        ]));
+
         // Rentals.
         Gate::define('view-rentals', static fn (User $user): bool => $user->hasAnyRole([
             Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::SalesAndLeasing->value, Role::Finance->value,

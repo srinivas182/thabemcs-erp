@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Platform\Http\Controllers;
 
 use App\Domains\Finance\Models\BudgetLine;
+use App\Domains\Funding\Models\FundingSource;
 use App\Domains\Funding\Models\Investor;
 use App\Domains\Projects\Models\Project;
 use App\Domains\Rentals\Models\Tenant;
@@ -79,6 +80,12 @@ final class LookupController
                     ->when($q !== '', fn (Builder $b) => $b->where(fn (Builder $w) => $w->where('name', 'like', $like)->orWhere('email', 'like', $like)))
                     ->orderBy('name'),
                 'ulid', static fn (Buyer $b): string => $b->email === null ? $b->name : "{$b->name} ({$b->email})",
+            ],
+            'funding-sources' => [
+                FundingSource::query()->with(['project:id,code', 'investor:id,name'])
+                    ->when($q !== '', fn (Builder $b) => $b->where('name', 'like', $like))
+                    ->orderByDesc('id'),
+                'ulid', static fn (FundingSource $f): string => "{$f->project->code}: {$f->name}",
             ],
             'investors' => [
                 Investor::query()->when($q !== '', fn (Builder $b) => $b->where('name', 'like', $like))->orderBy('name'),

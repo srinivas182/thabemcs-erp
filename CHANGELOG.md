@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.20.0] — Close-out, investor returns and reinvestment (Sprint 20)
+
+### Added
+- Close-out checklist per project (construction, statutory, handover, financial and records), with optional items, and a project can only be marked complete once every required item is done.
+- Final account on the close-out page: approved feasibility against the final position, paid to date, distributed and undistributed profit.
+- Investor positions per project: capital contributed, capital still owed, preferred return earned and total paid.
+- Distribution waterfall — capital, then preferred return, then profit share — with a preview before anything is saved, approval by a Director, and payment recorded against each investor's funding.
+- Reinvestment of returns into another project's funding.
+- Investor returns report (fourteenth standard report).
+
 ## [0.19.0] — Rentals (Sprint 19)
 
 ### Added

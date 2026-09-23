@@ -209,6 +209,17 @@ Everything marked **configurable** can be changed in settings without code chang
 | RN7 | Each lease has a private tenant link (48-character token, only its hash stored) showing the lease, invoices and outstanding amount, and allowing maintenance requests | No |
 | RN8 | Inspection areas and conditions come from configuration; deductions from a deposit must be supported by the outgoing inspection | Yes |
 
+## Close-out, investor returns and reinvestment (Sprint 20)
+| # | Assumption | Configurable |
+|---|---|---|
+| CL1 | Close-out checklist: 24 items across construction, statutory, handover, financial and records. Gas certificate, fire sign-off and body corporate handover are optional; the rest must be done before a project can be marked complete. Confirm with the client's QS and attorney | Yes |
+| CL2 | The final account compares the approved feasibility with the final position, using sales revenue where units were sold | No |
+| DI1 | Distribution waterfall: capital back first (pro rata where there is not enough), then the preferred return, then the remaining profit | Yes |
+| DI2 | The preferred return runs on each contribution from the day it was received, simple interest at the rate in that investor's funding record | Yes |
+| DI3 | Profit is shared by the stated profit-share percentages; where none are stated it follows capital contributed. Rounding differences go to the largest share | No |
+| DI4 | A distribution is prepared, then approved by a Director or Company Admin, then marked paid; paying records money out against each investor's funding | No |
+| DI5 | Reinvestment records money left in the business as funding received on another project, so both projects' funding stays correct | No |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.

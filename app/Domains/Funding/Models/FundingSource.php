@@ -25,6 +25,8 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property string $name
  * @property string $committed_amount
  * @property string|null $interest_rate
+ * @property string|null $preferred_return_percent
+ * @property string|null $profit_share_percent
  * @property Carbon|null $agreement_signed_on
  * @property FundingStatus $status
  * @property string|null $notes
@@ -35,7 +37,7 @@ class FundingSource extends Model
 {
     use BelongsToCompany, HasUlids, LogsActivity;
 
-    protected $fillable = ['project_id', 'investor_id', 'type', 'name', 'committed_amount', 'interest_rate', 'agreement_signed_on', 'status', 'notes'];
+    protected $fillable = ['project_id', 'investor_id', 'type', 'name', 'committed_amount', 'interest_rate', 'preferred_return_percent', 'profit_share_percent', 'agreement_signed_on', 'status', 'notes'];
 
     protected $attributes = ['status' => 'proposed'];
 
@@ -56,6 +58,8 @@ class FundingSource extends Model
     {
         return [
             'type' => FundingType::class,
+            'preferred_return_percent' => 'decimal:2',
+            'profit_share_percent' => 'decimal:2',
             'status' => FundingStatus::class,
             'committed_amount' => 'decimal:2',
             'interest_rate' => 'decimal:3',

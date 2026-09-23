@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Domains\Approvals\Http\Controllers\ApprovalController;
+use App\Domains\Closeout\Http\Controllers\CloseoutController;
+use App\Domains\Closeout\Http\Controllers\DistributionController;
 use App\Domains\Compliance\Http\Controllers\PopiaController;
 use App\Domains\Contracts\Http\Controllers\ContractController;
 use App\Domains\Documents\Http\Controllers\DocumentController;
@@ -244,6 +246,20 @@ Route::middleware(['auth'])->group(function (): void {
         Route::post('sales/agreements/{agreement}/commission', [SaleAgreementController::class, 'approveCommission'])->name('sales.agreements.commission');
         Route::patch('sales/conditions/{condition}', [SaleAgreementController::class, 'resolveCondition'])->name('sales.conditions.update');
         Route::patch('sales/transfer-steps/{step}', [SaleAgreementController::class, 'completeStep'])->name('sales.steps.update');
+    });
+
+    // Closing out: checklist, final account, investor distributions and reinvestment.
+    Route::middleware('module:projects')->group(function (): void {
+        Route::get('projects/{project}/closeout', [CloseoutController::class, 'show'])->name('projects.closeout');
+        Route::post('closeout-items/{item}/complete', [CloseoutController::class, 'complete'])->name('closeout.items.complete');
+        Route::post('closeout-items/{item}/reopen', [CloseoutController::class, 'reopen'])->name('closeout.items.reopen');
+        Route::post('projects/{project}/closeout/close', [CloseoutController::class, 'close'])->name('projects.closeout.close');
+
+        Route::get('projects/{project}/distributions', [DistributionController::class, 'index'])->name('projects.distributions');
+        Route::post('projects/{project}/distributions', [DistributionController::class, 'store'])->name('projects.distributions.store');
+        Route::post('distributions/{distribution}/approve', [DistributionController::class, 'approve'])->name('distributions.approve');
+        Route::post('distributions/{distribution}/pay', [DistributionController::class, 'pay'])->name('distributions.pay');
+        Route::post('projects/{project}/reinvestments', [DistributionController::class, 'reinvest'])->name('projects.reinvestments');
     });
 
     // Rentals: leases, tenants, billing, deposits, inspections and maintenance.

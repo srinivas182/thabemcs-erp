@@ -2,7 +2,7 @@ import { cn } from '@thabekhulu/ui';
 import { ChevronDown, X } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 
-export type LookupType = 'projects' | 'suppliers' | 'people' | 'employees' | 'investors' | 'buyers' | 'tenants' | 'units' | 'budget-lines';
+export type LookupType = 'projects' | 'suppliers' | 'people' | 'employees' | 'investors' | 'buyers' | 'tenants' | 'units' | 'funding-sources' | 'budget-lines';
 type Option = { key: string; label: string };
 
 async function fetchOptions(type: LookupType, params: Record<string, string | undefined>): Promise<Option[]> {

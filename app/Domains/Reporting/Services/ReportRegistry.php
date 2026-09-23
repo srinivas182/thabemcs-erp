@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Reporting\Services;
 
+use App\Domains\Closeout\Reports\InvestorReturnsReport;
 use App\Domains\Reporting\Contracts\Report;
 use App\Domains\Reporting\Models\CustomReport;
 use App\Domains\Reporting\Reports\CommitmentsReport;
@@ -29,7 +30,7 @@ final class ReportRegistry
     private const array REPORTS = [
         CostReport::class, CommitmentsReport::class, SupplierAgeAnalysisReport::class, RetentionScheduleReport::class,
         SafetyStatisticsReport::class, LeaveRegisterReport::class, PlantUtilisationReport::class,
-        VariationRegisterReport::class, ProgrammeStatusReport::class, SupplierComplianceReport::class, SalesReport::class, RentRollReport::class, RentalArrearsReport::class,
+        VariationRegisterReport::class, ProgrammeStatusReport::class, SupplierComplianceReport::class, SalesReport::class, RentRollReport::class, RentalArrearsReport::class, InvestorReturnsReport::class,
     ];
 
     public function __construct(private readonly Container $container) {}
