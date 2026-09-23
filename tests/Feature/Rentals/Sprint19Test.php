@@ -111,9 +111,10 @@ it('allocates receipts to the oldest invoices and ages the arrears', function ()
     expect($invoices[0]->status)->toBe('paid')->and($invoices[1]->status)->toBe('part_paid')
         ->and($invoices[1]->outstanding())->toBe(5_000.0)->and($invoices[2]->status)->toBe('issued');
 
-    // On 5 August: May is over 30 days late, June is 1-30 days, July's is due on the 1st.
+    // On 5 August: what is left of June is 65 days late, and July's invoice is 35 days late.
     $arrears = inCompany($this->company, fn () => app(LeaseService::class)->arrears($lease, Carbon::parse('2027-08-05')));
-    expect($arrears['total'])->toBe(15_000.0)->and($arrears['days30'])->toBe(5_000.0)->and($arrears['days60'])->toBe(10_000.0);
+    expect($arrears['total'])->toBe(15_000.0)->and($arrears['days90'])->toBe(5_000.0)
+        ->and($arrears['days60'])->toBe(10_000.0)->and($arrears['days30'])->toBe(0.0);
 
     $this->actingAs($this->director)->get('/reports/rental-arrears')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('result.rows.0.total', fn ($v): bool => (float) $v > 0));
