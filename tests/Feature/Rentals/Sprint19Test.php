@@ -63,7 +63,7 @@ it('creates a lease with its rent charge and a private tenant link', function ()
     $this->actingAs($this->letting)->post("/rentals/units/{$unit->ulid}/lease", [
         'tenant' => $tenant->ulid, 'type' => 'residential', 'starts_on' => '2027-05-01', 'ends_on' => '2028-04-30',
         'rent_amount' => 12_000, 'escalation_percent' => 8, 'payment_day' => 1, 'deposit_amount' => 12_000,
-    ])->assertSessionHas('success', fn (string $m) => str_contains($m, '/tenant/'));
+    ])->assertSessionHasNoErrors()->assertSessionHas('success', fn (?string $m) => str_contains((string) $m, '/tenant/'));
 
     $lease = inCompany($this->company, fn () => Lease::query()->with('charges')->sole());
     expect($lease->reference())->toBe('L-0001')->and($lease->status)->toBe('draft')

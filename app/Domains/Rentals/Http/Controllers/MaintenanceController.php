@@ -96,7 +96,7 @@ final class MaintenanceController
     {
         $lease = $this->leaseFor($token);
 
-        return $this->context->runFor(Company::query()->findOrFail($lease->getAttribute('company_id')), function () use ($lease, $token): Response {
+        return $this->context->runFor($this->companyOf($lease), function () use ($lease, $token): Response {
             $lease->load(['unit.project:id,name', 'tenant:id,name']);
 
             return Inertia::render('rentals/tenant-portal', [
@@ -127,11 +127,16 @@ final class MaintenanceController
             'priority' => ['required', 'in:urgent,normal,low'],
         ]);
 
-        $this->context->runFor(Company::query()->findOrFail($lease->getAttribute('company_id')), function () use ($lease, $data): void {
+        $this->context->runFor($this->companyOf($lease), function () use ($lease, $data): void {
             $this->raise($lease->unit, (string) $data['category'], (string) $data['description'], (string) $data['priority'], true, $lease);
         });
 
         return back()->with('success', 'Thank you. Your request has been logged and the letting team has been told.');
+    }
+
+    private function companyOf(Lease $lease): Company
+    {
+        return Company::query()->whereKey((int) $lease->getAttribute('company_id'))->firstOrFail();
     }
 
     private function leaseFor(string $token): Lease

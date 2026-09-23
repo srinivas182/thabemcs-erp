@@ -224,6 +224,8 @@ final class RentalController
         $this->leases->end($lease, Carbon::parse((string) $data['ended_on']), (string) $data['end_reason'],
             (float) ($data['deposit_deductions'] ?? 0), isset($data['deposit_refunded_on']) ? Carbon::parse((string) $data['deposit_refunded_on']) : null);
 
-        return back()->with('success', 'Lease ended. The deposit refund due is R'.number_format($this->leases->depositRefundDue($lease->fresh()), 2, '.', ' ').'.');
+        $lease->refresh();
+
+        return back()->with('success', 'Lease ended. The deposit refund due is R'.number_format($this->leases->depositRefundDue($lease), 2, '.', ' ').'.');
     }
 }
