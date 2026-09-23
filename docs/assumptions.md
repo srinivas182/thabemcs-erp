@@ -185,6 +185,18 @@ Everything marked **configurable** can be changed in settings without code chang
 | SC5 | Scheduled work is queued per company (per project for metrics and snapshots) across named queues; exactly one scheduler runs | No |
 | SC6 | Octane, Horizon, Scout/Meilisearch and the S3 driver are installed at deployment (docs/deployment.md); until then the app runs under PHP-FPM with OPcache preloading and database search | Yes |
 
+## Sales (Sprint 18)
+| # | Assumption | Configurable |
+|---|---|---|
+| SA1 | Unit prices are captured including VAT where the seller is a VAT vendor; revenue, commission and profitability use the price excluding VAT (VAT at 15%) | Yes |
+| SA2 | Reservations hold a unit for 14 days by default; when they run out the unit returns to available automatically and the person who reserved it is told | Yes |
+| SA3 | Standard suspensive condition periods: bond approval 30 days, sale of the buyer's property 60 days, deposit 14 days. The sale becomes unconditional when all are met or waived; one failure lapses the sale | Yes |
+| SA4 | Transfer pipeline: instruction, FICA, documents signed, bond granted, guarantees, rates clearance, transfer duty or VAT, lodgement, registration. Registration completes the sale and transfers the unit | Yes |
+| SA5 | Estate agencies are suppliers of type "estate agency"; commission is payable only after registration and only with a valid Fidelity Fund Certificate and tax compliance (Property Practitioners Act) | Yes |
+| SA6 | Agency commission defaults to 5% of the price excluding VAT; the signed mandate governs. Deposits are recorded as held in a named trust account | Yes |
+| SA7 | Once a project has a stock schedule, sales replace the feasibility's revenue line in profitability: sold units at agreed prices plus unsold units at list price | No |
+| SA8 | Transfer duty versus VAT on the sale is decided by the conveyancer; the system records that the step is done, not which applied. Confirm the whole pipeline with the client's conveyancer | No |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.

@@ -44,6 +44,9 @@ use App\Domains\Reporting\Http\Controllers\ReportController;
 use App\Domains\Reporting\Http\Controllers\ReportDesignerController;
 use App\Domains\Safety\Http\Controllers\SafetyComplianceController;
 use App\Domains\Safety\Http\Controllers\SafetyController;
+use App\Domains\Sales\Http\Controllers\BuyerController;
+use App\Domains\Sales\Http\Controllers\SaleAgreementController;
+use App\Domains\Sales\Http\Controllers\SalesController;
 use App\Domains\Site\Http\Controllers\SiteController;
 use App\Domains\Suppliers\Http\Controllers\SupplierController;
 use App\Domains\Team\Http\Controllers\TeamController;
@@ -216,6 +219,28 @@ Route::middleware(['auth'])->group(function (): void {
         Route::delete('reports/schedules/{schedule}', [ReportController::class, 'unschedule'])->name('reports.schedules.destroy');
         Route::get('reports/{key}', [ReportController::class, 'show'])->name('reports.show');
         Route::get('reports/{key}/download/{format}', [ReportController::class, 'download'])->name('reports.download');
+    });
+
+    // Sales: stock schedule, buyers, agreements, transfer and commission.
+    Route::middleware('module:projects')->group(function (): void {
+        Route::get('projects/{project}/sales', [SalesController::class, 'units'])->name('sales.units');
+        Route::post('projects/{project}/sales/units', [SalesController::class, 'storeUnit'])->name('sales.units.store');
+        Route::post('sales/units/{unit}/price', [SalesController::class, 'updatePrice'])->name('sales.units.price');
+        Route::post('sales/units/{unit}/withdraw', [SalesController::class, 'withdraw'])->name('sales.units.withdraw');
+        Route::post('sales/units/{unit}/reserve', [SalesController::class, 'reserve'])->name('sales.units.reserve');
+        Route::post('sales/units/{unit}/sign', [SalesController::class, 'sign'])->name('sales.units.sign');
+
+        Route::get('sales/buyers', [BuyerController::class, 'index'])->name('sales.buyers');
+        Route::post('sales/buyers', [BuyerController::class, 'store'])->name('sales.buyers.store');
+        Route::patch('sales/buyers/{buyer}', [BuyerController::class, 'update'])->name('sales.buyers.update');
+        Route::post('sales/buyers/{buyer}/fica', [BuyerController::class, 'verifyFica'])->name('sales.buyers.fica');
+
+        Route::get('sales/agreements', [SaleAgreementController::class, 'index'])->name('sales.agreements');
+        Route::get('sales/agreements/{agreement}', [SaleAgreementController::class, 'show'])->name('sales.agreement');
+        Route::patch('sales/agreements/{agreement}/deposit', [SaleAgreementController::class, 'updateDeposit'])->name('sales.agreements.deposit');
+        Route::post('sales/agreements/{agreement}/commission', [SaleAgreementController::class, 'approveCommission'])->name('sales.agreements.commission');
+        Route::patch('sales/conditions/{condition}', [SaleAgreementController::class, 'resolveCondition'])->name('sales.conditions.update');
+        Route::patch('sales/transfer-steps/{step}', [SaleAgreementController::class, 'completeStep'])->name('sales.steps.update');
     });
 
     // Form builder: custom checklists for the site app.

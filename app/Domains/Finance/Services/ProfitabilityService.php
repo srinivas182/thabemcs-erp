@@ -9,6 +9,7 @@ use App\Domains\Feasibility\Services\FeasibilityService;
 use App\Domains\Finance\Models\BudgetLine;
 use App\Domains\Finance\Models\SupplierInvoice;
 use App\Domains\Projects\Models\Project;
+use App\Domains\Sales\Services\SalesRevenueService;
 
 /**
  * Project profitability: the approved feasibility against today's forecast.
@@ -18,10 +19,14 @@ use App\Domains\Projects\Models\Project;
  */
 final class ProfitabilityService
 {
-    public function __construct(private readonly BudgetService $budgets, private readonly FeasibilityService $feasibility) {}
+    public function __construct(
+        private readonly BudgetService $budgets,
+        private readonly FeasibilityService $feasibility,
+        private readonly SalesRevenueService $sales,
+    ) {}
 
     /**
-     * @return array{hasBaseline: bool, baseline: array{revenue: float, cost: float, profit: float, margin: float|null}|null, forecast: array{revenue: float, cost: float, profit: float, margin: float|null}, costToDate: float, overruns: list<array{code: string, description: string, over: float}>}
+     * @return array{hasBaseline: bool, baseline: array{revenue: float, cost: float, profit: float, margin: float|null}|null, forecast: array{revenue: float, cost: float, profit: float, margin: float|null}, costToDate: float, overruns: list<array{code: string, description: string, over: float}>, revenueSource: string, sales: array<string, float|int|bool>}
      */
     public function forProject(Project $project): array
     {
@@ -32,6 +37,14 @@ final class ProfitabilityService
             $r = $this->feasibility->results($baseline);
             $revenue = (float) $r['revenue'];
             $base = ['revenue' => $revenue, 'cost' => (float) $r['cost'], 'profit' => (float) $r['profit'], 'margin' => $revenue > 0 ? round((float) $r['profit'] / $revenue * 100, 1) : null];
+        }
+
+        // Once units are on sale, the sales pipeline replaces the feasibility's revenue line.
+        $sales = $this->sales->forProject($project);
+        $revenueSource = 'feasibility';
+        if ($sales['hasStock']) {
+            $revenue = $sales['forecast'];
+            $revenueSource = 'sales';
         }
 
         $cost = 0.0;
@@ -53,6 +66,8 @@ final class ProfitabilityService
             'forecast' => ['revenue' => round($revenue, 2), 'cost' => round($cost, 2), 'profit' => round($profit, 2), 'margin' => $revenue > 0 ? round($profit / $revenue * 100, 1) : null],
             'costToDate' => round((float) SupplierInvoice::query()->where('project_id', $project->id)->where('status', 'paid')->sum('subtotal'), 2),
             'overruns' => $overruns,
+            'revenueSource' => $revenueSource,
+            'sales' => $sales,
         ];
     }
 }

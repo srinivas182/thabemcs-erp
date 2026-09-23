@@ -11,6 +11,7 @@ enum SupplierType: string
     case Supplier = 'supplier';
     case PlantHire = 'plant_hire';
     case Consultant = 'consultant';
+    case EstateAgency = 'estate_agency';
     case Other = 'other';
 
     public function label(): string
@@ -21,6 +22,7 @@ enum SupplierType: string
             self::Supplier => 'Materials supplier',
             self::PlantHire => 'Plant hire',
             self::Consultant => 'Consultant',
+            self::EstateAgency => 'Estate agency',
             self::Other => 'Other service provider',
         };
     }

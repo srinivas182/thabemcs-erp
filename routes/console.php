@@ -7,6 +7,7 @@ use App\Domains\Platform\Models\Company;
 use App\Domains\Programme\Jobs\SnapshotProjectProgress;
 use App\Domains\Projects\Models\Project;
 use App\Domains\Reporting\Jobs\RefreshProjectMetrics;
+use App\Domains\Sales\Services\SalesService;
 use App\Support\Tenancy\CurrentCompany;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -80,3 +81,14 @@ Artisan::command('metrics:refresh', function (CurrentCompany $context): void {
 })->purpose('Refresh precomputed project metrics');
 
 Schedule::command('metrics:refresh')->dailyAt('04:30')->timezone('Africa/Johannesburg');
+
+// Reservations that have run out put the unit back on the market (07:00 SAST).
+Artisan::command('sales:release-reservations', function (SalesService $sales, CurrentCompany $context): void {
+    $released = 0;
+    Company::query()->where('status', 'active')->each(function (Company $company) use ($sales, $context, &$released): void {
+        $released += $context->runFor($company, fn (): int => $sales->releaseExpiredReservations());
+    });
+    $this->info("Released {$released} expired reservations.");
+})->purpose('Release reservations that have expired');
+
+Schedule::command('sales:release-reservations')->dailyAt('07:00')->timezone('Africa/Johannesburg');

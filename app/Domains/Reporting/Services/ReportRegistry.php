@@ -14,6 +14,7 @@ use App\Domains\Reporting\Reports\PlantUtilisationReport;
 use App\Domains\Reporting\Reports\ProgrammeStatusReport;
 use App\Domains\Reporting\Reports\RetentionScheduleReport;
 use App\Domains\Reporting\Reports\SafetyStatisticsReport;
+use App\Domains\Reporting\Reports\SalesReport;
 use App\Domains\Reporting\Reports\SupplierAgeAnalysisReport;
 use App\Domains\Reporting\Reports\SupplierComplianceReport;
 use App\Domains\Reporting\Reports\VariationRegisterReport;
@@ -26,7 +27,7 @@ final class ReportRegistry
     private const array REPORTS = [
         CostReport::class, CommitmentsReport::class, SupplierAgeAnalysisReport::class, RetentionScheduleReport::class,
         SafetyStatisticsReport::class, LeaveRegisterReport::class, PlantUtilisationReport::class,
-        VariationRegisterReport::class, ProgrammeStatusReport::class, SupplierComplianceReport::class,
+        VariationRegisterReport::class, ProgrammeStatusReport::class, SupplierComplianceReport::class, SalesReport::class,
     ];
 
     public function __construct(private readonly Container $container) {}

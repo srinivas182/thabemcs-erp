@@ -165,6 +165,17 @@ class AppServiceProvider extends ServiceProvider
             Role::CompanyAdmin->value, Role::Director->value,
         ]));
 
+        // Sales.
+        Gate::define('view-sales', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::SalesAndLeasing->value, Role::Finance->value,
+        ]));
+        Gate::define('manage-sales', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::SalesAndLeasing->value,
+        ]));
+        Gate::define('approve-commission', static fn (User $user): bool => $user->hasAnyRole([
+            Role::Director->value, Role::Finance->value,
+        ]));
+
         // Form builder and integrations.
         Gate::define('manage-forms', static fn (User $user): bool => $user->hasAnyRole([
             Role::CompanyAdmin->value, Role::DevelopmentManager->value, Role::ProjectManager->value, Role::SafetyOfficer->value,

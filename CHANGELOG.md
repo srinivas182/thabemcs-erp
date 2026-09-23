@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.18.0] — Sales (Sprint 18)
+
+### Added
+- Stock schedule per project: erven, houses, sectional units and commercial units with prices (incl. VAT), price history, NHBRC enrolment and availability.
+- Buyers from enquiry to registration, with encrypted ID numbers and FICA verification.
+- Reservations with deposits that expire automatically and release the unit.
+- Sale agreements: price, deposit held in a named trust account, bond details, suspensive conditions with due dates, and automatic move to unconditional (or lapse on failure).
+- Transfer pipeline of nine steps through to registration in the Deeds Office, which transfers the unit.
+- Agency commission worked out on the price excluding VAT, payable after registration and blocked without a valid Fidelity Fund Certificate.
+- Sales feed profitability and cash flow: sold units at agreed prices plus unsold stock at list price replace the feasibility's revenue line.
+- Sales schedule report (eleventh standard report) and an estate agency supplier type with FFC compliance.
+
 ## [0.17.0] — Scale II: infrastructure (Sprint 17)
 
 ### Added

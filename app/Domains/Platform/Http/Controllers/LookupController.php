@@ -7,6 +7,7 @@ namespace App\Domains\Platform\Http\Controllers;
 use App\Domains\Finance\Models\BudgetLine;
 use App\Domains\Funding\Models\Investor;
 use App\Domains\Projects\Models\Project;
+use App\Domains\Sales\Models\Buyer;
 use App\Domains\Suppliers\Models\Supplier;
 use App\Domains\Workforce\Models\Employee;
 use App\Models\User;
@@ -58,6 +59,12 @@ final class LookupController
                     ->when($q !== '', fn (Builder $b) => $b->where(fn (Builder $w) => $w->where('last_name', 'like', $like)->orWhere('first_name', 'like', $like)->orWhere('employee_number', 'like', $like)))
                     ->orderBy('last_name'),
                 'ulid', static fn (Employee $e): string => "{$e->name()} ({$e->employee_number})",
+            ],
+            'buyers' => [
+                Buyer::query()->when($request->query('status') !== 'all', fn (Builder $b) => $b->where('status', '!=', 'lost'))
+                    ->when($q !== '', fn (Builder $b) => $b->where(fn (Builder $w) => $w->where('name', 'like', $like)->orWhere('email', 'like', $like)))
+                    ->orderBy('name'),
+                'ulid', static fn (Buyer $b): string => $b->email === null ? $b->name : "{$b->name} ({$b->email})",
             ],
             'investors' => [
                 Investor::query()->when($q !== '', fn (Builder $b) => $b->where('name', 'like', $like))->orderBy('name'),

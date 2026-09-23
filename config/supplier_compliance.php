@@ -25,6 +25,7 @@ return [
         'public_liability' => ['label' => 'Public liability insurance', 'expires' => true],
         'professional_indemnity' => ['label' => 'Professional indemnity insurance', 'expires' => true],
         'nhbrc' => ['label' => 'NHBRC home builder registration', 'expires' => true],
+        'ffc' => ['label' => 'Fidelity Fund Certificate (Property Practitioners Act)', 'expires' => true],
         'hs_file' => ['label' => 'Health and safety file', 'expires' => false],
     ],
 
@@ -50,6 +51,13 @@ return [
         'consultant' => [
             'cipc' => ['block' => false], 'tax_compliance' => ['block' => true], 'bbbee' => ['block' => false],
             'bank_confirmation' => ['block' => true], 'professional_indemnity' => ['block' => true],
+        ],
+        // Estate agencies may not be paid commission without a valid Fidelity Fund Certificate.
+        'estate_agency' => [
+            'ffc' => ['block' => true],
+            'cipc' => ['block' => false],
+            'tax_compliance' => ['block' => true],
+            'bank_confirmation' => ['block' => false],
         ],
         'other' => [
             'tax_compliance' => ['block' => true], 'bank_confirmation' => ['block' => true],
