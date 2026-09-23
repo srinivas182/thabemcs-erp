@@ -159,24 +159,24 @@ final class SeedScaleCommand extends Command
                     }
                     for ($o = 0; $o < 6; $o++) {
                         $subtotal = random_int(20_000, 900_000);
-                        $orders[] = ['company_id' => $companyId, 'project_id' => $projectId, 'supplier_id' => $suppliers[$companyId][array_rand($suppliers[$companyId])],
+                        $orders[] = ['ulid' => (string) Str::ulid(), 'company_id' => $companyId, 'project_id' => $projectId, 'supplier_id' => $suppliers[$companyId][array_rand($suppliers[$companyId])],
                             'number' => $o + 1, 'status' => 'approved', 'vat_applies' => true, 'subtotal' => $subtotal, 'vat' => $subtotal * 0.15,
                             'total' => $subtotal * 1.15, 'created_by' => 1, 'created_at' => now(), 'updated_at' => now()];
                     }
                     for ($v = 0; $v < 8; $v++) {
                         $subtotal = random_int(5_000, 400_000);
-                        $invoices[] = ['company_id' => $companyId, 'project_id' => $projectId, 'supplier_id' => $suppliers[$companyId][array_rand($suppliers[$companyId])],
+                        $invoices[] = ['ulid' => (string) Str::ulid(), 'company_id' => $companyId, 'project_id' => $projectId, 'supplier_id' => $suppliers[$companyId][array_rand($suppliers[$companyId])],
                             'invoice_number' => 'SC-'.$projectId.'-'.$v, 'invoice_date' => Carbon::today()->subDays(random_int(1, 400))->toDateString(),
                             'due_date' => Carbon::today()->addDays(random_int(1, 30))->toDateString(), 'subtotal' => $subtotal, 'vat' => $subtotal * 0.15,
                             'total' => $subtotal * 1.15, 'status' => ['approved', 'paid', 'scheduled'][$v % 3], 'captured_by' => 1, 'created_at' => now(), 'updated_at' => now()];
                     }
                     for ($a = 0; $a < 20; $a++) {
-                        $activities[] = ['company_id' => $companyId, 'project_id' => $projectId, 'name' => 'Activity '.($a + 1),
+                        $activities[] = ['ulid' => (string) Str::ulid(), 'company_id' => $companyId, 'project_id' => $projectId, 'name' => 'Activity '.($a + 1),
                             'planned_start' => Carbon::today()->subDays(300 - $a * 10)->toDateString(), 'duration_days' => random_int(3, 25),
                             'percent_complete' => min(100, $a * 5), 'sort' => $a, 'created_at' => now(), 'updated_at' => now()];
                     }
                     for ($r = 0; $r < 3; $r++) {
-                        $risks[] = ['company_id' => $companyId, 'project_id' => $projectId, 'title' => 'Risk '.($r + 1), 'kind' => 'risk',
+                        $risks[] = ['ulid' => (string) Str::ulid(), 'company_id' => $companyId, 'project_id' => $projectId, 'title' => 'Risk '.($r + 1), 'kind' => 'risk',
                             'likelihood' => random_int(1, 5), 'impact' => random_int(1, 5), 'status' => 'open', 'created_at' => now(), 'updated_at' => now()];
                     }
                 }
