@@ -175,6 +175,16 @@ Everything marked **configurable** can be changed in settings without code chang
 | IN2 | SimplePay: overtime hours (1.5x and 2x) and allowances go to the payslip for the period end through Bulk Inputs; the payslip item for each is set per company; approved leave is sent as leave days (working days, public holidays excluded) | Yes |
 | IN3 | Each supplier and employee needs its ID from Sage/SimplePay entered once; records without it are listed as not sent. Nothing is sent twice | No |
 
+## Scale and infrastructure (Sprints 16-17)
+| # | Assumption | Configurable |
+|---|---|---|
+| SC1 | Dashboard and command-centre figures come from precomputed metrics, refreshed when data changes and nightly; they can be a few minutes behind. Project pages read live data | No |
+| SC2 | The dashboard and command centre list the 100 projects needing attention most; the full list is the projects register | Yes |
+| SC3 | Dropdowns return at most 20 matches as you type; reports return 5 000 rows and say when they are cut short | Yes |
+| SC4 | Hosting recommended in a South African region (AWS Cape Town) for POPIA; read replica for reports, Redis for cache/sessions/queues, S3-compatible storage for files, CDN for assets | Yes |
+| SC5 | Scheduled work is queued per company (per project for metrics and snapshots) across named queues; exactly one scheduler runs | No |
+| SC6 | Octane, Horizon, Scout/Meilisearch and the S3 driver are installed at deployment (docs/deployment.md); until then the app runs under PHP-FPM with OPcache preloading and database search | Yes |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.

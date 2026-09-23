@@ -9,6 +9,7 @@ use App\Domains\Reporting\Mail\ScheduledReport;
 use App\Domains\Reporting\Models\ReportSchedule;
 use App\Models\User;
 use App\Support\Tenancy\CurrentCompany;
+use App\Support\Tenancy\IteratesCompanies;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 
@@ -18,14 +19,16 @@ use Illuminate\Support\Facades\Mail;
  */
 final class ScheduledReportSender
 {
+    use IteratesCompanies;
+
     public function __construct(private readonly ReportRegistry $registry, private readonly CurrentCompany $context) {}
 
-    public function sendDue(?Carbon $today = null): int
+    public function sendDue(?Carbon $today = null, ?Company $only = null): int
     {
         $today ??= Carbon::today('Africa/Johannesburg');
         $sent = 0;
 
-        Company::query()->where('status', 'active')->each(function (Company $company) use ($today, &$sent): void {
+        $this->companies($only)->each(function (Company $company) use ($today, &$sent): void {
             $this->context->runFor($company, function () use ($company, $today, &$sent): void {
                 setPermissionsTeamId($company->getKey());
 

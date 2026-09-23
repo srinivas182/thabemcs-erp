@@ -9,6 +9,7 @@ use App\Domains\Platform\Notifications\SystemMessage;
 use App\Domains\Projects\Enums\TaskStatus;
 use App\Domains\Projects\Models\Task;
 use App\Support\Tenancy\CurrentCompany;
+use App\Support\Tenancy\IteratesCompanies;
 use Illuminate\Support\Carbon;
 
 /**
@@ -16,12 +17,14 @@ use Illuminate\Support\Carbon;
  */
 final class TaskEscalation
 {
+    use IteratesCompanies;
+
     public function __construct(private readonly CurrentCompany $context) {}
 
-    public function run(): int
+    public function run(?Company $only = null): int
     {
         $count = 0;
-        Company::query()->where('status', 'active')->each(function (Company $company) use (&$count): void {
+        $this->companies($only)->each(function (Company $company) use (&$count): void {
             $this->context->runFor($company, function () use (&$count): void {
                 Task::query()->with(['project', 'assignee'])
                     ->whereNotIn('status', [TaskStatus::Done->value])

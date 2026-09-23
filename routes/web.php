@@ -21,6 +21,7 @@ use App\Domains\Meetings\Http\Controllers\MeetingController;
 use App\Domains\Plant\Http\Controllers\PlantController;
 use App\Domains\Platform\Http\Controllers\ActingCompanyController;
 use App\Domains\Platform\Http\Controllers\CompanyController;
+use App\Domains\Platform\Http\Controllers\HealthController;
 use App\Domains\Platform\Http\Controllers\LookupController;
 use App\Domains\Platform\Http\Controllers\MyDayController;
 use App\Domains\Platform\Http\Controllers\NotificationController;
@@ -53,6 +54,9 @@ use Illuminate\Support\Facades\Route;
 /*
 | Management web app (React + Inertia). Authentication routes are registered by Fortify.
 */
+
+// Readiness for the load balancer and monitoring (liveness is Laravel's /up).
+Route::get('/health', HealthController::class)->middleware('throttle:60,1')->name('health');
 
 Route::middleware(['auth'])->group(function (): void {
     Route::get('/', MyDayController::class)->name('my-day');

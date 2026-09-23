@@ -10,6 +10,7 @@ use App\Domains\Platform\Notifications\SystemMessage;
 use App\Domains\Suppliers\Models\SupplierDocument;
 use App\Models\User;
 use App\Support\Tenancy\CurrentCompany;
+use App\Support\Tenancy\IteratesCompanies;
 use Illuminate\Support\Carbon;
 
 /**
@@ -18,9 +19,11 @@ use Illuminate\Support\Carbon;
  */
 final class ComplianceAlerts
 {
+    use IteratesCompanies;
+
     public function __construct(private readonly CurrentCompany $context) {}
 
-    public function send(): int
+    public function send(?Company $only = null): int
     {
         $sent = 0;
         /** @var list<int> $days */
@@ -28,7 +31,7 @@ final class ComplianceAlerts
         /** @var array<string, array{label: string}> $definitions */
         $definitions = config('supplier_compliance.documents');
 
-        Company::query()->where('status', 'active')->each(function (Company $company) use ($days, $definitions, &$sent): void {
+        $this->companies($only)->each(function (Company $company) use ($days, $definitions, &$sent): void {
             $this->context->runFor($company, function () use ($company, $days, $definitions, &$sent): void {
                 $dates = array_map(static fn (int $d): string => Carbon::today()->addDays($d)->toDateString(), $days);
                 $dates[] = Carbon::yesterday()->toDateString();

@@ -34,6 +34,23 @@ return [
 
         // Project documents and compliance files. Private: files are only served through
         // the app after a permission check. Point DOCUMENTS_DISK at 's3' in production.
+        /*
+        | Private files in object storage (S3-compatible, South African region). Needed once the
+        | application runs on more than one server, because a local disk is not shared between them.
+        | Set DOCUMENTS_DISK=documents_s3 after installing league/flysystem-aws-s3-v3.
+        */
+        'documents_s3' => [
+            'driver' => 's3',
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION', 'af-south-1'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
+            'use_path_style_endpoint' => (bool) env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'throw' => true,
+            'visibility' => 'private',
+        ],
+
         'documents' => [
             'driver' => 'local',
             'root' => storage_path('app/private/documents'),

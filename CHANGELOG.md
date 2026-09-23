@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.17.0] — Scale II: infrastructure (Sprint 17)
+
+### Added
+- Read replica support for reports and dashboards (`DB_READ_HOST`), with sticky reads after a write.
+- Separate Redis databases for cache, sessions and queues, so a full cache cannot evict sessions and clearing the cache cannot drop queued jobs; permissions cached in Redis.
+- Named queues (`metrics`, `reports`, `maintenance`, `integrations`, `mail`, `default`) with workers split per queue, and scheduled work queued per company and per project instead of looping in one process.
+- S3-compatible object storage for private files and a CDN host for built assets.
+- `/health` readiness endpoint checking database, cache, queue and storage, for the load balancer and monitoring.
+- OPcache preloading and production PHP settings; `deploy.sh` that migrates, caches config/routes/views/events, restarts workers and verifies health.
+- Web server compression, upload limits and year-long caching of content-hashed assets.
+- `docs/deployment.md` (hosting topology, queue layout, packages to install at deployment) and ADR-0005.
+
+## [0.16.0] — Scale I: application (Sprint 16)
+
+### Added
+- Precomputed project metrics and stored critical path, refreshed by queued jobs on change and nightly.
+- Search-as-you-type lookups replacing 25 whole-table dropdowns.
+- Report designer filters and sorting pushed into the database, with an explicit note when a report is cut short.
+- Company-scoped caching with an architecture test, ETags on the site app API, and indexes for company-wide queries.
+
 ## [0.15.0] — Reporting and integrations (Sprint 15)
 
 ### Added
