@@ -128,10 +128,15 @@ final class SeedScaleCommand extends Command
 
         $bar = $this->output->createProgressBar($toMake);
         $suppliers = $this->suppliers($companyIds);
+        // Order numbers run in one sequence per company, as they do in the application.
+        $nextOrderNumber = [];
+        foreach ($companyIds as $companyId) {
+            $nextOrderNumber[$companyId] = (int) DB::table('purchase_orders')->where('company_id', $companyId)->max('number') + 1;
+        }
 
         for ($made = 0; $made < $toMake; $made += $chunk) {
             $batch = min($chunk, $toMake - $made);
-            DB::transaction(function () use ($batch, $companyIds, $suppliers, $have, $made, &$counts): void {
+            DB::transaction(function () use ($batch, $companyIds, $suppliers, $have, $made, &$counts, &$nextOrderNumber): void {
                 $projects = [];
                 for ($i = 0; $i < $batch; $i++) {
                     $n = $have + $made + $i;
@@ -160,7 +165,7 @@ final class SeedScaleCommand extends Command
                     for ($o = 0; $o < 6; $o++) {
                         $subtotal = random_int(20_000, 900_000);
                         $orders[] = ['ulid' => (string) Str::ulid(), 'company_id' => $companyId, 'project_id' => $projectId, 'supplier_id' => $suppliers[$companyId][array_rand($suppliers[$companyId])],
-                            'number' => $o + 1, 'status' => 'approved', 'vat_applies' => true, 'subtotal' => $subtotal, 'vat' => $subtotal * 0.15,
+                            'number' => $nextOrderNumber[$companyId]++, 'status' => 'approved', 'vat_applies' => true, 'subtotal' => $subtotal, 'vat' => $subtotal * 0.15,
                             'total' => $subtotal * 1.15, 'created_by' => 1, 'created_at' => now(), 'updated_at' => now()];
                     }
                     for ($v = 0; $v < 8; $v++) {
