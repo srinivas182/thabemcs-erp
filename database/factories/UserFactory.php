@@ -52,7 +52,11 @@ class UserFactory extends Factory
 
     public function superAdmin(): static
     {
-        return $this->state(fn (array $attributes) => ['company_id' => null, 'is_super_admin' => true]);
+        // Super Admins must have two-factor authentication; tests get it already set up.
+        return $this->state(fn (array $attributes) => [
+            'company_id' => null, 'is_super_admin' => true,
+            'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now(),
+        ]);
     }
 
     public function inactive(): static

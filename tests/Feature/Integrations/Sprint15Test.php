@@ -135,7 +135,7 @@ it('sends approved invoices to Sage once, with the mapped account and VAT type',
     expect((string) DB::table('integrations')->value('credentials'))->not->toContain('S3cret!');
 
     $this->actingAs($this->finance)->post('/settings/integrations/sage_za/test')->assertSessionHas('success', fn (string $m) => str_contains($m, 'Thabekhulu (Pty) Ltd'));
-    $this->actingAs($this->finance)->post('/settings/integrations/sage_za/sync')->assertSessionHas('success', fn (string $m) => str_contains($m, '1 invoices sent') && str_contains($m, 'No Sage ID Supplies'));
+    $this->actingAs($this->finance)->post('/settings/integrations/sage_za/sync')->assertSessionHas('success', fn (string $m) => str_contains($m, 'Sent to Sage') && str_contains($m, 'No Sage ID Supplies'));
     $this->actingAs($this->finance)->post('/settings/integrations/sage_za/sync');
 
     Http::assertSentCount(2); // the connection test and one invoice; the second run sends nothing new
