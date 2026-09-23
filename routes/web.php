@@ -39,6 +39,9 @@ use App\Domains\Projects\Http\Controllers\ProjectController;
 use App\Domains\Projects\Http\Controllers\RiskController;
 use App\Domains\Projects\Http\Controllers\StageGateController;
 use App\Domains\Projects\Http\Controllers\TaskController;
+use App\Domains\Rentals\Http\Controllers\MaintenanceController;
+use App\Domains\Rentals\Http\Controllers\RentalController;
+use App\Domains\Rentals\Http\Controllers\TenantController;
 use App\Domains\Reporting\Http\Controllers\MapController;
 use App\Domains\Reporting\Http\Controllers\ReportController;
 use App\Domains\Reporting\Http\Controllers\ReportDesignerController;
@@ -243,6 +246,28 @@ Route::middleware(['auth'])->group(function (): void {
         Route::patch('sales/transfer-steps/{step}', [SaleAgreementController::class, 'completeStep'])->name('sales.steps.update');
     });
 
+    // Rentals: leases, tenants, billing, deposits, inspections and maintenance.
+    Route::middleware('module:projects')->group(function (): void {
+        Route::get('rentals', [RentalController::class, 'index'])->name('rentals.index');
+        Route::get('rentals/leases/{lease}', [RentalController::class, 'show'])->name('rentals.lease');
+        Route::post('rentals/units/{unit}/lease', [RentalController::class, 'store'])->name('rentals.leases.store');
+        Route::post('rentals/leases/{lease}/activate', [RentalController::class, 'activate'])->name('rentals.leases.activate');
+        Route::post('rentals/leases/{lease}/bill', [RentalController::class, 'bill'])->name('rentals.leases.bill');
+        Route::post('rentals/leases/{lease}/charges', [RentalController::class, 'addCharge'])->name('rentals.leases.charges');
+        Route::post('rentals/leases/{lease}/receipts', [RentalController::class, 'receipt'])->name('rentals.leases.receipts');
+        Route::post('rentals/leases/{lease}/inspections', [RentalController::class, 'inspect'])->name('rentals.leases.inspections');
+        Route::post('rentals/leases/{lease}/end', [RentalController::class, 'end'])->name('rentals.leases.end');
+
+        Route::get('rentals/tenants', [TenantController::class, 'index'])->name('rentals.tenants');
+        Route::post('rentals/tenants', [TenantController::class, 'store'])->name('rentals.tenants.store');
+        Route::patch('rentals/tenants/{tenant}', [TenantController::class, 'update'])->name('rentals.tenants.update');
+        Route::post('rentals/tenants/{tenant}/screen', [TenantController::class, 'screen'])->name('rentals.tenants.screen');
+
+        Route::get('rentals/maintenance', [MaintenanceController::class, 'index'])->name('rentals.maintenance');
+        Route::post('rentals/maintenance', [MaintenanceController::class, 'store'])->name('rentals.maintenance.store');
+        Route::patch('rentals/maintenance/{maintenance}', [MaintenanceController::class, 'update'])->name('rentals.maintenance.update');
+    });
+
     // Form builder: custom checklists for the site app.
     Route::get('forms', [FormController::class, 'index'])->name('forms.index');
     Route::get('forms/new', [FormController::class, 'edit'])->name('forms.create');
@@ -364,6 +389,15 @@ Route::middleware(['auth'])->group(function (): void {
         Route::post('users', [CompanyUserController::class, 'store'])->name('users.store');
         Route::patch('users/{user:ulid}', [CompanyUserController::class, 'update'])->name('users.update');
     });
+});
+
+/*
+| The tenant's own page, reached from the link given with their lease. No sign-in: the random token is
+| the key, requests are rate-limited, and the page is not indexed.
+*/
+Route::middleware('throttle:30,1')->group(function (): void {
+    Route::get('/tenant/{token}', [MaintenanceController::class, 'portal'])->where('token', '[A-Za-z0-9]{48}')->name('tenant.portal');
+    Route::post('/tenant/{token}/requests', [MaintenanceController::class, 'portalRequest'])->where('token', '[A-Za-z0-9]{48}')->name('tenant.requests');
 });
 
 /*

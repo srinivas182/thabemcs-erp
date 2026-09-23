@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.19.0] — Rentals (Sprint 19)
+
+### Added
+- Leases over the same unit records used for sales, residential or commercial, fixed-term or month to month, with notice periods, escalations and deposits.
+- Tenants with encrypted ID numbers, FICA and credit-check screening before approval.
+- Monthly rental invoicing with escalations applied on each anniversary, extra recurring charges (utilities, parking, levies), and no double billing.
+- Receipts allocated to the oldest unpaid invoice, and arrears aged current, 30, 60 and 60+ days.
+- Deposits held in a named interest-bearing account with interest accrued monthly, and the refund due worked out on ending the lease.
+- Incoming and outgoing inspections recording the condition of each area.
+- Maintenance requests, with a private tenant link where tenants see their lease and account and report problems without signing in; urgent requests notify the letting team.
+- Rent roll and tenant arrears reports (twelve and thirteen standard reports), and weekly arrears and lease-expiry reminders.
+
 ## [0.18.0] — Sales (Sprint 18)
 
 ### Added

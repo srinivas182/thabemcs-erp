@@ -92,3 +92,17 @@ Artisan::command('sales:release-reservations', function (SalesService $sales, Cu
 })->purpose('Release reservations that have expired');
 
 Schedule::command('sales:release-reservations')->dailyAt('07:00')->timezone('Africa/Johannesburg');
+
+// Rent for the coming month is invoiced a week ahead, with escalations applied on the anniversary.
+Artisan::command('rentals:bill', function (): void {
+    $this->info('Queued rental billing for '.RunCompanyMaintenance::fanOut('rent-billing').' companies.');
+})->purpose('Raise monthly rental invoices');
+
+Schedule::command('rentals:bill')->monthlyOn(24, '05:00')->timezone('Africa/Johannesburg');
+
+// Arrears and lease-expiry reminders to the letting team.
+Artisan::command('rentals:reminders', function (): void {
+    $this->info('Queued rental reminders for '.RunCompanyMaintenance::fanOut('rent-reminders').' companies.');
+})->purpose('Warn about rent arrears and leases ending');
+
+Schedule::command('rentals:reminders')->weekdays()->at('08:00')->timezone('Africa/Johannesburg');

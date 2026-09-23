@@ -7,6 +7,7 @@ namespace App\Domains\Platform\Jobs;
 use App\Domains\Compliance\Services\RetentionService;
 use App\Domains\Platform\Models\Company;
 use App\Domains\Projects\Services\TaskEscalation;
+use App\Domains\Rentals\Services\RentBillingService;
 use App\Domains\Reporting\Services\ScheduledReportSender;
 use App\Domains\Suppliers\Services\ComplianceAlerts;
 use App\Domains\Workflow\Services\ApprovalEngine;
@@ -28,7 +29,7 @@ final class RunCompanyMaintenance implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable;
 
-    public const array TASKS = ['compliance-alerts', 'approvals-escalate', 'reports-send', 'tasks-escalate', 'retention'];
+    public const array TASKS = ['compliance-alerts', 'approvals-escalate', 'reports-send', 'tasks-escalate', 'retention', 'rent-billing', 'rent-reminders'];
 
     public int $uniqueFor = 3600;
 
@@ -63,9 +64,21 @@ final class RunCompanyMaintenance implements ShouldBeUnique, ShouldQueue
                 'reports-send' => $container->make(ScheduledReportSender::class)->sendDue(null, $company),
                 'tasks-escalate' => $container->make(TaskEscalation::class)->run($company),
                 'retention' => $container->make(RetentionService::class)->runForCurrentCompany(),
+                'rent-billing' => $this->bill($container),
+                'rent-reminders' => $container->make(RentBillingService::class)->sendReminders(),
                 default => null,
             };
         });
+    }
+
+    /**
+     * Rent for next month is invoiced a few days ahead, and the deposit interest is brought up to date.
+     */
+    private function bill(Container $container): void
+    {
+        $billing = $container->make(RentBillingService::class);
+        $billing->accrueDepositInterest();
+        $billing->billMonth(now('Africa/Johannesburg')->addDays((int) config('rentals.bill_days_ahead', 7)));
     }
 
     /**

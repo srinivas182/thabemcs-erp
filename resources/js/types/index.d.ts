@@ -27,7 +27,7 @@ export interface SharedProps {
         supportEmail: string | null; supportPhone: string | null; supportHours: string | null; privacyUrl: string | null; poweredBy: string | null;
     };
     auth: { user: AuthUser | null };
-    can: { manageCompanies: boolean; viewPortfolio: boolean; manageMasterData: boolean; managePopia: boolean; viewSales: boolean; manageSales: boolean; manageForms: boolean; manageIntegrations: boolean; manageUsers: boolean; viewAuditLog: boolean };
+    can: { manageCompanies: boolean; viewPortfolio: boolean; manageMasterData: boolean; managePopia: boolean; viewSales: boolean; manageSales: boolean; viewRentals: boolean; manageRentals: boolean; manageForms: boolean; manageIntegrations: boolean; manageUsers: boolean; viewAuditLog: boolean };
     notifications: { unread: number };
     company: CurrentCompany | null;
     flash: { success: string | null; error: string | null };

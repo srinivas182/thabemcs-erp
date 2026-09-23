@@ -22,7 +22,7 @@ const STATUS: Record<string, string> = { available: 'Available', reserved: 'Rese
 const TONE: Record<string, string> = { available: 'bg-line-wash text-line-deep', reserved: 'bg-hivis/20 text-ink', sold: 'bg-ink text-white', transferred: 'bg-line text-white', withdrawn: 'bg-concrete text-ink-soft' };
 
 export default function SalesUnits({ project, units, revenue, unitTypes, conditionTypes, reservationDays, commissionPercent, canManage }: Props) {
-    const [acting, setActing] = useState<{ unit: Unit; mode: 'reserve' | 'sign' | 'price' } | null>(null);
+    const [acting, setActing] = useState<{ unit: Unit; mode: 'reserve' | 'sign' | 'price' | 'let' } | null>(null);
     const [adding, setAdding] = useState(false);
 
     return (
@@ -72,6 +72,7 @@ export default function SalesUnits({ project, units, revenue, unitTypes, conditi
                                                 {(u.status === 'available' || u.status === 'reserved') && <button className="ml-3 text-line hover:underline" onClick={() => setActing({ unit: u, mode: 'sign' })}>Record sale</button>}
                                                 {['available', 'withdrawn'].includes(u.status) && <button className="ml-3 text-ink-soft hover:underline" onClick={() => router.post(`/sales/units/${u.id}/withdraw`, {}, { preserveScroll: true })}>{u.status === 'withdrawn' ? 'Restore' : 'Withdraw'}</button>}
                                                 <button className="ml-3 text-ink-soft hover:underline" onClick={() => setActing({ unit: u, mode: 'price' })}>Price</button>
+                                                {['available', 'withdrawn'].includes(u.status) && <button className="ml-3 text-line hover:underline" onClick={() => setActing({ unit: u, mode: 'let' })}>Let</button>}
                                             </>
                                         )}
                                     </td>
@@ -85,6 +86,7 @@ export default function SalesUnits({ project, units, revenue, unitTypes, conditi
                 {acting?.mode === 'reserve' && <Reserve unit={acting.unit} days={reservationDays} onDone={() => setActing(null)} />}
                 {acting?.mode === 'sign' && <Sign unit={acting.unit} conditionTypes={conditionTypes} commissionPercent={commissionPercent} onDone={() => setActing(null)} />}
                 {acting?.mode === 'price' && <PriceChange unit={acting.unit} onDone={() => setActing(null)} />}
+                {acting?.mode === 'let' && <LetUnit unit={acting.unit} onDone={() => setActing(null)} />}
             </div>
         </>
     );
@@ -216,6 +218,40 @@ function PriceChange({ unit, onDone }: { unit: Unit; onDone: () => void }) {
                 <Field label="Effective from" name="effective_from" type="date" value={form.data.effective_from} onChange={(e) => form.setData('effective_from', e.target.value)} />
                 <Field label="Reason" name="reason" value={form.data.reason} onChange={(e) => form.setData('reason', e.target.value)} placeholder="Annual escalation" />
                 <Button type="submit" disabled={form.processing}>Save price</Button>
+            </form>
+        </Panel>
+    );
+}
+
+function LetUnit({ unit, onDone }: { unit: Unit; onDone: () => void }) {
+    const today = new Date().toLocaleDateString('en-CA');
+    const form = useForm({
+        tenant: '', type: 'residential', signed_on: today, starts_on: today, ends_on: '', month_to_month: false,
+        rent_amount: '', vat_applies: false, escalation_percent: '8', payment_day: '1',
+        deposit_amount: '', deposit_account: '', deposit_received_on: '', notes: '',
+    });
+    return (
+        <Panel title={`Let ${unit.reference}`} onDone={onDone}>
+            <form onSubmit={(e) => { e.preventDefault(); form.transform((d) => ({ ...d, ends_on: d.ends_on || null, deposit_received_on: d.deposit_received_on || null })); form.post(`/rentals/units/${unit.id}/lease`); }} className="grid gap-4">
+                <div className="grid gap-4 sm:grid-cols-4">
+                    <LookupField label="Tenant" name="tenant" type="tenants" value={form.data.tenant} onChange={(v) => form.setData('tenant', v)} error={form.errors.tenant} placeholder="Search tenants" />
+                    <SelectField label="Lease type" name="type" value={form.data.type} onChange={(v) => form.setData('type', v)} options={[{ key: 'residential', label: 'Residential' }, { key: 'commercial', label: 'Commercial (VAT)' }]} />
+                    <Field label="Starts" name="starts_on" type="date" value={form.data.starts_on} onChange={(e) => form.setData('starts_on', e.target.value)} />
+                    <Field label="Ends" name="ends_on" type="date" value={form.data.ends_on} onChange={(e) => form.setData('ends_on', e.target.value)} error={form.errors.ends_on} />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-4">
+                    <Field label="Rent a month (R)" name="rent_amount" type="number" value={form.data.rent_amount} onChange={(e) => form.setData('rent_amount', e.target.value)} error={form.errors.rent_amount} />
+                    <Field label="Escalation % a year" name="escalation_percent" type="number" step="0.1" value={form.data.escalation_percent} onChange={(e) => form.setData('escalation_percent', e.target.value)} />
+                    <Field label="Rent due on day" name="payment_day" type="number" value={form.data.payment_day} onChange={(e) => form.setData('payment_day', e.target.value)} error={form.errors.payment_day} />
+                    <label className="flex items-center gap-2 self-end pb-2 text-sm"><input type="checkbox" className="size-4 accent-line" checked={form.data.month_to_month} onChange={(e) => form.setData('month_to_month', e.target.checked)} /> Month to month</label>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-3">
+                    <Field label="Deposit (R)" name="deposit_amount" type="number" value={form.data.deposit_amount} onChange={(e) => form.setData('deposit_amount', e.target.value)} />
+                    <Field label="Interest-bearing account holding it" name="deposit_account" value={form.data.deposit_account} onChange={(e) => form.setData('deposit_account', e.target.value)} />
+                    <Field label="Deposit received on" name="deposit_received_on" type="date" value={form.data.deposit_received_on} onChange={(e) => form.setData('deposit_received_on', e.target.value)} />
+                </div>
+                <p className="text-xs text-ink-soft">The lease is created as a draft with a private link for the tenant. Activate it once signed; rent is then invoiced monthly with escalations on each anniversary.</p>
+                <div><Button type="submit" disabled={form.processing}>Create the lease</Button></div>
             </form>
         </Panel>
     );

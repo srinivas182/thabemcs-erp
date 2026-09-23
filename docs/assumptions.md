@@ -197,6 +197,18 @@ Everything marked **configurable** can be changed in settings without code chang
 | SA7 | Once a project has a stock schedule, sales replace the feasibility's revenue line in profitability: sold units at agreed prices plus unsold units at list price | No |
 | SA8 | Transfer duty versus VAT on the sale is decided by the conveyancer; the system records that the step is done, not which applied. Confirm the whole pipeline with the client's conveyancer | No |
 
+## Rentals (Sprint 19)
+| # | Assumption | Configurable |
+|---|---|---|
+| RN1 | Rented units are the same stock records as sales; a unit can be for sale, to let, or both, and cannot be let while an active lease exists | No |
+| RN2 | Residential letting is exempt from VAT; commercial leases carry VAT at 15% | No |
+| RN3 | Rent for the coming month is invoiced 7 days ahead, due on the lease's payment day; escalations apply on each anniversary and are shown on the invoice line | Yes |
+| RN4 | Notice to end a lease defaults to 20 days for residential (Consumer Protection Act cooling-off for fixed terms) and 60 for commercial; the lease itself governs | Yes |
+| RN5 | Deposits are held in a named interest-bearing account and earn interest at a configured rate (default 5% a year, simple, accrued monthly). Confirm the rate basis with the client's bank; the Rental Housing Act requires the rate the bank actually pays | Yes |
+| RN6 | Receipts are allocated to the oldest unpaid invoice first; arrears are aged current, 1-30, 31-60 and 60+ days | No |
+| RN7 | Each lease has a private tenant link (48-character token, only its hash stored) showing the lease, invoices and outstanding amount, and allowing maintenance requests | No |
+| RN8 | Inspection areas and conditions come from configuration; deductions from a deposit must be supported by the outgoing inspection | Yes |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.
