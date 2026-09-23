@@ -44,8 +44,10 @@ final class LeaseService
                 // Residential letting is exempt from VAT; commercial letting carries it.
                 'vat_applies' => $type === 'commercial' && ($data['vat_applies'] ?? true),
                 'notice_days' => $data['notice_days'] ?? config("rentals.notice_days.{$type}"),
-                'status' => 'draft', 'created_by' => $by->id, 'token_hash' => hash('sha256', $token),
+                'status' => 'draft', 'created_by' => $by->id,
             ]);
+            // The tenant's link token is never mass-assignable: only its hash is stored.
+            $lease->forceFill(['token_hash' => hash('sha256', $token)])->save();
 
             LeaseCharge::query()->create([
                 'lease_id' => $lease->id, 'type' => 'rent', 'description' => 'Monthly rent',
