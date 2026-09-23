@@ -41,7 +41,9 @@ it('sets security headers and a request id on every response', function (): void
 });
 
 it('makes people who approve work and move money set up two-factor authentication', function (): void {
-    // A Director without two-factor is sent to their profile, whatever they try to open.
+    // A Director who has not set it up yet is sent to their profile, whatever they try to open.
+    $this->director->forceFill(['two_factor_secret' => null, 'two_factor_confirmed_at' => null])->save();
+    $this->director->refresh();
     $this->actingAs($this->director)->get('/projects')->assertRedirect('/settings/profile');
     $this->actingAs($this->director)->get('/settings/profile')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('twoFactor.required', true)->where('twoFactor.confirmed', false));
