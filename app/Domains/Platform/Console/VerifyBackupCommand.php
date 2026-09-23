@@ -21,6 +21,13 @@ final class VerifyBackupCommand extends Command
 
     protected $description = 'Restore the latest backup into a scratch database and check it';
 
+    private function password(): string
+    {
+        $password = config('database.connections.mysql.password');
+
+        return is_string($password) && $password !== '' ? '-p'.escapeshellarg($password) : '';
+    }
+
     public function handle(): int
     {
         $disk = (string) config('platform.backup_disk', 'backups');
@@ -42,7 +49,7 @@ final class VerifyBackupCommand extends Command
             escapeshellarg((string) config('database.connections.mysql.host')),
             escapeshellarg((string) config('database.connections.mysql.port')),
             escapeshellarg((string) config('database.connections.mysql.username')),
-            config('database.connections.mysql.password') ? '-p'.escapeshellarg((string) config('database.connections.mysql.password')) : '',
+            $this->password(),
         );
 
         Process::timeout(7200)->run("mysql {$credentials} -e ".escapeshellarg("drop database if exists `{$scratch}`; create database `{$scratch}`;"));

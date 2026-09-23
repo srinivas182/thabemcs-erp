@@ -20,6 +20,13 @@ final class BackupCommand extends Command
 
     protected $description = 'Back up the database to the backup disk';
 
+    private function password(): string
+    {
+        $password = config('database.connections.mysql.password');
+
+        return is_string($password) && $password !== '' ? '-p'.escapeshellarg($password) : '';
+    }
+
     public function handle(): int
     {
         $disk = (string) config('platform.backup_disk', 'backups');
@@ -31,7 +38,7 @@ final class BackupCommand extends Command
             escapeshellarg((string) config('database.connections.mysql.host')),
             escapeshellarg((string) config('database.connections.mysql.port')),
             escapeshellarg((string) config('database.connections.mysql.username')),
-            config('database.connections.mysql.password') ? '-p'.escapeshellarg((string) config('database.connections.mysql.password')) : '',
+            $this->password(),
             escapeshellarg((string) config('database.connections.mysql.database')),
             escapeshellarg($path),
         ));
