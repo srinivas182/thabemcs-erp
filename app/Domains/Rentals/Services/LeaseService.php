@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Rentals\Services;
 
+use App\Domains\Platform\Services\WebhookDispatcher;
 use App\Domains\Rentals\Models\Lease;
 use App\Domains\Rentals\Models\LeaseCharge;
 use App\Domains\Rentals\Models\LeaseInvoice;
@@ -20,6 +21,8 @@ use Illuminate\Support\Str;
  */
 final class LeaseService
 {
+    public function __construct(private readonly WebhookDispatcher $webhooks) {}
+
     /**
      * @param  array<string, mixed>  $data
      * @return array{lease: Lease, token: string}
@@ -72,6 +75,10 @@ final class LeaseService
             $lease->update(['status' => 'active']);
             $lease->tenant->update(['status' => 'current']);
             activity('rentals')->performedOn($lease)->log('Lease activated');
+            $this->webhooks->send('lease.started', [
+                'lease' => $lease->reference(), 'unit' => $lease->unit->reference,
+                'tenant' => $lease->tenant->name, 'rent' => (float) $lease->rent_amount, 'startsOn' => $lease->starts_on->toDateString(),
+            ]);
         });
     }
 

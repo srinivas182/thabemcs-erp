@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.21.0] — Professional platform (Sprint 21)
+
+### Added
+- Opening data import from CSV for suppliers, employees, units, budgets and tenants, with downloadable templates, a check-first pass and a full rollback if any row is wrong.
+- Company letterhead on every report, on screen and in print, and saved report layouts choosing which columns show and in what order, with one default per report.
+- Notification preferences: email as things happen, or one daily summary at 07:15; everything still appears in the inbox.
+- Read-only API tokens for other systems, and webhooks for six events (invoice approved, order issued, sale registered, lease started, incident reported, project completed), signed with HMAC-SHA256 and retried with a growing delay.
+
 ## [0.20.0] — Close-out, investor returns and reinvestment (Sprint 20)
 
 ### Added

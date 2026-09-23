@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domains\Platform\Notifications;
 
+use App\Domains\Platform\Models\NotificationPreference;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
@@ -28,7 +30,18 @@ final class SystemMessage extends Notification
      */
     public function via(User $notifiable): array
     {
-        return ['database'];
+        // Always in the inbox; by email too unless the person asked for a daily summary instead.
+        $preference = NotificationPreference::query()->where('user_id', $notifiable->id)->first();
+        $byEmail = $preference === null ? false : ($preference->email_immediately && ! $preference->daily_digest);
+
+        return $byEmail && $notifiable->email !== null ? ['database', 'mail'] : ['database'];
+    }
+
+    public function toMail(User $notifiable): MailMessage
+    {
+        $message = (new MailMessage)->subject($this->title)->greeting('Hello '.$notifiable->name)->line($this->body);
+
+        return $this->url === null ? $message : $message->action('Open it', url($this->url));
     }
 
     /**

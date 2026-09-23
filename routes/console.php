@@ -106,3 +106,10 @@ Artisan::command('rentals:reminders', function (): void {
 })->purpose('Warn about rent arrears and leases ending');
 
 Schedule::command('rentals:reminders')->weekdays()->at('08:00')->timezone('Africa/Johannesburg');
+
+// One email a day for people who asked for a summary instead of a message each time.
+Artisan::command('notifications:digest', function (): void {
+    $this->info('Queued the daily digest for '.RunCompanyMaintenance::fanOut('digest').' companies.');
+})->purpose('Send the daily notification digest');
+
+Schedule::command('notifications:digest')->dailyAt('07:15')->timezone('Africa/Johannesburg');

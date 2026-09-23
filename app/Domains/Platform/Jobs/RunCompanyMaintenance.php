@@ -29,7 +29,7 @@ final class RunCompanyMaintenance implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable;
 
-    public const array TASKS = ['compliance-alerts', 'approvals-escalate', 'reports-send', 'tasks-escalate', 'retention', 'rent-billing', 'rent-reminders'];
+    public const array TASKS = ['compliance-alerts', 'approvals-escalate', 'reports-send', 'tasks-escalate', 'retention', 'rent-billing', 'rent-reminders', 'digest'];
 
     public int $uniqueFor = 3600;
 
@@ -66,6 +66,7 @@ final class RunCompanyMaintenance implements ShouldBeUnique, ShouldQueue
                 'retention' => $container->make(RetentionService::class)->runForCurrentCompany(),
                 'rent-billing' => $this->bill($container),
                 'rent-reminders' => $container->make(RentBillingService::class)->sendReminders(),
+                'digest' => SendNotificationDigest::dispatch($this->companyId),
                 default => null,
             };
         });

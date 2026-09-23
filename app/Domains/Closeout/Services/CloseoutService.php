@@ -8,6 +8,7 @@ use App\Domains\Closeout\Models\CloseoutItem;
 use App\Domains\Closeout\Models\Distribution;
 use App\Domains\Finance\Services\ProfitabilityService;
 use App\Domains\Funding\Services\FundingSummary;
+use App\Domains\Platform\Services\WebhookDispatcher;
 use App\Domains\Projects\Enums\ProjectStatus;
 use App\Domains\Projects\Models\Project;
 use App\Models\User;
@@ -25,6 +26,7 @@ final class CloseoutService
     public function __construct(
         private readonly ProfitabilityService $profitability,
         private readonly FundingSummary $funding,
+        private readonly WebhookDispatcher $webhooks,
     ) {}
 
     /**
@@ -119,5 +121,6 @@ final class CloseoutService
 
         $project->update(['status' => ProjectStatus::Completed]);
         activity('closeout')->causedBy($by)->performedOn($project)->log('Project closed out');
+        $this->webhooks->send('project.completed', ['project' => $project->code, 'name' => $project->name, 'closedOn' => now()->toDateString()]);
     }
 }

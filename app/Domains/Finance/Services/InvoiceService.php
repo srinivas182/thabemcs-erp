@@ -6,6 +6,7 @@ namespace App\Domains\Finance\Services;
 
 use App\Domains\Finance\Exceptions\FinanceException;
 use App\Domains\Finance\Models\SupplierInvoice;
+use App\Domains\Platform\Services\WebhookDispatcher;
 use App\Domains\Procurement\Models\PurchaseOrderLine;
 use App\Models\User;
 
@@ -15,6 +16,8 @@ use App\Models\User;
  */
 final class InvoiceService
 {
+    public function __construct(private readonly WebhookDispatcher $webhooks) {}
+
     /**
      * Run the checks and set the invoice to "matched" or "exception".
      *
@@ -109,6 +112,11 @@ final class InvoiceService
             'status' => 'approved', 'approved_by' => $by->id, 'approved_at' => now(),
             'override_reason' => $invoice->status === 'exception' ? $overrideReason : null,
         ])->save();
+
+        $this->webhooks->send('invoice.approved', [
+            'invoice' => $invoice->invoice_number, 'supplier' => $invoice->supplier->name,
+            'total' => (float) $invoice->total, 'dueOn' => $invoice->due_date->toDateString(),
+        ]);
     }
 
     public function reject(SupplierInvoice $invoice, string $reason, User $by): void

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Reporting\Http\Controllers;
 
+use App\Domains\Platform\Models\ReportPreset;
 use App\Domains\Reporting\Contracts\Report;
 use App\Domains\Reporting\Models\ReportSchedule;
 use App\Domains\Reporting\Services\PortfolioService;
@@ -68,11 +69,106 @@ final class ReportController
         $report = $this->authorized($request, $key);
         $filters = ReportFilters::fromArray($request->only(['project', 'from', 'to', 'as_at']));
 
+        $presets = ReportPreset::query()->where('report_key', $key)->orderBy('name')->get();
+        $preset = $request->string('preset')->toString() !== ''
+            ? $presets->firstWhere('id', (int) $request->string('preset')->toString())
+            : $presets->firstWhere('is_default', true);
+
+        $result = $report->build($filters)->toArray();
+        if ($preset !== null) {
+            $result = $this->applyPreset($result, $preset->columns);
+        }
+
         return Inertia::render('reports/show', [
+            'letterhead' => $this->letterhead(),
+            'presets' => $presets->map(static fn (ReportPreset $p): array => ['id' => $p->id, 'name' => $p->name, 'columns' => $p->columns, 'isDefault' => $p->is_default])->values(),
+            'presetId' => $preset?->id,
             'report' => ['key' => $report->key(), 'title' => $report->title(), 'description' => $report->description(), 'filters' => $report->filters()],
-            'result' => $report->build($filters)->toArray(),
+            'result' => $result,
             'values' => $filters->toArray(),
         ]);
+    }
+
+    /**
+     * Save the columns on show as a layout, so the same report can be produced the same way each time.
+     */
+    public function storePreset(Request $request, string $key): RedirectResponse
+    {
+        $report = $this->authorized($request, $key);
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:60'],
+            'columns' => ['required', 'array', 'min:1'],
+            'columns.*' => ['string'],
+            'is_default' => ['boolean'],
+        ]);
+        /** @var User $user */
+        $user = $request->user();
+
+        if ($data['is_default'] ?? false) {
+            ReportPreset::query()->where('report_key', $report->key())->update(['is_default' => false]);
+        }
+        ReportPreset::query()->create([
+            'report_key' => $report->key(), 'name' => $data['name'], 'columns' => array_values($data['columns']),
+            'is_default' => (bool) ($data['is_default'] ?? false), 'created_by' => $user->id,
+        ]);
+
+        return back()->with('success', 'Layout saved. Choose it whenever you open this report.');
+    }
+
+    public function destroyPreset(ReportPreset $preset): RedirectResponse
+    {
+        $preset->delete();
+
+        return back()->with('success', 'Layout removed.');
+    }
+
+    /**
+     * The company's letterhead, shown on screen and on every printed or exported report.
+     *
+     * @return array<string, string|null>
+     */
+    private function letterhead(): array
+    {
+        $company = $this->context->require();
+        /** @var array<string, string> $settings */
+        $settings = (array) ($company->settings['letterhead'] ?? []);
+
+        return [
+            'company' => $company->name,
+            'registration' => $company->registration_number,
+            'vat' => $company->vat_number,
+            'address' => $settings['address'] ?? null,
+            'contact' => $settings['contact'] ?? null,
+            'logoUrl' => $settings['logo_url'] ?? (string) config('branding.logo') ?: null,
+            'footer' => $settings['footer'] ?? null,
+        ];
+    }
+
+    /**
+     * Keep only the chosen columns, in the chosen order.
+     *
+     * @param  array<string, mixed>  $result
+     * @param  list<string>  $columns
+     * @return array<string, mixed>
+     */
+    private function applyPreset(array $result, array $columns): array
+    {
+        /** @var list<array{key: string, label: string, type: string}> $all */
+        $all = $result['columns'];
+        $keep = array_values(array_filter($columns, static fn (string $c): bool => in_array($c, array_column($all, 'key'), true)));
+        if ($keep === []) {
+            return $result;
+        }
+
+        $result['columns'] = array_values(array_map(
+            static fn (string $key): array => $all[array_search($key, array_column($all, 'key'), true)],
+            $keep,
+        ));
+        /** @var list<array<string, mixed>> $rows */
+        $rows = $result['rows'];
+        $result['rows'] = array_map(static fn (array $row): array => array_intersect_key($row, array_flip($keep)), $rows);
+
+        return $result;
     }
 
     public function download(Request $request, string $key, string $format): Response

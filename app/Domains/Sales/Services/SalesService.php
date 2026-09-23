@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Sales\Services;
 
 use App\Domains\Platform\Notifications\SystemMessage;
+use App\Domains\Platform\Services\WebhookDispatcher;
 use App\Domains\Sales\Models\Buyer;
 use App\Domains\Sales\Models\Reservation;
 use App\Domains\Sales\Models\SaleAgreement;
@@ -26,7 +27,7 @@ use Illuminate\Support\Facades\DB;
  */
 final class SalesService
 {
-    public function __construct(private readonly ComplianceService $compliance) {}
+    public function __construct(private readonly ComplianceService $compliance, private readonly WebhookDispatcher $webhooks) {}
 
     public function changePrice(SaleUnit $unit, float $price, Carbon $from, ?string $reason, User $by): UnitPrice
     {
@@ -190,6 +191,10 @@ final class SalesService
                 $agreement->update(['status' => 'registered', 'registered_on' => $step->completed_on?->toDateString()]);
                 $agreement->unit->update(['status' => 'transferred']);
                 activity('sales')->causedBy($by)->performedOn($agreement)->log('Transfer registered in the Deeds Office');
+                $this->webhooks->send('sale.registered', [
+                    'agreement' => $agreement->reference(), 'unit' => $agreement->unit->reference,
+                    'price' => (float) $agreement->purchase_price, 'registeredOn' => $agreement->registered_on?->toDateString(),
+                ]);
             });
         }
     }

@@ -220,6 +220,16 @@ Everything marked **configurable** can be changed in settings without code chang
 | DI4 | A distribution is prepared, then approved by a Director or Company Admin, then marked paid; paying records money out against each investor's funding | No |
 | DI5 | Reinvestment records money left in the business as funding received on another project, so both projects' funding stays correct | No |
 
+## Platform polish (Sprint 21)
+| # | Assumption | Configurable |
+|---|---|---|
+| PP1 | Imports are CSV files (save an Excel sheet as CSV) with a header row, up to 5 000 rows; every row is checked first and nothing is written unless the whole file is good | Yes |
+| PP2 | Imports refuse names or codes already in the system rather than updating them, so an import can never overwrite existing records | No |
+| PP3 | Report letterhead comes from the company record plus a letterhead block in company settings (address, contact, logo URL, footer); it prints on every report | Yes |
+| PP4 | Saved report layouts choose which standard columns show and in what order; one can be the default for everyone in the company | No |
+| PP5 | People choose to be emailed as things happen or to get one daily summary at 07:15; everything always appears in the inbox | Yes |
+| PP6 | API tokens are read-only. Webhooks are signed with HMAC-SHA256 in X-Thabekhulu-Signature and retried up to five times with a growing delay | Yes |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.

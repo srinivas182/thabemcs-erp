@@ -30,6 +30,9 @@ use App\Domains\Platform\Http\Controllers\NotificationController;
 use App\Domains\Platform\Http\Controllers\SearchController;
 use App\Domains\Platform\Http\Controllers\Settings\ActivityLogController;
 use App\Domains\Platform\Http\Controllers\Settings\CompanyUserController;
+use App\Domains\Platform\Http\Controllers\Settings\ImportController;
+use App\Domains\Platform\Http\Controllers\Settings\IntegrationApiController;
+use App\Domains\Platform\Http\Controllers\Settings\NotificationPreferenceController;
 use App\Domains\Platform\Http\Controllers\Settings\ProfileController;
 use App\Domains\Procurement\Http\Controllers\PurchaseOrderController;
 use App\Domains\Procurement\Http\Controllers\RequisitionController;
@@ -216,6 +219,8 @@ Route::middleware(['auth'])->group(function (): void {
     Route::middleware('module:reporting')->group(function (): void {
         Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
         Route::post('reports/schedules', [ReportController::class, 'schedule'])->name('reports.schedules.store');
+        Route::post('reports/{key}/presets', [ReportController::class, 'storePreset'])->name('reports.presets.store');
+        Route::delete('report-presets/{preset}', [ReportController::class, 'destroyPreset'])->name('reports.presets.destroy');
         Route::get('reports/designer', [ReportDesignerController::class, 'edit'])->name('reports.designer');
         Route::post('reports/designer', [ReportDesignerController::class, 'store'])->name('reports.designer.store');
         Route::get('reports/designer/{report}', [ReportDesignerController::class, 'edit'])->name('reports.designer.edit');
@@ -309,6 +314,20 @@ Route::middleware(['auth'])->group(function (): void {
 
     // Search-as-you-type options for dropdowns (never whole tables).
     Route::get('lookup/{type}', LookupController::class)->middleware('throttle:120,1')->name('lookup');
+
+    // Opening data imports, API access and webhooks, notification settings.
+    Route::get('settings/import', [ImportController::class, 'index'])->name('import.index');
+    Route::get('settings/import/{type}/template', [ImportController::class, 'template'])->name('import.template');
+    Route::post('settings/import', [ImportController::class, 'upload'])->name('import.upload');
+
+    Route::get('settings/api', [IntegrationApiController::class, 'index'])->name('api.index');
+    Route::post('settings/api/tokens', [IntegrationApiController::class, 'createToken'])->name('api.tokens.store');
+    Route::delete('settings/api/tokens/{token}', [IntegrationApiController::class, 'revokeToken'])->name('api.tokens.destroy');
+    Route::post('settings/api/webhooks', [IntegrationApiController::class, 'storeWebhook'])->name('api.webhooks.store');
+    Route::patch('settings/api/webhooks/{webhook}', [IntegrationApiController::class, 'updateWebhook'])->name('api.webhooks.update');
+    Route::delete('settings/api/webhooks/{webhook}', [IntegrationApiController::class, 'destroyWebhook'])->name('api.webhooks.destroy');
+
+    Route::patch('settings/notifications', [NotificationPreferenceController::class, 'update'])->name('notifications.preferences');
 
     // POPIA: register, retention clean-up, data subject requests.
     Route::get('settings/popia', [PopiaController::class, 'index'])->name('popia.index');
