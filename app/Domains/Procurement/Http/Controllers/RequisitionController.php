@@ -53,7 +53,6 @@ final class RequisitionController
                     'neededBy' => $r->needed_by?->toDateString(), 'by' => $r->requester->name,
                 ]),
             'filter' => $status,
-            'projects' => Project::query()->where('status', 'active')->orderBy('name')->get(['ulid', 'name'])->map(static fn (Project $p): array => ['key' => $p->ulid, 'label' => $p->name])->values(),
             'units' => app(MasterDataService::class)->unitOptions(),
             'canRaise' => $request->user()?->can('raise-requisitions') ?? false,
         ]);
@@ -121,7 +120,6 @@ final class RequisitionController
             'approval' => $approval ? $this->approvalTrail($approval) : null,
             'purchaseOrder' => $requisition->status === 'awarded'
                 ? PurchaseOrder::query()->where('requisition_id', $requisition->id)->value('ulid') : null,
-            'suppliers' => Supplier::query()->where('status', 'active')->orderBy('name')->get(['ulid', 'name'])->map(static fn (Supplier $s): array => ['key' => $s->ulid, 'label' => $s->name])->values(),
             'threshold' => (float) config('delegation_of_authority.three_quote_threshold'),
             'invitations' => RfqController::invitationsFor($requisition),
             'can' => [

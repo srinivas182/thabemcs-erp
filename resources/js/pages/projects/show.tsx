@@ -3,10 +3,10 @@ import { Button, cn, Field } from '@thabekhulu/ui';
 import { Check, Lock } from 'lucide-react';
 import { type FormEvent, type ReactNode, useEffect, useState } from 'react';
 import { formatDate, formatDateTime, formatRand, selectClass, SelectField } from '@/components/data';
+import { LookupField } from '@/components/lookup-field';
 import AppLayout from '@/layouts/app-layout';
 import type { SharedProps } from '@/types';
 
-type Option = { key: string; label: string };
 
 interface GateItem {
     id: number;
@@ -40,7 +40,6 @@ interface Props {
     tasks: { id: string; title: string; assignee: string | null; assigneeId: string | null; dueDate: string | null; status: string; priority: string; overdue: boolean }[];
     risks: { id: string; kind: string; title: string; likelihood: number; impact: number; score: number; rating: string; mitigation: string | null; owner: string | null; status: string; reviewDate: string | null }[];
     openRiskCount: number;
-    people: Option[];
     can: { manage: boolean; approve: boolean };
 }
 
@@ -387,7 +386,7 @@ function ProgrammeTab({ project, milestones, stages, can }: Props) {
     );
 }
 
-function TasksTab({ project, tasks, people, can }: Props) {
+function TasksTab({ project, tasks, can }: Props) {
     const form = useForm({ title: '', assignee: '', due_date: '', priority: 'normal' });
 
     function add(e: FormEvent) {
@@ -401,7 +400,7 @@ function TasksTab({ project, tasks, people, can }: Props) {
             {can.manage && (
                 <form onSubmit={add} className="grid items-end gap-3 rounded-[var(--radius-panel)] border border-concrete bg-surface p-4 sm:grid-cols-[1fr_200px_160px_auto]">
                     <Field label="Task" name="title" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} error={form.errors.title} />
-                    <SelectField label="Assign to" name="assignee" value={form.data.assignee} onChange={(v) => form.setData('assignee', v)} options={people} placeholder="Nobody yet" error={form.errors.assignee} />
+                    <LookupField label="Assign to" name="assignee" value={form.data.assignee} onChange={(v) => form.setData('assignee', v)} type="people" placeholder="Nobody yet" error={form.errors.assignee} />
                     <Field label="Due" name="due_date" type="date" value={form.data.due_date} onChange={(e) => form.setData('due_date', e.target.value)} />
                     <Button type="submit" disabled={form.processing}>
                         Add task
@@ -452,7 +451,7 @@ function TasksTab({ project, tasks, people, can }: Props) {
     );
 }
 
-function RisksTab({ project, risks, people, can }: Props) {
+function RisksTab({ project, risks, can }: Props) {
     const form = useForm({ kind: 'risk', title: '', likelihood: '3', impact: '3', mitigation: '', owner: '' });
     const scale = [1, 2, 3, 4, 5].map((n) => ({ key: String(n), label: String(n) }));
 
@@ -526,7 +525,7 @@ function RisksTab({ project, risks, people, can }: Props) {
                     <div className="grid gap-4 sm:grid-cols-3">
                         <SelectField label="Likelihood (1 to 5)" name="likelihood" value={form.data.likelihood} onChange={(v) => form.setData('likelihood', v)} options={scale} />
                         <SelectField label="Impact (1 to 5)" name="impact" value={form.data.impact} onChange={(v) => form.setData('impact', v)} options={scale} />
-                        <SelectField label="Owner" name="owner" value={form.data.owner} onChange={(v) => form.setData('owner', v)} options={people} placeholder="Nobody yet" error={form.errors.owner} />
+                        <LookupField label="Owner" name="owner" value={form.data.owner} onChange={(v) => form.setData('owner', v)} type="people" placeholder="Nobody yet" error={form.errors.owner} />
                     </div>
                     <Field label="Mitigation or action" name="mitigation" value={form.data.mitigation} onChange={(e) => form.setData('mitigation', e.target.value)} />
                     <div>

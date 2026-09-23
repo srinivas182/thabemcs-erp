@@ -80,7 +80,6 @@ final class SiteController
                 ->groupBy(static fn ($c) => $c->worked_on->toDateString())
                 ->map(static fn ($rows, $date): array => ['date' => $date, 'present' => $rows->where('status', 'present')->count(), 'absent' => $rows->where('status', '!=', 'present')->count()])
                 ->values(),
-            'suppliers' => Supplier::query()->where('status', 'active')->orderBy('name')->get(['ulid', 'name'])->map(static fn (Supplier $s): array => ['key' => $s->ulid, 'label' => $s->name])->values(),
             'canManage' => $request->user()?->can('manage-site') ?? false,
         ]);
     }

@@ -3,9 +3,9 @@ import { Button, cn, Field } from '@thabekhulu/ui';
 import { MapPinOff } from 'lucide-react';
 import { type FormEvent, type ReactNode, useEffect, useState } from 'react';
 import { formatDate, formatDateTime, selectClass, SelectField } from '@/components/data';
+import { LookupField } from '@/components/lookup-field';
 import AppLayout from '@/layouts/app-layout';
 
-type Option = { key: string; label: string };
 
 interface Props {
     project: { id: string; name: string; code: string; hasLocation: boolean };
@@ -17,7 +17,6 @@ interface Props {
     inspections: { id: string; title: string; location: string | null; result: string; findings: string | null; on: string }[];
     snags: { id: string; location: string | null; description: string; status: string; dueOn: string | null; supplier: string | null }[];
     crew: { date: string; present: number; absent: number }[];
-    suppliers: Option[];
     canManage: boolean;
 }
 
@@ -142,7 +141,7 @@ function Deliveries({ deliveries }: Props) {
     );
 }
 
-function Instructions({ project, instructions, suppliers, canManage }: Props) {
+function Instructions({ project, instructions, canManage }: Props) {
     const form = useForm({ supplier: '', subject: '', instruction: '', cost_implication: false, time_implication: false });
     function submit(e: FormEvent) {
         e.preventDefault();
@@ -155,7 +154,7 @@ function Instructions({ project, instructions, suppliers, canManage }: Props) {
                 <form onSubmit={submit} className="grid gap-3 rounded-[var(--radius-panel)] border border-concrete bg-surface p-4">
                     <p className="font-semibold">Issue a site instruction</p>
                     <div className="grid gap-3 sm:grid-cols-2">
-                        <SelectField label="To" name="supplier" value={form.data.supplier} onChange={(v) => form.setData('supplier', v)} options={suppliers} placeholder="Choose contractor" />
+                        <LookupField label="To" name="supplier" value={form.data.supplier} onChange={(v) => form.setData('supplier', v)} type="suppliers" placeholder="Choose contractor" />
                         <Field label="Subject" name="subject" value={form.data.subject} onChange={(e) => form.setData('subject', e.target.value)} error={form.errors.subject} />
                     </div>
                     <textarea aria-label="Instruction" rows={3} value={form.data.instruction} onChange={(e) => form.setData('instruction', e.target.value)} placeholder="Instruction" className="rounded-[var(--radius-control)] border border-concrete p-3 text-sm" />
@@ -188,7 +187,7 @@ function Instructions({ project, instructions, suppliers, canManage }: Props) {
     );
 }
 
-function Quality({ project, inspections, snags, suppliers, canManage }: Props) {
+function Quality({ project, inspections, snags, canManage }: Props) {
     const insp = useForm({ kind: 'quality', title: '', location: '', result: 'pass', findings: '', inspected_on: new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' }).format(new Date()) });
     const snag = useForm({ location: '', description: '', supplier: '', due_on: '' });
     return (
@@ -202,7 +201,7 @@ function Quality({ project, inspections, snags, suppliers, canManage }: Props) {
                             <Field label="Due" name="due_on" type="date" value={snag.data.due_on} onChange={(e) => snag.setData('due_on', e.target.value)} />
                         </div>
                         <Field label="Defect" name="description" value={snag.data.description} onChange={(e) => snag.setData('description', e.target.value)} error={snag.errors.description} />
-                        <SelectField label="Contractor responsible" name="supplier" value={snag.data.supplier} onChange={(v) => snag.setData('supplier', v)} options={suppliers} placeholder="Not assigned" />
+                        <LookupField label="Contractor responsible" name="supplier" value={snag.data.supplier} onChange={(v) => snag.setData('supplier', v)} type="suppliers" placeholder="Not assigned" />
                         <div><Button type="submit" disabled={snag.processing}>Add snag</Button></div>
                     </form>
                 )}

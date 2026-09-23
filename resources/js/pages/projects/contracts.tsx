@@ -3,6 +3,7 @@ import { Button, cn, Field } from '@thabekhulu/ui';
 import { type FormEvent, type ReactNode, useState } from 'react';
 import { STATUS_LABEL } from '@/components/approval-trail';
 import { formatDate, formatRand, SelectField } from '@/components/data';
+import { LookupField } from '@/components/lookup-field';
 import AppLayout from '@/layouts/app-layout';
 
 type Option = { key: string; label: string };
@@ -13,11 +14,11 @@ interface Contract {
     blockers: string[]; certificates: Certificate[];
 }
 interface FormDefault { label: string; retention_percent: number; retention_cap_percent: number | null; release_at_practical_percent: number; payment_terms_days: number; defects_period_months: number; notes: string }
-interface Props { project: { id: string; name: string; code: string }; contracts: Contract[]; contractors: Option[]; budgetLines: Option[]; forms: Option[]; formDefaults: Record<string, FormDefault>; canManage: boolean }
+interface Props { project: { id: string; name: string; code: string }; contracts: Contract[]; budgetLines: Option[]; forms: Option[]; formDefaults: Record<string, FormDefault>; canManage: boolean }
 
 const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' }).format(new Date());
 
-export default function Contracts({ project, contracts, contractors, budgetLines, forms, formDefaults, canManage }: Props) {
+export default function Contracts({ project, contracts, budgetLines, forms, formDefaults, canManage }: Props) {
     const [adding, setAdding] = useState(false);
     const form = useForm({ supplier: '', reference: '', contract_form: 'jbcc_pba', contract_sum: '', retention_percent: '10', retention_cap_percent: '5', release_at_practical_percent: '50', payment_terms_days: '7', defects_period_months: '3', budget_line_id: '' });
     function chooseForm(key: string) {
@@ -49,7 +50,7 @@ export default function Contracts({ project, contracts, contractors, budgetLines
                 {adding && (
                     <form onSubmit={submit} className="grid gap-4 rounded-[var(--radius-panel)] border border-concrete bg-surface p-5" noValidate>
                         <div className="grid gap-4 sm:grid-cols-3">
-                            <SelectField label="Contractor" name="supplier" value={form.data.supplier} onChange={(v) => form.setData('supplier', v)} options={contractors} placeholder="Choose" error={form.errors.supplier} />
+                            <LookupField label="Contractor" name="supplier" value={form.data.supplier} onChange={(v) => form.setData('supplier', v)} type="suppliers" params={{ types: 'contractor,subcontractor' }} placeholder="Choose" error={form.errors.supplier} />
                             <Field label="Contract reference" name="reference" value={form.data.reference} onChange={(e) => form.setData('reference', e.target.value)} error={form.errors.reference} placeholder="e.g. BH-MAIN-01" />
                             <SelectField label="Form of contract" name="contract_form" value={form.data.contract_form} onChange={chooseForm} options={forms} />
                         </div>

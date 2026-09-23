@@ -175,7 +175,6 @@ final class ProjectController
                 'reviewDate' => $r->review_date?->toDateString(),
             ]),
             'openRiskCount' => $project->risks()->where('status', '!=', RiskStatus::Closed)->count(),
-            'people' => $this->people(),
             'can' => [
                 'manage' => $user->can('manage-projects'),
                 'approve' => $user->can('approve-stage-gate'),
@@ -227,24 +226,7 @@ final class ProjectController
             'developmentTypes' => array_map(static fn (DevelopmentType $t): array => ['key' => $t->value, 'label' => $t->label()], DevelopmentType::cases()),
             'provinces' => array_map(static fn (Province $p): array => ['key' => $p->value, 'label' => $p->label()], Province::cases()),
             'regions' => Region::query()->orderBy('name')->get(['id', 'name'])->map(static fn (Region $r): array => ['key' => $r->id, 'label' => $r->name]),
-            'people' => $this->people(),
             'statuses' => array_map(static fn (ProjectStatus $s): string => $s->value, ProjectStatus::cases()),
         ];
-    }
-
-    /**
-     * Active people in the company, for assigning managers, tasks and risk owners.
-     *
-     * @return list<array{key: string, label: string}>
-     */
-    private function people(): array
-    {
-        return array_values(User::query()
-            ->where('company_id', $this->context->id())
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get(['ulid', 'name', 'job_title'])
-            ->map(static fn (User $u): array => ['key' => $u->ulid, 'label' => $u->job_title ? "{$u->name} ({$u->job_title})" : $u->name])
-            ->all());
     }
 }

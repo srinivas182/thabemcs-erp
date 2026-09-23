@@ -1,7 +1,8 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Button, cn, Field } from '@thabekhulu/ui';
 import { type FormEvent, type ReactNode, useState } from 'react';
-import { formatDate, formatDateTime, formatRand, PageHeader, SelectField } from '@/components/data';
+import { formatDate, formatDateTime, formatRand, PageHeader } from '@/components/data';
+import { LookupField } from '@/components/lookup-field';
 import AppLayout from '@/layouts/app-layout';
 
 interface Item {
@@ -13,12 +14,11 @@ interface Props {
     waiting: Item[];
     mine: Item[];
     delegations: { id: number; delegate: string; from: string; to: string }[];
-    people: { key: string; label: string }[];
-}
+    }
 
 const POLICY: Record<string, string> = { requisition: 'Requisition', purchase_order: 'Purchase order' };
 
-export default function Inbox({ waiting, mine, delegations, people }: Props) {
+export default function Inbox({ waiting, mine, delegations }: Props) {
     return (
         <>
             <Head title="Approvals" />
@@ -48,7 +48,7 @@ export default function Inbox({ waiting, mine, delegations, people }: Props) {
                     )}
                 </section>
 
-                <Delegation delegations={delegations} people={people} />
+                <Delegation delegations={delegations} />
             </div>
         </>
     );
@@ -83,7 +83,7 @@ function Decision({ item }: { item: Item }) {
     );
 }
 
-function Delegation({ delegations, people }: { delegations: Props['delegations']; people: Props['people'] }) {
+function Delegation({ delegations }: { delegations: Props['delegations'] }) {
     const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' }).format(new Date());
     const form = useForm({ delegate: '', starts_on: today, ends_on: '', reason: '' });
     function submit(e: FormEvent) {
@@ -101,7 +101,7 @@ function Delegation({ delegations, people }: { delegations: Props['delegations']
                 </p>
             ))}
             <form onSubmit={submit} className="grid items-end gap-3 sm:grid-cols-[1fr_160px_160px_1fr_auto]">
-                <SelectField label="Delegate to" name="delegate" value={form.data.delegate} onChange={(v) => form.setData('delegate', v)} options={people} placeholder="Choose a person" error={form.errors.delegate} />
+                <LookupField label="Delegate to" name="delegate" value={form.data.delegate} onChange={(v) => form.setData('delegate', v)} type="people" placeholder="Choose a person" error={form.errors.delegate} />
                 <Field label="From" name="starts_on" type="date" value={form.data.starts_on} onChange={(e) => form.setData('starts_on', e.target.value)} error={form.errors.starts_on} />
                 <Field label="Until" name="ends_on" type="date" value={form.data.ends_on} onChange={(e) => form.setData('ends_on', e.target.value)} error={form.errors.ends_on} />
                 <Field label="Reason" name="reason" value={form.data.reason} onChange={(e) => form.setData('reason', e.target.value)} placeholder="e.g. Annual leave" />

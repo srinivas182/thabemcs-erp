@@ -3,6 +3,7 @@ import { Button, cn, Field } from '@thabekhulu/ui';
 import { Link2, Trash2, X } from 'lucide-react';
 import { type FormEvent, type ReactNode, useMemo, useState } from 'react';
 import { formatDate, SelectField } from '@/components/data';
+import { LookupField } from '@/components/lookup-field';
 import AppLayout from '@/layouts/app-layout';
 
 type Option = { key: string; label: string };
@@ -14,7 +15,7 @@ interface Activity {
 interface Props {
     project: { id: string; name: string; code: string };
     finish: string | null; plannedCompletion: string | null;
-    activities: Activity[]; people: Option[]; suppliers: Option[]; canManage: boolean;
+    activities: Activity[]; canManage: boolean;
 }
 
 const DAY = 86_400_000;
@@ -80,7 +81,7 @@ function Gantt({ activities }: { activities: Activity[] }) {
     );
 }
 
-export default function Programme({ project, finish, plannedCompletion, activities, people, suppliers, canManage }: Props) {
+export default function Programme({ project, finish, plannedCompletion, activities, canManage }: Props) {
     const [selected, setSelected] = useState<string | null>(null);
     const add = useForm({ wbs: '', name: '', planned_start: '', duration_days: '5', owner: '', supplier: '' });
     const current = activities.find((a) => a.id === selected) ?? null;
@@ -141,8 +142,8 @@ export default function Programme({ project, finish, plannedCompletion, activiti
                             <Field label="Working days" name="duration_days" type="number" min={0} value={add.data.duration_days} onChange={(e) => add.setData('duration_days', e.target.value)} hint="0 = milestone" />
                         </div>
                         <div className="grid gap-3 sm:grid-cols-2">
-                            <SelectField label="Responsible person" name="owner" value={add.data.owner} onChange={(v) => add.setData('owner', v)} options={people} placeholder="None" />
-                            <SelectField label="Contractor" name="supplier" value={add.data.supplier} onChange={(v) => add.setData('supplier', v)} options={suppliers} placeholder="None" />
+                            <LookupField label="Responsible person" name="owner" value={add.data.owner} onChange={(v) => add.setData('owner', v)} type="people" placeholder="None" />
+                            <LookupField label="Contractor" name="supplier" value={add.data.supplier} onChange={(v) => add.setData('supplier', v)} type="suppliers" params={{ types: 'contractor,subcontractor' }} placeholder="None" />
                         </div>
                         <div><Button type="submit" disabled={add.processing}>Add activity</Button></div>
                         <p className="text-xs text-ink-soft">Click an activity in the table to link it to the activities it follows, record progress or remove it.</p>

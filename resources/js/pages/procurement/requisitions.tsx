@@ -4,13 +4,14 @@ import { Plus, Trash2 } from 'lucide-react';
 import { type FormEvent, type ReactNode, useState } from 'react';
 import { STATUS_LABEL } from '@/components/approval-trail';
 import { formatDate, formatRand, PageHeader, Pager, SelectField, tableClass } from '@/components/data';
+import { LookupField } from '@/components/lookup-field';
 import AppLayout from '@/layouts/app-layout';
 import type { Paginated } from '@/types';
 
 interface Row { id: string; reference: string; title: string; project: string; status: string; total: number; quotes: number; neededBy: string | null; by: string }
 type Line = { description: string; quantity: string; unit: string; estimated_unit_price: string };
 
-export default function Requisitions({ requisitions, filter, projects, units, canRaise }: { requisitions: Paginated<Row>; filter: string; projects: { key: string; label: string }[]; units: { key: string; label: string }[]; canRaise: boolean }) {
+export default function Requisitions({ requisitions, filter, units, canRaise }: { requisitions: Paginated<Row>; filter: string; units: { key: string; label: string }[]; canRaise: boolean }) {
     const [adding, setAdding] = useState(false);
     const blank: Line = { description: '', quantity: '1', unit: 'each', estimated_unit_price: '' };
     const form = useForm<{ project: string; title: string; needed_by: string; notes: string; lines: Line[]; submit: boolean }>({ project: '', title: '', needed_by: '', notes: '', lines: [blank], submit: true });
@@ -33,7 +34,7 @@ export default function Requisitions({ requisitions, filter, projects, units, ca
                 {adding && (
                     <form onSubmit={(e) => submit(e, true)} className="grid gap-4 rounded-[var(--radius-panel)] border border-concrete bg-surface p-5" noValidate>
                         <div className="grid gap-4 sm:grid-cols-3">
-                            <SelectField label="Project" name="project" value={form.data.project} onChange={(v) => form.setData('project', v)} options={projects} placeholder="Choose" error={form.errors.project} />
+                            <LookupField label="Project" name="project" value={form.data.project} onChange={(v) => form.setData('project', v)} type="projects" params={{ status: 'active' }} placeholder="Choose" error={form.errors.project} />
                             <Field label="What is needed" name="title" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} error={form.errors.title} placeholder="e.g. Cement and aggregate for Block C slab" />
                             <Field label="Needed by" name="needed_by" type="date" value={form.data.needed_by} onChange={(e) => form.setData('needed_by', e.target.value)} error={form.errors.needed_by} />
                         </div>

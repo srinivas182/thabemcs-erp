@@ -2,9 +2,9 @@ import { Head, useForm } from '@inertiajs/react';
 import { Button, cn, Field } from '@thabekhulu/ui';
 import { type FormEvent, type ReactNode, useState } from 'react';
 import { formatDate, formatRand, PageHeader, SelectField } from '@/components/data';
+import { LookupField } from '@/components/lookup-field';
 import AppLayout from '@/layouts/app-layout';
 
-type Option = { key: string; label: string };
 interface Item {
     id: string; asset: string; description: string; category: string; makeModel: string | null; ownership: string; supplier: string | null; rate: number | null;
     project: string | null; status: string; nextService: string | null; serviceDue: boolean; events: { type: string; on: string; project: string | null; notes: string | null }[];
@@ -13,7 +13,7 @@ const STATUS: Record<string, string> = { available: 'In the yard', on_site: 'On 
 const EVENTS = [{ key: 'moved', label: 'Moved to a site' }, { key: 'serviced', label: 'Serviced' }, { key: 'breakdown', label: 'Broke down' }, { key: 'repaired', label: 'Repaired' }, { key: 'off_hired', label: 'Off-hired / returned' }];
 const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' }).format(new Date());
 
-export default function Plant({ items, projects, suppliers, canManage }: { items: Item[]; projects: Option[]; suppliers: Option[]; canManage: boolean }) {
+export default function Plant({ items, canManage }: { items: Item[]; canManage: boolean }) {
     const [adding, setAdding] = useState(false);
     const form = useForm({ asset_number: '', description: '', category: 'Earthmoving', make_model: '', serial_number: '', ownership: 'owned', supplier: '', hire_rate_per_day: '', service_interval_days: '', next_service_on: '' });
     function submit(e: FormEvent) {
@@ -36,7 +36,7 @@ export default function Plant({ items, projects, suppliers, canManage }: { items
                         </div>
                         <div className="grid gap-4 sm:grid-cols-5">
                             <SelectField label="Owned or hired" name="ownership" value={form.data.ownership} onChange={(v) => form.setData('ownership', v)} options={[{ key: 'owned', label: 'Owned' }, { key: 'hired', label: 'Hired' }]} />
-                            {form.data.ownership === 'hired' && <SelectField label="Hire company" name="supplier" value={form.data.supplier} onChange={(v) => form.setData('supplier', v)} options={suppliers} placeholder="Choose" error={form.errors.supplier} />}
+                            {form.data.ownership === 'hired' && <LookupField label="Hire company" name="supplier" value={form.data.supplier} onChange={(v) => form.setData('supplier', v)} type="suppliers" params={{ types: 'plant_hire' }} placeholder="Choose" error={form.errors.supplier} />}
                             {form.data.ownership === 'hired' && <Field label="Rate per day (R)" name="hire_rate_per_day" type="number" value={form.data.hire_rate_per_day} onChange={(e) => form.setData('hire_rate_per_day', e.target.value)} />}
                             <Field label="Service every (days)" name="service_interval_days" type="number" value={form.data.service_interval_days} onChange={(e) => form.setData('service_interval_days', e.target.value)} />
                             <Field label="Next service" name="next_service_on" type="date" value={form.data.next_service_on} onChange={(e) => form.setData('next_service_on', e.target.value)} />
@@ -44,13 +44,13 @@ export default function Plant({ items, projects, suppliers, canManage }: { items
                         <div className="flex gap-3"><Button type="submit" disabled={form.processing}>Add to register</Button><Button type="button" variant="secondary" onClick={() => setAdding(false)}>Cancel</Button></div>
                     </form>
                 )}
-                {items.length === 0 ? <p className="text-ink-soft">No plant recorded.</p> : <ul className="grid gap-3">{items.map((i) => <PlantRow key={i.id} item={i} projects={projects} canManage={canManage} />)}</ul>}
+                {items.length === 0 ? <p className="text-ink-soft">No plant recorded.</p> : <ul className="grid gap-3">{items.map((i) => <PlantRow key={i.id} item={i} canManage={canManage} />)}</ul>}
             </div>
         </>
     );
 }
 
-function PlantRow({ item: i, projects, canManage }: { item: Item; projects: Option[]; canManage: boolean }) {
+function PlantRow({ item: i, canManage }: { item: Item; canManage: boolean }) {
     const [open, setOpen] = useState(false);
     const ev = useForm({ type: 'moved', project: '', happened_on: today(), cost: '', notes: '' });
     return (
@@ -70,7 +70,7 @@ function PlantRow({ item: i, projects, canManage }: { item: Item; projects: Opti
             {open && (
                 <form onSubmit={(e) => { e.preventDefault(); ev.transform((d) => ({ ...d, project: d.project || null, cost: d.cost || null })); ev.post(`/plant/${i.id}/events`, { preserveScroll: true, onSuccess: () => setOpen(false) }); }} className="mt-3 grid items-end gap-3 border-t border-concrete pt-3 sm:grid-cols-[1fr_1fr_150px_120px_1fr_auto]">
                     <SelectField label="What happened" name="type" value={ev.data.type} onChange={(v) => ev.setData('type', v)} options={EVENTS} />
-                    {ev.data.type === 'moved' ? <SelectField label="To project" name="project" value={ev.data.project} onChange={(v) => ev.setData('project', v)} options={projects} placeholder="Choose" error={ev.errors.project} /> : <span />}
+                    {ev.data.type === 'moved' ? <LookupField label="To project" name="project" value={ev.data.project} onChange={(v) => ev.setData('project', v)} type="projects" params={{ status: 'active' }} placeholder="Choose" error={ev.errors.project} /> : <span />}
                     <Field label="Date" name="happened_on" type="date" value={ev.data.happened_on} onChange={(e) => ev.setData('happened_on', e.target.value)} />
                     <Field label="Cost (R)" name="cost" type="number" value={ev.data.cost} onChange={(e) => ev.setData('cost', e.target.value)} />
                     <Field label="Notes" name="notes" value={ev.data.notes} onChange={(e) => ev.setData('notes', e.target.value)} />

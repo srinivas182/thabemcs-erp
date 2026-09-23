@@ -3,6 +3,7 @@ import { Button, cn } from '@thabekhulu/ui';
 import { Download, Printer } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { formatDate, formatRand } from '@/components/data';
+import { LookupField } from '@/components/lookup-field';
 import AppLayout from '@/layouts/app-layout';
 
 type Column = { key: string; label: string; type: 'text' | 'money' | 'number' | 'percent' | 'date' };
@@ -11,7 +12,6 @@ interface Props {
     report: { key: string; title: string; description: string; filters: ('project' | 'period' | 'as_at')[] };
     result: { title: string; subtitle: string; columns: Column[]; rows: Row[]; totals: Row | null; note: string | null };
     values: { project: string | null; from: string; to: string; as_at: string };
-    projects: { key: string; label: string }[];
 }
 
 function cell(value: string | number | null | undefined, type: Column['type']): string {
@@ -23,7 +23,7 @@ function cell(value: string | number | null | undefined, type: Column['type']): 
     return String(value);
 }
 
-export default function ReportShow({ report, result, values, projects }: Props) {
+export default function ReportShow({ report, result, values }: Props) {
     const [f, setF] = useState(values);
     const query = new URLSearchParams(Object.entries(f).filter(([, v]) => v) as [string, string][]).toString();
     const input = 'h-10 rounded-[var(--radius-control)] border border-concrete bg-surface px-3 text-sm';
@@ -48,12 +48,7 @@ export default function ReportShow({ report, result, values, projects }: Props) 
 
                 <form onSubmit={(e) => { e.preventDefault(); router.get(`/reports/${report.key}`, Object.fromEntries(Object.entries(f).filter(([, v]) => v)), { preserveState: true }); }} className="flex flex-wrap items-end gap-3 print:hidden">
                     {report.filters.includes('project') && (
-                        <label className="grid gap-1 text-sm font-medium">Project
-                            <select className={input} value={f.project ?? ''} onChange={(e) => setF({ ...f, project: e.target.value || null })}>
-                                <option value="">All projects</option>
-                                {projects.map((p) => <option key={p.key} value={p.key}>{p.label}</option>)}
-                            </select>
-                        </label>
+                        <div className="w-72"><LookupField label="Project" name="project" type="projects" value={f.project ?? ''} placeholder="All projects" onChange={(v) => setF({ ...f, project: v || null })} /></div>
                     )}
                     {report.filters.includes('period') && (
                         <>

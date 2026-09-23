@@ -2,7 +2,8 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Button, cn, Field } from '@thabekhulu/ui';
 import { type FormEvent, type ReactNode, useState } from 'react';
 import { ApprovalTrail, type ApprovalTrailData, STATUS_LABEL } from '@/components/approval-trail';
-import { formatDate, formatRand, SelectField, tableClass } from '@/components/data';
+import { formatDate, formatRand, tableClass } from '@/components/data';
+import { LookupField, LookupMulti } from '@/components/lookup-field';
 import AppLayout from '@/layouts/app-layout';
 
 interface Quote { id: number; supplier: string; amount: number; reference: string | null; leadTime: number | null; validUntil: string | null; notes: string | null; lowest: boolean; blockers: string[] }
@@ -12,13 +13,12 @@ interface Props {
     quotes: Quote[];
     approval: ApprovalTrailData | null;
     purchaseOrder: string | null;
-    suppliers: { key: string; label: string }[];
     threshold: number;
     invitations: { supplier: string; email: string; sentAt: string; closesOn: string; status: string }[];
     can: { submit: boolean; procure: boolean };
 }
 
-export default function RequisitionShow({ requisition: r, lines, quotes, approval, purchaseOrder, suppliers, threshold, invitations, can }: Props) {
+export default function RequisitionShow({ requisition: r, lines, quotes, approval, purchaseOrder, threshold, invitations, can }: Props) {
     const [choice, setChoice] = useState<number | null>(null);
     const [reason, setReason] = useState('');
     const [singleSource, setSingleSource] = useState('');
@@ -91,11 +91,11 @@ export default function RequisitionShow({ requisition: r, lines, quotes, approva
                             </div>
                         )}
 
-                        {r.status === 'approved' && can.procure && <InviteSuppliers requisitionId={r.id} suppliers={suppliers} invitations={invitations} />}
+                        {r.status === 'approved' && can.procure && <InviteSuppliers requisitionId={r.id} invitations={invitations} />}
 
                         {r.status === 'approved' && can.procure && (
                             <form onSubmit={addQuote} className="grid items-end gap-3 rounded-[var(--radius-panel)] border border-dashed border-concrete p-4 sm:grid-cols-[1.4fr_1fr_1fr_110px_150px]">
-                                <SelectField label="Supplier" name="supplier" value={quote.data.supplier} onChange={(v) => quote.setData('supplier', v)} options={suppliers} placeholder="Choose" error={quote.errors.supplier} />
+                                <LookupField label="Supplier" name="supplier" value={quote.data.supplier} onChange={(v) => quote.setData('supplier', v)} type="suppliers" placeholder="Choose" error={quote.errors.supplier} />
                                 <Field label="Amount excl. VAT (R)" name="amount" type="number" value={quote.data.amount} onChange={(e) => quote.setData('amount', e.target.value)} error={quote.errors.amount} />
                                 <Field label="Quote reference" name="reference" value={quote.data.reference} onChange={(e) => quote.setData('reference', e.target.value)} />
                                 <Field label="Lead time (days)" name="lead_time_days" type="number" value={quote.data.lead_time_days} onChange={(e) => quote.setData('lead_time_days', e.target.value)} />
@@ -115,10 +115,9 @@ export default function RequisitionShow({ requisition: r, lines, quotes, approva
 
 const INVITE_STATUS: Record<string, string> = { sent: 'Sent', opened: 'Opened', quoted: 'Quoted', declined: 'Declined' };
 
-function InviteSuppliers({ requisitionId, suppliers, invitations }: { requisitionId: string; suppliers: { key: string; label: string }[]; invitations: Props['invitations'] }) {
+function InviteSuppliers({ requisitionId, invitations }: { requisitionId: string; invitations: Props['invitations'] }) {
     const inAWeek = new Date(Date.now() + 7 * 86_400_000).toLocaleDateString('en-CA');
     const form = useForm<{ suppliers: string[]; closes_on: string; message: string }>({ suppliers: [], closes_on: inAWeek, message: '' });
-    const invited = new Set(invitations.map((i) => i.supplier));
     return (
         <div className="grid gap-3 rounded-[var(--radius-panel)] border border-concrete bg-surface p-4">
             <p className="font-semibold">Request quotes by email</p>
@@ -128,14 +127,7 @@ function InviteSuppliers({ requisitionId, suppliers, invitations }: { requisitio
                 </ul>
             )}
             <form onSubmit={(e) => { e.preventDefault(); form.post(`/requisitions/${requisitionId}/rfq`, { preserveScroll: true, onSuccess: () => form.reset('suppliers', 'message') }); }} className="grid gap-3">
-                <div className="flex flex-wrap gap-2">
-                    {suppliers.filter((s) => !invited.has(s.label)).map((s) => (
-                        <label key={s.key} className="flex items-center gap-1.5 rounded-full border border-concrete px-2.5 py-1 text-sm">
-                            <input type="checkbox" className="accent-line" checked={form.data.suppliers.includes(s.key)} onChange={(e) => form.setData('suppliers', e.target.checked ? [...form.data.suppliers, s.key] : form.data.suppliers.filter((x) => x !== s.key))} />
-                            {s.label}
-                        </label>
-                    ))}
-                </div>
+                <LookupMulti label="Suppliers to invite" name="suppliers" type="suppliers" value={form.data.suppliers} onChange={(v) => form.setData('suppliers', v)} error={form.errors.suppliers} />
                 <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
                     <Field label="Quotes close on" name="closes_on" type="date" value={form.data.closes_on} onChange={(e) => form.setData('closes_on', e.target.value)} error={form.errors.closes_on} />
                     <Field label="Message to suppliers (optional)" name="message" value={form.data.message} onChange={(e) => form.setData('message', e.target.value)} placeholder="e.g. Delivery to site in Ballito; prices to include transport" />

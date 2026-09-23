@@ -7,6 +7,7 @@ use App\Domains\Platform\Models\Company;
 use App\Domains\Programme\Services\EarnedValueService;
 use App\Domains\Projects\Models\Project;
 use App\Domains\Projects\Services\TaskEscalation;
+use App\Domains\Reporting\Jobs\RefreshProjectMetrics;
 use App\Domains\Reporting\Services\ScheduledReportSender;
 use App\Domains\Suppliers\Services\ComplianceAlerts;
 use App\Domains\Workflow\Services\ApprovalEngine;
@@ -72,3 +73,21 @@ Artisan::command('popia:retention', function (RetentionService $retention): void
 })->purpose('Apply POPIA retention rules');
 
 Schedule::command('popia:retention')->monthlyOn(1, '02:00')->timezone('Africa/Johannesburg');
+
+// Nightly refresh of project metrics: "behind" and "late" depend on today's date.
+Artisan::command('metrics:refresh', function (CurrentCompany $context): void {
+    $queued = 0;
+    Company::query()->where('status', 'active')->each(function (Company $company) use ($context, &$queued): void {
+        $context->runFor($company, function () use ($company, &$queued): void {
+            Project::query()->whereIn('status', ['active', 'on_hold'])->select(['id'])->chunkById(500, function ($projects) use ($company, &$queued): void {
+                foreach ($projects as $project) {
+                    RefreshProjectMetrics::dispatch((int) $company->getKey(), (int) $project->id);
+                    $queued++;
+                }
+            });
+        });
+    });
+    $this->info("Queued {$queued} project metric refreshes.");
+})->purpose('Refresh precomputed project metrics');
+
+Schedule::command('metrics:refresh')->dailyAt('04:30')->timezone('Africa/Johannesburg');

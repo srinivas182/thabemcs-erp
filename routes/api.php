@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domains\Forms\Http\Controllers\FormController;
 use App\Domains\Site\Http\Controllers\Api\SiteApiController;
 use App\Domains\Site\Http\Controllers\Api\SiteOperationsApiController;
+use App\Http\Middleware\SetCacheHeaders;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 | Authentication: Laravel Sanctum (SPA cookie or bearer token).
 */
 
-Route::prefix('v1')->middleware(['auth:sanctum', 'company', 'throttle:api'])->group(function (): void {
+Route::prefix('v1')->middleware([SetCacheHeaders::class, 'auth:sanctum', 'company', 'throttle:api'])->group(function (): void {
     Route::get('/me', function (Request $request): array {
         /** @var User $user */
         $user = $request->user();

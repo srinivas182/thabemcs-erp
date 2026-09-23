@@ -97,7 +97,6 @@ final class LandController
             'outstanding' => $this->land->outstanding($parcel),
             'statuses' => array_map(static fn (LandStatus $s): array => ['key' => $s->value, 'label' => $s->label()], LandStatus::cases()),
             'provinces' => array_map(static fn (Province $p): array => ['key' => $p->value, 'label' => $p->label()], Province::cases()),
-            'projects' => Project::query()->orderBy('name')->get(['id', 'ulid', 'name'])->map(static fn (Project $p): array => ['key' => $p->ulid, 'label' => $p->name])->values(),
             'canManage' => $request->user()?->can('manage-land') ?? false,
         ]);
     }

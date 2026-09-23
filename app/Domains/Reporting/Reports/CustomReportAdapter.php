@@ -57,20 +57,16 @@ final class CustomReportAdapter implements Report
         $config = $this->report->config;
         $columns = array_values(array_filter($config['columns'], static fn (string $c): bool => isset($fields[$c])));
 
-        $rows = $this->datasets->rows($this->report->dataset, $filters->project?->id);
+        $result = $this->datasets->rows(
+            $this->report->dataset, $filters->project?->id, $config['filters'] ?? [],
+            $config['sort'] ?? null, $config['direction'] ?? 'asc',
+        );
+        $rows = $result['rows'];
 
-        foreach ($config['filters'] ?? [] as $f) {
-            if (! isset($fields[$f['field']])) {
-                continue;
-            }
-            $type = $fields[$f['field']]['type'];
+        // Conditions on figures worked out in PHP (revised budget, supplier compliance) run on the rows fetched.
+        foreach ($result['inPhp'] as $f) {
+            $type = $fields[$f['field']]['type'] ?? 'text';
             $rows = array_values(array_filter($rows, static fn (array $r): bool => self::matches($r[$f['field']] ?? null, $f['op'], $f['value'], $type)));
-        }
-
-        if (! empty($config['sort']) && isset($fields[$config['sort']])) {
-            $key = $config['sort'];
-            $desc = ($config['direction'] ?? 'asc') === 'desc';
-            usort($rows, static fn (array $a, array $b): int => ($desc ? -1 : 1) * (($a[$key] ?? '') <=> ($b[$key] ?? '')));
         }
 
         $rows = array_map(static fn (array $r): array => array_intersect_key($r, array_flip($columns)), $rows);
@@ -79,13 +75,18 @@ final class CustomReportAdapter implements Report
             ? [$columns[0] => 'Total', ...ReportResult::sum($rows, $moneyColumns)]
             : null;
 
+        $note = count($rows).' rows.';
+        if ($result['truncated']) {
+            $note .= ' Showing the first '.count($result['rows'])." of {$result['total']} matching rows; add a condition or filter by project to narrow it.";
+        }
+
         return new ReportResult(
             $this->report->name,
             trim(($config['subtitle'] ?? '').' '.$filters->describe(false, false)),
             array_map(static fn (string $c): array => ['key' => $c, 'label' => $fields[$c]['label'], 'type' => $fields[$c]['type']], $columns),
             $rows,
             $totals,
-            count($rows).' rows.',
+            $note,
         );
     }
 

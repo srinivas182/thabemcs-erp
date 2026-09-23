@@ -2,6 +2,7 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Button, cn, Field } from '@thabekhulu/ui';
 import { type FormEvent, type ReactNode, useState } from 'react';
 import { formatDate, formatDateTime, SelectField } from '@/components/data';
+import { LookupField } from '@/components/lookup-field';
 import AppLayout from '@/layouts/app-layout';
 
 type Option = { key: string; label: string };
@@ -42,7 +43,6 @@ interface Props {
     outstanding: string[];
     statuses: Option[];
     provinces: Option[];
-    projects: Option[];
     canManage: boolean;
 }
 
@@ -53,7 +53,7 @@ const RESULTS: { key: Check['result']; label: string; style: string }[] = [
     { key: 'pending', label: 'To do', style: 'bg-surface text-ink border-ink' },
 ];
 
-export default function LandShow({ parcel, checks, outstanding, statuses, provinces, projects, canManage }: Props) {
+export default function LandShow({ parcel, checks, outstanding, statuses, provinces, canManage }: Props) {
     const [editing, setEditing] = useState(false);
     const done = checks.filter((c) => c.result !== 'pending').length;
 
@@ -82,7 +82,7 @@ export default function LandShow({ parcel, checks, outstanding, statuses, provin
                     {[parcel.offer_date && `Offer made ${formatDate(parcel.offer_date)}`, parcel.acceptance_date && `accepted ${formatDate(parcel.acceptance_date)}`, parcel.transfer_date && `transferred ${formatDate(parcel.transfer_date)}`].filter(Boolean).join(', ')}
                 </p>
 
-                {editing && <DetailsForm parcel={parcel} provinces={provinces} projects={projects} onDone={() => setEditing(false)} />}
+                {editing && <DetailsForm parcel={parcel} provinces={provinces} onDone={() => setEditing(false)} />}
 
                 <section>
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -147,7 +147,7 @@ function CheckRow({ parcelId, check, canManage }: { parcelId: string; check: Che
     );
 }
 
-function DetailsForm({ parcel, provinces, projects, onDone }: { parcel: Parcel; provinces: Option[]; projects: Option[]; onDone: () => void }) {
+function DetailsForm({ parcel, provinces, onDone }: { parcel: Parcel; provinces: Option[]; onDone: () => void }) {
     const form = useForm({
         name: parcel.name, property_description: parcel.property_description ?? '', title_deed_number: parcel.title_deed_number ?? '',
         province: parcel.province ?? '', town: parcel.town ?? '', size_m2: parcel.size_m2 ?? '', current_zoning: parcel.current_zoning ?? '',
@@ -180,7 +180,7 @@ function DetailsForm({ parcel, provinces, projects, onDone }: { parcel: Parcel; 
                 <Field label="Seller" {...bind('seller_name')} />
                 <Field label="Asking price (R)" type="number" {...bind('asking_price')} />
                 <Field label="Offer price (R)" type="number" {...bind('offer_price')} />
-                <SelectField label="Project" name="project" value={form.data.project} onChange={(v) => form.setData('project', v)} options={projects} placeholder="Not linked" error={form.errors.project} />
+                <LookupField label="Project" name="project" value={form.data.project} onChange={(v) => form.setData('project', v)} type="projects" placeholder="Not linked" error={form.errors.project} />
             </div>
             <div className="flex gap-3">
                 <Button type="submit" disabled={form.processing}>Save</Button>

@@ -3,6 +3,7 @@ import { Button, cn, Field } from '@thabekhulu/ui';
 import { BadgeCheck, Download } from 'lucide-react';
 import { type FormEvent, type ReactNode, useState } from 'react';
 import { formatDate, formatDateTime, formatRand, SelectField } from '@/components/data';
+import { LookupField } from '@/components/lookup-field';
 import AppLayout from '@/layouts/app-layout';
 
 type Option = { key: string; label: string };
@@ -32,7 +33,6 @@ interface Props {
     documentTypes: Option[];
     types: Option[];
     provinces: Option[];
-    projects: Option[];
     can: { manage: boolean; rate: boolean };
 }
 
@@ -43,7 +43,7 @@ const STATE: Record<ComplianceRow['state'], { label: string; style: string }> = 
     missing: { label: 'Missing', style: 'bg-brick-wash text-brick' },
 };
 
-export default function SupplierShow({ supplier, compliance, blockers, ratings, documentTypes, types, provinces, projects, can }: Props) {
+export default function SupplierShow({ supplier, compliance, blockers, ratings, documentTypes, types, provinces, can }: Props) {
     const [editing, setEditing] = useState(false);
     const [value, setValue] = useState('');
     const cidbOk = (() => {
@@ -135,7 +135,7 @@ export default function SupplierShow({ supplier, compliance, blockers, ratings, 
                     </section>
                 )}
 
-                <Ratings supplierId={supplier.id} ratings={ratings} projects={projects} canRate={can.rate} />
+                <Ratings supplierId={supplier.id} ratings={ratings} canRate={can.rate} />
             </div>
         </>
     );
@@ -174,7 +174,7 @@ function AddDocument({ supplierId, documentTypes }: { supplierId: string; docume
     );
 }
 
-function Ratings({ supplierId, ratings, projects, canRate }: { supplierId: string; ratings: Props['ratings']; projects: Option[]; canRate: boolean }) {
+function Ratings({ supplierId, ratings, canRate }: { supplierId: string; ratings: Props['ratings']; canRate: boolean }) {
     const form = useForm({ project: '', quality: '4', timeliness: '4', safety: '4', comment: '' });
     const scale = [1, 2, 3, 4, 5].map((n) => ({ key: String(n), label: String(n) }));
     const avg = ratings.length ? (ratings.reduce((s, r) => s + r.average, 0) / ratings.length).toFixed(1) : null;
@@ -200,7 +200,7 @@ function Ratings({ supplierId, ratings, projects, canRate }: { supplierId: strin
             </ul>
             {canRate && (
                 <form onSubmit={submit} className="grid items-end gap-3 sm:grid-cols-[1fr_90px_90px_90px_1.5fr_auto]">
-                    <SelectField label="Project" name="project" value={form.data.project} onChange={(v) => form.setData('project', v)} options={projects} placeholder="General" />
+                    <LookupField label="Project" name="project" value={form.data.project} onChange={(v) => form.setData('project', v)} type="projects" placeholder="General" />
                     <SelectField label="Quality" name="quality" value={form.data.quality} onChange={(v) => form.setData('quality', v)} options={scale} />
                     <SelectField label="On time" name="timeliness" value={form.data.timeliness} onChange={(v) => form.setData('timeliness', v)} options={scale} />
                     <SelectField label="Safety" name="safety" value={form.data.safety} onChange={(v) => form.setData('safety', v)} options={scale} />

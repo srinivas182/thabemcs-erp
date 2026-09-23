@@ -55,8 +55,6 @@ final class ContractController
                     'due' => (float) $p->amount_due, 'vat' => (float) $p->vat, 'status' => $p->status,
                 ])->values(),
             ]),
-            'contractors' => Supplier::query()->whereIn('type', ['contractor', 'subcontractor'])->where('status', 'active')->orderBy('name')->get(['ulid', 'name'])
-                ->map(static fn (Supplier $s): array => ['key' => $s->ulid, 'label' => $s->name])->values(),
             'budgetLines' => BudgetLine::query()->where('project_id', $project->id)->orderBy('code')->get(['id', 'code', 'description'])
                 ->map(static fn (BudgetLine $l): array => ['key' => (string) $l->id, 'label' => "{$l->code} {$l->description}"])->values(),
             'forms' => collect(self::FORMS)->map(static fn (string $label, string $key): array => ['key' => $key, 'label' => $label])->values(),

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domains\Reporting\Http\Controllers;
 
-use App\Domains\Projects\Models\Project;
 use App\Domains\Reporting\Contracts\Report;
 use App\Domains\Reporting\Models\ReportSchedule;
 use App\Domains\Reporting\Services\PortfolioService;
@@ -60,8 +59,6 @@ final class ReportController
                     'format' => $s->format, 'recipients' => User::query()->whereIn('id', $s->recipients)->pluck('name')->all(),
                     'lastSent' => $s->last_sent_at?->toIso8601String(), 'by' => $s->creator->name,
                 ])->values(),
-            'people' => User::query()->where('company_id', $this->context->id())->where('is_active', true)->orderBy('name')->get(['ulid', 'name'])
-                ->map(static fn (User $u): array => ['key' => $u->ulid, 'label' => $u->name])->values(),
             'canSchedule' => $user->can('manage-report-schedules'),
         ]);
     }
@@ -75,7 +72,6 @@ final class ReportController
             'report' => ['key' => $report->key(), 'title' => $report->title(), 'description' => $report->description(), 'filters' => $report->filters()],
             'result' => $report->build($filters)->toArray(),
             'values' => $filters->toArray(),
-            'projects' => Project::query()->orderBy('code')->get(['ulid', 'code', 'name'])->map(static fn (Project $p): array => ['key' => $p->ulid, 'label' => "{$p->code} {$p->name}"])->values(),
         ]);
     }
 

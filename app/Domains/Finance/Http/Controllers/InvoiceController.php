@@ -8,7 +8,6 @@ use App\Domains\Contracts\Models\PaymentCertificate;
 use App\Domains\Documents\Enums\DocumentCategory;
 use App\Domains\Documents\Services\DocumentService;
 use App\Domains\Finance\Exceptions\FinanceException;
-use App\Domains\Finance\Models\BudgetLine;
 use App\Domains\Finance\Models\SupplierInvoice;
 use App\Domains\Finance\Services\InvoiceService;
 use App\Domains\Platform\Enums\Role;
@@ -50,14 +49,10 @@ final class InvoiceController
                     'mine' => $i->captured_by === $request->user()?->id,
                 ]),
             'filter' => $status,
-            'suppliers' => Supplier::query()->orderBy('name')->get(['ulid', 'name'])->map(static fn (Supplier $s): array => ['key' => $s->ulid, 'label' => $s->name])->values(),
             'orders' => PurchaseOrder::query()->with('supplier:id,ulid,name')->whereIn('status', ['issued', 'partially_received', 'received'])->latest('id')->limit(200)->get()
                 ->map(static fn (PurchaseOrder $o): array => ['key' => $o->ulid, 'label' => "{$o->reference()} {$o->supplier->name}", 'supplier' => $o->supplier->ulid])->values(),
             'certificates' => PaymentCertificate::query()->with('contract.supplier:id,ulid,name')->where('status', 'certified')->latest('id')->limit(100)->get()
                 ->map(static fn ($c): array => ['key' => $c->ulid, 'label' => "{$c->reference()} {$c->contract->reference} (R".number_format((float) $c->amount_due, 2, '.', ' ').')', 'supplier' => $c->contract->supplier->ulid])->values(),
-            'projects' => Project::query()->orderBy('name')->get(['id', 'ulid', 'name'])->map(static fn (Project $p): array => ['key' => $p->ulid, 'label' => $p->name])->values(),
-            'budgetLines' => BudgetLine::query()->with('project:id,ulid')->orderBy('code')->get()
-                ->map(static fn (BudgetLine $l): array => ['key' => (string) $l->id, 'label' => "{$l->code} {$l->description}", 'project' => $l->project->ulid])->values(),
             'canOverride' => $request->user()?->can('override-invoice-match') ?? false,
         ]);
     }

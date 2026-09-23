@@ -2,6 +2,7 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Button, cn, Field } from '@thabekhulu/ui';
 import { type FormEvent, type ReactNode, useState } from 'react';
 import { formatDate, formatRand, selectClass, SelectField } from '@/components/data';
+import { LookupField } from '@/components/lookup-field';
 import AppLayout from '@/layouts/app-layout';
 
 type Option = { key: string; label: string };
@@ -27,7 +28,6 @@ interface Props {
     sources: Source[];
     account: { bank: string; accountName: string; last4: string; openedOn: string | null } | null;
     types: Option[];
-    investors: Option[];
     can: { manage: boolean };
 }
 
@@ -38,7 +38,7 @@ const STATUSES: Option[] = [
     { key: 'closed', label: 'Closed' },
 ];
 
-export default function Funding({ project, summary, sources, account, types, investors, can }: Props) {
+export default function Funding({ project, summary, sources, account, types, can }: Props) {
     const covered = summary.requirement ? Math.min(100, (summary.committed / summary.requirement) * 100) : null;
 
     return (
@@ -89,7 +89,7 @@ export default function Funding({ project, summary, sources, account, types, inv
                             <SourceCard key={s.id} source={s} canManage={can.manage} />
                         ))}
                     </ul>
-                    {can.manage && <NewSource projectId={project.id} types={types} investors={investors} />}
+                    {can.manage && <NewSource projectId={project.id} types={types} />}
                 </section>
 
                 <BankAccount projectId={project.id} account={account} canManage={can.manage} />
@@ -161,7 +161,7 @@ function SourceCard({ source, canManage }: { source: Source; canManage: boolean 
     );
 }
 
-function NewSource({ projectId, types, investors }: { projectId: string; types: Option[]; investors: Option[] }) {
+function NewSource({ projectId, types }: { projectId: string; types: Option[] }) {
     const form = useForm({ type: 'equity', name: '', investor: '', committed_amount: '', interest_rate: '', agreement_signed_on: '', status: 'proposed' });
 
     function submit(e: FormEvent) {
@@ -180,7 +180,7 @@ function NewSource({ projectId, types, investors }: { projectId: string; types: 
             </div>
             <div className="grid gap-4 sm:grid-cols-4">
                 {form.data.type === 'investor' && (
-                    <SelectField label="Investor" name="investor" value={form.data.investor} onChange={(v) => form.setData('investor', v)} options={investors} placeholder={investors.length ? 'Choose' : 'Add investors first'} error={form.errors.investor} />
+                    <LookupField label="Investor" name="investor" value={form.data.investor} onChange={(v) => form.setData('investor', v)} type="investors" placeholder="Search investors" error={form.errors.investor} />
                 )}
                 {form.data.type === 'debt' && (
                     <Field label="Interest rate (% a year)" name="interest_rate" type="number" step="0.01" value={form.data.interest_rate} onChange={(e) => form.setData('interest_rate', e.target.value)} error={form.errors.interest_rate} />

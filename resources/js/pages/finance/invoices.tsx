@@ -3,6 +3,7 @@ import { Button, cn, Field } from '@thabekhulu/ui';
 import { AlertTriangle, Check } from 'lucide-react';
 import { type FormEvent, type ReactNode, useState } from 'react';
 import { formatDate, formatRand, PageHeader, Pager, SelectField } from '@/components/data';
+import { LookupField } from '@/components/lookup-field';
 import AppLayout from '@/layouts/app-layout';
 import type { Paginated } from '@/types';
 
@@ -11,17 +12,14 @@ interface Row { id: string; number: string; supplier: string; project: string; p
 interface Props {
     invoices: Paginated<Row>;
     filter: string;
-    suppliers: Option[];
     orders: (Option & { supplier: string })[];
     certificates: (Option & { supplier: string })[];
-    projects: Option[];
-    budgetLines: (Option & { project: string })[];
     canOverride: boolean;
 }
 
 const LABEL: Record<string, string> = { captured: 'Captured', matched: 'Matched', exception: 'Match failed', approved: 'Approved', scheduled: 'In a payment run', paid: 'Paid', rejected: 'Rejected' };
 
-export default function Invoices({ invoices, filter, suppliers, orders, certificates, projects, budgetLines, canOverride }: Props) {
+export default function Invoices({ invoices, filter, orders, certificates, canOverride }: Props) {
     const [capturing, setCapturing] = useState(false);
     return (
         <>
@@ -29,7 +27,7 @@ export default function Invoices({ invoices, filter, suppliers, orders, certific
             <div className="mx-auto grid max-w-6xl gap-6">
                 <PageHeader title="Supplier invoices" description="Every invoice is matched to its purchase order and the goods received before it can be paid."
                     action={<div className="flex gap-2"><Button variant="ghost" asChild><Link href="/exports">Exports</Link></Button><Button variant="secondary" asChild><Link href="/payment-runs">Payment runs</Link></Button><Button onClick={() => setCapturing(!capturing)}>Capture invoice</Button></div>} />
-                {capturing && <Capture suppliers={suppliers} orders={orders} certificates={certificates} projects={projects} budgetLines={budgetLines} onDone={() => setCapturing(false)} />}
+                {capturing && <Capture orders={orders} certificates={certificates} onDone={() => setCapturing(false)} />}
                 <div className="flex flex-wrap gap-1.5">
                     {['', 'exception', 'matched', 'approved', 'scheduled', 'paid', 'rejected'].map((s) => (
                         <button key={s} onClick={() => router.get('/invoices', s ? { status: s } : {})} className={cn('rounded-full border px-3 py-1 text-sm', filter === s ? 'border-line bg-line text-white' : 'border-concrete bg-surface')}>{s ? LABEL[s] : 'All'}</button>
@@ -78,7 +76,7 @@ function InvoiceCard({ invoice: i, canOverride }: { invoice: Row; canOverride: b
     );
 }
 
-function Capture({ suppliers, orders, certificates, projects, budgetLines, onDone }: Omit<Props, 'invoices' | 'filter' | 'canOverride'> & { onDone: () => void }) {
+function Capture({ orders, certificates, onDone }: Omit<Props, 'invoices' | 'filter' | 'canOverride'> & { onDone: () => void }) {
     const form = useForm<{ supplier: string; purchase_order: string; certificate: string; project: string; budget_line_id: string; invoice_number: string; invoice_date: string; due_date: string; subtotal: string; vat: string; total: string; file: File | null }>({
         supplier: '', purchase_order: '', certificate: '', project: '', budget_line_id: '', invoice_number: '', invoice_date: '', due_date: '', subtotal: '', vat: '', total: '', file: null,
     });
@@ -101,7 +99,7 @@ function Capture({ suppliers, orders, certificates, projects, budgetLines, onDon
     return (
         <form onSubmit={submit} className="grid gap-4 rounded-[var(--radius-panel)] border border-concrete bg-surface p-5" noValidate>
             <div className="grid gap-4 sm:grid-cols-3">
-                <SelectField label="Supplier" name="supplier" value={form.data.supplier} onChange={(v) => form.setData((d) => ({ ...d, supplier: v, purchase_order: '' }))} options={suppliers} placeholder="Choose" error={form.errors.supplier} />
+                <LookupField label="Supplier" name="supplier" value={form.data.supplier} onChange={(v) => form.setData((d) => ({ ...d, supplier: v, purchase_order: '' }))} type="suppliers" placeholder="Choose" error={form.errors.supplier} />
                 <SelectField label="Purchase order" name="purchase_order" value={form.data.purchase_order} onChange={(v) => form.setData('purchase_order', v)} options={supplierOrders} placeholder={supplierOrders.length ? 'Choose' : 'No open orders for this supplier'} />
                 <Field label="Supplier's invoice number" {...bind('invoice_number')} />
             </div>
@@ -110,8 +108,8 @@ function Capture({ suppliers, orders, certificates, projects, budgetLines, onDon
             )}
             {!form.data.purchase_order && !form.data.certificate && (
                 <div className="grid gap-4 sm:grid-cols-2">
-                    <SelectField label="Project" name="project" value={form.data.project} onChange={(v) => form.setData((d) => ({ ...d, project: v, budget_line_id: '' }))} options={projects} placeholder="Choose" error={form.errors.project} />
-                    <SelectField label="Cost code" name="budget_line_id" value={form.data.budget_line_id} onChange={(v) => form.setData('budget_line_id', v)} options={budgetLines.filter((l) => l.project === form.data.project)} placeholder="Choose" error={form.errors.budget_line_id} />
+                    <LookupField label="Project" name="project" value={form.data.project} onChange={(v) => form.setData((d) => ({ ...d, project: v, budget_line_id: '' }))} type="projects" placeholder="Choose" error={form.errors.project} />
+                    <LookupField key={form.data.project} label="Cost code" name="budget_line_id" value={form.data.budget_line_id} onChange={(v) => form.setData('budget_line_id', v)} type="budget-lines" params={{ project: form.data.project }} placeholder="Choose" error={form.errors.budget_line_id} />
                 </div>
             )}
             <div className="grid gap-4 sm:grid-cols-5">

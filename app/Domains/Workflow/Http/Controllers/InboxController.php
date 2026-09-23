@@ -52,8 +52,6 @@ final class InboxController
             'delegations' => ApprovalDelegation::query()->with('delegate:id,name')->where('user_id', $user->id)
                 ->whereDate('ends_on', '>=', now('Africa/Johannesburg')->toDateString())->get()
                 ->map(static fn (ApprovalDelegation $d): array => ['id' => $d->id, 'delegate' => $d->delegate->name, 'from' => $d->starts_on->toDateString(), 'to' => $d->ends_on->toDateString()]),
-            'people' => User::query()->where('company_id', $this->context->id())->where('is_active', true)->whereKeyNot($user->id)->orderBy('name')
-                ->get(['ulid', 'name'])->map(static fn (User $u): array => ['key' => $u->ulid, 'label' => $u->name])->values(),
         ]);
     }
 

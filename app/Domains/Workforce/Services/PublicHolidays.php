@@ -15,7 +15,22 @@ final class PublicHolidays
     /**
      * @return list<string> Y-m-d dates
      */
+    /** @var array<int, list<string>> */
+    private array $memo = [];
+
     public function forYear(int $year): array
+    {
+        if (isset($this->memo[$year])) {
+            return $this->memo[$year];
+        }
+
+        return $this->memo[$year] = $this->calculate($year);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function calculate(int $year): array
     {
         $fixed = ['01-01', '03-21', '04-27', '05-01', '06-16', '08-09', '09-24', '12-16', '12-25', '12-26'];
         $dates = [];

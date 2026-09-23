@@ -21,6 +21,7 @@ use App\Domains\Meetings\Http\Controllers\MeetingController;
 use App\Domains\Plant\Http\Controllers\PlantController;
 use App\Domains\Platform\Http\Controllers\ActingCompanyController;
 use App\Domains\Platform\Http\Controllers\CompanyController;
+use App\Domains\Platform\Http\Controllers\LookupController;
 use App\Domains\Platform\Http\Controllers\MyDayController;
 use App\Domains\Platform\Http\Controllers\NotificationController;
 use App\Domains\Platform\Http\Controllers\SearchController;
@@ -235,6 +236,9 @@ Route::middleware(['auth'])->group(function (): void {
     Route::patch('settings/master-data/cost-codes/{costCode}', [MasterDataController::class, 'toggleCostCode'])->name('master-data.cost-codes.toggle');
     Route::post('settings/master-data/units', [MasterDataController::class, 'storeUnit'])->name('master-data.units.store');
     Route::delete('settings/master-data/units/{unit}', [MasterDataController::class, 'destroyUnit'])->name('master-data.units.destroy');
+
+    // Search-as-you-type options for dropdowns (never whole tables).
+    Route::get('lookup/{type}', LookupController::class)->middleware('throttle:120,1')->name('lookup');
 
     // POPIA: register, retention clean-up, data subject requests.
     Route::get('settings/popia', [PopiaController::class, 'index'])->name('popia.index');

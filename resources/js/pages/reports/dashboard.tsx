@@ -4,9 +4,9 @@ import type { ReactNode } from 'react';
 import { formatRand, tableClass } from '@/components/data';
 import AppLayout from '@/layouts/app-layout';
 
-interface Totals { projects: number; budget: number; spent: number; paid: number; highRisks: number; openIncidents: number; pendingApprovals: number; owedToSuppliers: number; daysSinceLti: number | null }
+interface Totals { red: number; amber: number; projects: number; budget: number; spent: number; paid: number; highRisks: number; openIncidents: number; pendingApprovals: number; owedToSuppliers: number; daysSinceLti: number | null }
 interface ProjectRow { id: string; code: string; name: string; stage: string; stageNumber: number; status: string; budget: number; spent: number; used: number | null; paid: number; highRisks: number; openIncidents: number; openSnags: number }
-interface Props { portfolio: { projects: ProjectRow[]; totals: Totals } | null; group: (Totals & { id: string; name: string })[] | null }
+interface Props { portfolio: { projects: ProjectRow[]; totals: Totals; listed: number } | null; group: (Totals & { id: string; name: string })[] | null }
 
 function Figure({ label, value, tone }: { label: string; value: ReactNode; tone?: 'bad' | 'warn' }) {
     return (
@@ -81,6 +81,7 @@ export default function Dashboard({ portfolio, group }: Props) {
                     <Figure label="Days since lost-time injury" value={t.daysSinceLti ?? 'None recorded'} />
                 </section>
 
+                {t.projects > portfolio.projects.length && <p className="text-sm text-ink-soft">Showing the {portfolio.projects.length} projects needing attention most, of {t.projects} live. <Link href="/projects" className="underline">All projects</Link>.</p>}
                 {portfolio.projects.length === 0 ? <p className="text-ink-soft">No live projects.</p> : (
                     <div className="overflow-x-auto rounded-[var(--radius-panel)] border border-concrete bg-surface">
                         <table className={tableClass}>

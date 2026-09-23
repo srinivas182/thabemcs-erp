@@ -40,10 +40,6 @@ final class ProgrammeController
                 ...($plan['activities'][$a->id] ?? ['earlyStart' => $a->planned_start->toDateString(), 'earlyFinish' => $a->planned_start->toDateString(), 'float' => 0, 'critical' => false, 'behind' => false]),
                 'predecessors' => $a->predecessors->map(static fn (ActivityDependency $d): array => ['id' => $d->id, 'activity' => $d->predecessor->ulid, 'name' => $d->predecessor->name, 'lag' => $d->lag_days])->values(),
             ])->values(),
-            'people' => User::query()->where('company_id', $this->context->id())->where('is_active', true)->orderBy('name')->get(['ulid', 'name'])
-                ->map(static fn (User $u): array => ['key' => $u->ulid, 'label' => $u->name])->values(),
-            'suppliers' => Supplier::query()->whereIn('type', ['contractor', 'subcontractor'])->orderBy('name')->get(['ulid', 'name'])
-                ->map(static fn (Supplier $s): array => ['key' => $s->ulid, 'label' => $s->name])->values(),
             'canManage' => $request->user()?->can('manage-projects') ?? false,
         ]);
     }

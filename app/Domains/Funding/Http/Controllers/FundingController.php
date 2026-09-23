@@ -61,8 +61,6 @@ final class FundingController
                 'last4' => $account->account_last4, 'openedOn' => $account->opened_on?->toDateString(),
             ] : null,
             'types' => array_map(static fn (FundingType $t): array => ['key' => $t->value, 'label' => $t->label()], FundingType::cases()),
-            'investors' => Investor::query()->orderBy('name')->get(['ulid', 'name'])
-                ->map(static fn (Investor $i): array => ['key' => $i->ulid, 'label' => $i->name])->values(),
             'can' => ['manage' => $request->user()?->can('manage-funding') ?? false],
         ]);
     }

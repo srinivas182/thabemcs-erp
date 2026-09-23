@@ -2,6 +2,7 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Button, cn, Field } from '@thabekhulu/ui';
 import { type FormEvent, type ReactNode, useState } from 'react';
 import { formatDate, PageHeader, selectClass, SelectField } from '@/components/data';
+import { LookupField } from '@/components/lookup-field';
 import AppLayout from '@/layouts/app-layout';
 
 type Option = { key: string; label: string };
@@ -29,16 +30,14 @@ interface Props {
     applications: Application[];
     filters: { project: string | null; view: string };
     projectName: string | null;
-    projects: Option[];
     types: (Option & { authority: string })[];
     statuses: Option[];
-    people: Option[];
     canManage: boolean;
 }
 
 const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' }).format(new Date());
 
-export default function Approvals({ applications, filters, projectName, projects, types, statuses, people, canManage }: Props) {
+export default function Approvals({ applications, filters, projectName, types, statuses, canManage }: Props) {
     const [adding, setAdding] = useState(false);
 
     return (
@@ -52,17 +51,14 @@ export default function Approvals({ applications, filters, projectName, projects
                 />
 
                 <div className="flex flex-wrap items-center gap-3">
-                    <select aria-label="Project" className={selectClass + ' h-10 w-64 text-sm'} value={filters.project ?? ''} onChange={(e) => router.get('/approvals', { ...filters, project: e.target.value || undefined })}>
-                        <option value="">All projects</option>
-                        {projects.map((p) => (<option key={p.key} value={p.key}>{p.label}</option>))}
-                    </select>
+                    <div className="w-72"><LookupField label="" name="project_filter" type="projects" value={filters.project ?? ''} initialLabel={projectName} placeholder="All projects" onChange={(v) => router.get('/approvals', { ...filters, project: v || undefined })} /></div>
                     <label className="flex items-center gap-2 text-sm">
                         <input type="checkbox" className="size-4 accent-line" checked={filters.view === 'attention'} onChange={(e) => router.get('/approvals', { ...filters, view: e.target.checked ? 'attention' : undefined })} />
                         Only those needing attention
                     </label>
                 </div>
 
-                {adding && <NewApplication filters={filters} projects={projects} types={types} people={people} onDone={() => setAdding(false)} />}
+                {adding && <NewApplication filters={filters} types={types} onDone={() => setAdding(false)} />}
 
                 {applications.length === 0 ? (
                     <p className="text-ink-soft">No applications here.</p>
@@ -106,7 +102,7 @@ export default function Approvals({ applications, filters, projectName, projects
     );
 }
 
-function NewApplication({ filters, projects, types, people, onDone }: { filters: Props['filters']; projects: Option[]; types: Props['types']; people: Option[]; onDone: () => void }) {
+function NewApplication({ filters, types, onDone }: { filters: Props['filters']; types: Props['types']; onDone: () => void }) {
     const form = useForm({ project: filters.project ?? '', type: 'building_plans', description: '', authority: types.find((t) => t.key === 'building_plans')?.authority ?? '', reference_number: '', expected_decision_on: '', valid_until: '', responsible: '' });
 
     function submit(e: FormEvent) {
@@ -118,7 +114,7 @@ function NewApplication({ filters, projects, types, people, onDone }: { filters:
     return (
         <form onSubmit={submit} className="grid gap-4 rounded-[var(--radius-panel)] border border-concrete bg-surface p-5" noValidate>
             <div className="grid gap-4 sm:grid-cols-3">
-                <SelectField label="Project" name="project" value={form.data.project} onChange={(v) => form.setData('project', v)} options={projects} placeholder="Choose a project" error={form.errors.project} />
+                <LookupField label="Project" name="project" value={form.data.project} onChange={(v) => form.setData('project', v)} type="projects" placeholder="Choose a project" error={form.errors.project} />
                 <SelectField label="Type" name="type" value={form.data.type} onChange={(v) => { form.setData('type', v); form.setData('authority', types.find((t) => t.key === v)?.authority ?? ''); }} options={types} />
                 <Field label="Authority" name="authority" value={form.data.authority} onChange={(e) => form.setData('authority', e.target.value)} />
             </div>
@@ -126,7 +122,7 @@ function NewApplication({ filters, projects, types, people, onDone }: { filters:
                 <Field label="Description" name="description" value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} placeholder="e.g. Rezoning to General Residential 3" />
                 <Field label="Reference number" name="reference_number" value={form.data.reference_number} onChange={(e) => form.setData('reference_number', e.target.value)} />
                 <Field label="Decision expected" name="expected_decision_on" type="date" value={form.data.expected_decision_on} onChange={(e) => form.setData('expected_decision_on', e.target.value)} />
-                <SelectField label="Responsible" name="responsible" value={form.data.responsible} onChange={(v) => form.setData('responsible', v)} options={people} placeholder="Nobody yet" />
+                <LookupField label="Responsible" name="responsible" value={form.data.responsible} onChange={(v) => form.setData('responsible', v)} type="people" placeholder="Nobody yet" />
             </div>
             <div className="flex gap-3">
                 <Button type="submit" disabled={form.processing}>Add to register</Button>

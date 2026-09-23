@@ -1,18 +1,18 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Button, cn, Field } from '@thabekhulu/ui';
 import type { FormEvent, ReactNode } from 'react';
-import { formatDate, formatDateTime, SelectField } from '@/components/data';
+import { formatDate, formatDateTime } from '@/components/data';
+import { LookupField } from '@/components/lookup-field';
 import AppLayout from '@/layouts/app-layout';
 
 interface Props {
     project: { id: string; name: string; code: string };
     meeting: { id: string; reference: string; title: string; type: string; at: string; location: string | null; attendees: string | null; apologies: string | null; minutes: string | null; status: string; issuedAt: string | null; by: string };
     actions: { id: string; title: string; owner: string | null; due: string | null; status: string }[];
-    people: { key: string; label: string }[];
     canManage: boolean;
 }
 
-export default function MeetingPage({ project, meeting: m, actions, people, canManage }: Props) {
+export default function MeetingPage({ project, meeting: m, actions, canManage }: Props) {
     const draft = m.status === 'draft' && canManage;
     const notes = useForm({ attendees: m.attendees ?? '', apologies: m.apologies ?? '', minutes: m.minutes ?? '' });
     const action = useForm({ title: '', owner: '', due_date: '' });
@@ -65,7 +65,7 @@ export default function MeetingPage({ project, meeting: m, actions, people, canM
                     {canManage && (
                         <form onSubmit={addAction} className="grid items-end gap-3 print:hidden sm:grid-cols-[1fr_200px_160px_auto]">
                             <Field label="Action" name="title" value={action.data.title} onChange={(e) => action.setData('title', e.target.value)} error={action.errors.title} />
-                            <SelectField label="Who" name="owner" value={action.data.owner} onChange={(v) => action.setData('owner', v)} options={people} placeholder="Choose" />
+                            <LookupField label="Who" name="owner" value={action.data.owner} onChange={(v) => action.setData('owner', v)} type="people" placeholder="Choose" />
                             <Field label="By when" name="due_date" type="date" value={action.data.due_date} onChange={(e) => action.setData('due_date', e.target.value)} />
                             <Button type="submit" disabled={action.processing}>Add action</Button>
                         </form>

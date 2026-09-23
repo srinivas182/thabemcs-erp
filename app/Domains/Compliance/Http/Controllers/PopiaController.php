@@ -47,8 +47,6 @@ final class PopiaController
                     'due' => $r->due_on->toDateString(), 'overdue' => ! in_array($r->status, ['completed', 'refused'], true) && $r->due_on->lessThan($today),
                     'status' => $r->status, 'outcome' => $r->outcome, 'handler' => $r->handler?->name,
                 ]),
-            'employees' => Employee::query()->orderBy('last_name')->get(['ulid', 'first_name', 'last_name', 'employee_number'])->map(static fn (Employee $e): array => ['key' => $e->ulid, 'label' => "{$e->name()} ({$e->employee_number})"])->values(),
-            'users' => User::query()->where('company_id', $this->context->id())->orderBy('name')->get(['ulid', 'name'])->map(static fn (User $u): array => ['key' => $u->ulid, 'label' => $u->name])->values(),
         ]);
     }
 

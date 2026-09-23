@@ -36,8 +36,6 @@ final class PlantController
                     'serviceDue' => $p->next_service_on !== null && $p->next_service_on->lessThanOrEqualTo(Carbon::today()->addDays(7)),
                     'events' => $p->events->map(static fn (PlantEvent $e): array => ['type' => $e->type, 'on' => $e->happened_on->toDateString(), 'project' => $e->project?->name, 'notes' => $e->notes])->values(),
                 ]),
-            'projects' => Project::query()->where('status', 'active')->orderBy('name')->get(['ulid', 'name'])->map(static fn (Project $p): array => ['key' => $p->ulid, 'label' => $p->name])->values(),
-            'suppliers' => Supplier::query()->where('type', 'plant_hire')->orderBy('name')->get(['ulid', 'name'])->map(static fn (Supplier $s): array => ['key' => $s->ulid, 'label' => $s->name])->values(),
             'canManage' => $request->user()?->can('manage-plant') ?? false,
         ]);
     }

@@ -42,6 +42,8 @@ final class MasterDataController
         ]);
         CostCode::query()->create([...$data, 'active' => true]);
 
+        $this->masterData->forget();
+
         return back()->with('success', "Cost code {$data['code']} added.");
     }
 
@@ -61,6 +63,8 @@ final class MasterDataController
             'name' => ['required', 'string', 'max:60'],
         ]);
         Unit::query()->create($data);
+
+        $this->masterData->forget();
 
         return back()->with('success', "Unit {$data['code']} added.");
     }

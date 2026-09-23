@@ -62,11 +62,8 @@ final class ApprovalController
             ]),
             'filters' => ['project' => $project?->ulid, 'view' => $view],
             'projectName' => $project?->name,
-            'projects' => Project::query()->orderBy('name')->get(['ulid', 'name'])->map(static fn (Project $p): array => ['key' => $p->ulid, 'label' => $p->name])->values(),
             'types' => array_map(static fn (ApplicationType $t): array => ['key' => $t->value, 'label' => $t->label(), 'authority' => $t->typicalAuthority()], ApplicationType::cases()),
             'statuses' => array_map(static fn (ApplicationStatus $s): array => ['key' => $s->value, 'label' => $s->label()], ApplicationStatus::cases()),
-            'people' => User::query()->where('company_id', $this->context->id())->where('is_active', true)->orderBy('name')->get(['ulid', 'name'])
-                ->map(static fn (User $u): array => ['key' => $u->ulid, 'label' => $u->name])->values(),
             'canManage' => $request->user()?->can('manage-projects') ?? false,
         ]);
     }

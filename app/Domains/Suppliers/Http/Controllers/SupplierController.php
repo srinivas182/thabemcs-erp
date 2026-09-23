@@ -104,7 +104,6 @@ final class SupplierController
             'documentTypes' => collect((array) config('supplier_compliance.documents'))->map(static fn (array $d, string $k): array => ['key' => $k, 'label' => (string) $d['label']])->values(),
             'types' => array_map(static fn (SupplierType $t): array => ['key' => $t->value, 'label' => $t->label()], SupplierType::cases()),
             'provinces' => array_map(static fn (Province $p): array => ['key' => $p->value, 'label' => $p->label()], Province::cases()),
-            'projects' => Project::query()->orderBy('name')->get(['ulid', 'name'])->map(static fn (Project $p): array => ['key' => $p->ulid, 'label' => $p->name])->values(),
             'can' => [
                 'manage' => $request->user()?->can('manage-suppliers') ?? false,
                 'rate' => $request->user()?->can('manage-projects') ?? false,

@@ -3,6 +3,7 @@ import { Button, cn, Field } from '@thabekhulu/ui';
 import { ChevronDown, Download, Folder, Lock, Upload } from 'lucide-react';
 import { type FormEvent, type ReactNode, useState } from 'react';
 import { formatDateTime, selectClass, SelectField } from '@/components/data';
+import { LookupField } from '@/components/lookup-field';
 import AppLayout from '@/layouts/app-layout';
 
 type Option = { key: string; label: string };
@@ -32,7 +33,6 @@ interface Doc {
 
 interface Props {
     project: { id: string; name: string; code: string } | null;
-    projects: Option[];
     folders: Record<string, number>;
     documents: Doc[];
     filters: { folder: string; category: string | null; q: string };
@@ -46,7 +46,7 @@ interface Props {
 const size = (bytes: number) => (bytes > 1_048_576 ? `${(bytes / 1_048_576).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`);
 
 export default function Documents(props: Props) {
-    const { project, projects, folders, documents, filters, categories, storage, canUpload } = props;
+    const { project, folders, documents, filters, categories, storage, canUpload } = props;
     const [uploading, setUploading] = useState(false);
     const [q, setQ] = useState(filters.q);
     const base = { project: project?.id };
@@ -64,10 +64,7 @@ export default function Documents(props: Props) {
                         {storage && <p className="text-sm text-ink-soft">Storage used: {storage.used} MB{storage.limit ? ` of ${storage.limit} MB` : ''}</p>}
                     </div>
                     <div className="flex items-center gap-2">
-                        <select aria-label="Project" className={selectClass + ' h-10 w-56 text-sm'} value={project?.id ?? ''} onChange={(e) => router.get('/documents', { project: e.target.value || undefined })}>
-                            <option value="">Company documents (no project)</option>
-                            {projects.map((p) => (<option key={p.key} value={p.key}>{p.label}</option>))}
-                        </select>
+                        <div className="w-64"><LookupField label="" name="project_filter" type="projects" value={project?.id ?? ''} initialLabel={project ? `${project.code} ${project.name}` : null} placeholder="Company documents (no project)" onChange={(v) => router.get('/documents', { project: v || undefined })} /></div>
                         {canUpload && <Button onClick={() => setUploading(!uploading)}><Upload className="size-4" /> Upload</Button>}
                     </div>
                 </header>

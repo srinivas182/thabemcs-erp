@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Domains\Reporting\Http\Controllers;
 
 use App\Domains\Platform\Models\Company;
-use App\Domains\Programme\Services\ScheduleService;
 use App\Domains\Projects\Enums\ProjectStatus;
-use App\Domains\Projects\Models\Project;
+use App\Domains\Reporting\Models\ProjectMetric;
 use App\Domains\Reporting\Services\PortfolioService;
 use App\Models\User;
+use App\Support\Tenancy\CompanyScope;
 use App\Support\Tenancy\CurrentCompany;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -17,60 +17,51 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Command centre: every live project on a map of South Africa, coloured by health.
+ * Command centre. Every live project is a compact map point (clustered in the browser); the side list
+ * shows the 100 needing attention most. All figures come from project_metrics, so the page costs a fixed
+ * number of queries whatever the size of the portfolio.
  */
 final class MapController
 {
-    public function __construct(private readonly PortfolioService $portfolio, private readonly ScheduleService $schedule, private readonly CurrentCompany $context) {}
+    public function __construct(private readonly PortfolioService $portfolio, private readonly CurrentCompany $context) {}
 
     public function show(Request $request): Response
     {
         /** @var User $user */
         $user = $request->user();
-
-        if ($this->context->get() === null) {
+        $group = $this->context->get() === null;
+        if ($group) {
             abort_unless($user->is_super_admin, 403);
-            $points = [];
-            Company::query()->where('status', 'active')->each(function (Company $c) use (&$points): void {
-                $points = [...$points, ...$this->context->runFor($c, fn (): array => $this->points($c->name))];
-            });
         } else {
             Gate::authorize('view-financial-reports');
-            $points = $this->points(null);
         }
 
-        return Inertia::render('reports/map', ['projects' => $points, 'group' => $this->context->get() === null]);
-    }
-
-    /**
-     * @return list<array<string, mixed>>
-     */
-    private function points(?string $company): array
-    {
-        $rows = collect($this->portfolio->forCurrentCompany()['projects'])->keyBy('id');
-        $points = [];
-
-        foreach (Project::query()->whereIn('status', [ProjectStatus::Active, ProjectStatus::OnHold])->get() as $p) {
-            $lat = $p->getAttribute('latitude');
-            $lng = $p->getAttribute('longitude');
-            $row = $rows->get($p->ulid);
-            if ($row === null) {
-                continue;
-            }
-            $plan = $this->schedule->calculate($p);
-            $behind = count(array_filter($plan['activities'], static fn (array $a): bool => $a['behind']));
-            $late = $p->planned_completion_date !== null && $plan['finish'] !== null && $plan['finish'] > $p->planned_completion_date->toDateString();
-
-            // Red: over budget, open incident or late; amber: 80%+ budget used, high risks or activities behind.
-            $health = ($row['used'] !== null && $row['used'] >= 100) || $row['openIncidents'] > 0 || $late ? 'red'
-                : (($row['used'] !== null && $row['used'] >= 80) || $row['highRisks'] > 0 || $behind > 0 ? 'amber' : 'green');
-
-            $points[] = [
-                ...$row, 'company' => $company, 'town' => $p->town, 'lat' => $lat === null ? null : (float) $lat, 'lng' => $lng === null ? null : (float) $lng,
-                'behind' => $behind, 'late' => $late, 'forecastFinish' => $plan['finish'], 'health' => $health,
-            ];
+        $query = ProjectMetric::query()->join('projects', 'projects.id', '=', 'project_metrics.project_id')
+            ->whereIn('projects.status', [ProjectStatus::Active->value, ProjectStatus::OnHold->value]);
+        if ($group) {
+            $query->withoutGlobalScope(CompanyScope::class);
         }
 
-        return $points;
+        $counts = (clone $query)->selectRaw('project_metrics.health, count(*) as n')->groupBy('project_metrics.health')->toBase()->pluck('n', 'health');
+        $points = (clone $query)->whereNotNull('projects.latitude')->whereNotNull('projects.longitude')
+            ->toBase()->get(['projects.ulid', 'projects.code', 'projects.latitude', 'projects.longitude', 'project_metrics.health'])
+            ->map(static fn ($r): array => [$r->ulid, $r->code, round((float) $r->latitude, 5), round((float) $r->longitude, 5), $r->health])->values();
+
+        if ($group) {
+            $companies = Company::query()->pluck('name', 'id');
+            $list = ProjectMetric::query()->withoutGlobalScope(CompanyScope::class)->with(['project' => fn ($q) => $q->withoutGlobalScope(CompanyScope::class)])
+                ->whereHas('project', fn ($q) => $q->withoutGlobalScope(CompanyScope::class)->whereIn('status', [ProjectStatus::Active, ProjectStatus::OnHold]))
+                ->orderBy('severity')->orderByDesc('used_percent')->limit(PortfolioService::LIST_LIMIT)->get()
+                ->map(static fn (ProjectMetric $m): array => [...PortfolioService::row($m, true), 'company' => $companies[$m->getAttribute('company_id')] ?? null])->values()->all();
+        } else {
+            $list = $this->portfolio->attentionList(PortfolioService::LIST_LIMIT, true);
+        }
+
+        return Inertia::render('reports/map', [
+            'points' => $points,
+            'projects' => $list,
+            'counts' => ['red' => (int) ($counts['red'] ?? 0), 'amber' => (int) ($counts['amber'] ?? 0), 'green' => (int) ($counts['green'] ?? 0)],
+            'group' => $group,
+        ]);
     }
 }

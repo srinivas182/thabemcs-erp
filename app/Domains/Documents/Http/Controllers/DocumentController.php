@@ -73,7 +73,6 @@ final class DocumentController
 
         return Inertia::render('documents/index', [
             'project' => $project ? ['id' => $project->ulid, 'name' => $project->name, 'code' => $project->code] : null,
-            'projects' => Project::query()->orderBy('name')->get(['ulid', 'name'])->map(static fn (Project $p): array => ['key' => $p->ulid, 'label' => $p->name])->values(),
             'folders' => $folders,
             'documents' => $documents,
             'filters' => ['folder' => $folder, 'category' => $category?->value, 'q' => $term],

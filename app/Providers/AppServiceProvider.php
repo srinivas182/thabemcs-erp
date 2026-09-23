@@ -4,8 +4,20 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domains\Finance\Models\BudgetLine;
+use App\Domains\Finance\Models\SupplierInvoice;
+use App\Domains\Finance\Models\VariationOrder;
 use App\Domains\Platform\Enums\Role;
 use App\Domains\Platform\Models\Company;
+use App\Domains\Procurement\Models\PurchaseOrder;
+use App\Domains\Programme\Models\ActivityDependency;
+use App\Domains\Programme\Models\ProgrammeActivity;
+use App\Domains\Projects\Models\Project;
+use App\Domains\Projects\Models\Risk;
+use App\Domains\Reporting\Jobs\RefreshProjectMetrics;
+use App\Domains\Safety\Models\SafetyIncident;
+use App\Domains\Site\Models\Snag;
+use App\Domains\Workforce\Services\PublicHolidays;
 use App\Models\User;
 use App\Support\Tenancy\CurrentCompany;
 use Illuminate\Database\Eloquent\Model;
@@ -18,12 +30,37 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->singleton(PublicHolidays::class);
         // Scoped (not singleton) so the company context resets between requests under Octane.
         $this->app->scoped(CurrentCompany::class);
     }
 
+    /**
+     * Records whose changes affect a project's stored metrics.
+     *
+     * @var list<class-string<Model>>
+     */
+    private const array METRIC_SOURCES = [
+        Project::class,
+        Risk::class,
+        BudgetLine::class,
+        SupplierInvoice::class,
+        VariationOrder::class,
+        PurchaseOrder::class,
+        SafetyIncident::class,
+        Snag::class,
+        ProgrammeActivity::class,
+        ActivityDependency::class,
+    ];
+
     public function boot(): void
     {
+        // Keep precomputed project figures current without recalculating them on every page view.
+        foreach (self::METRIC_SOURCES as $model) {
+            $model::saved(static fn ($record) => RefreshProjectMetrics::forModel($record));
+            $model::deleted(static fn ($record) => RefreshProjectMetrics::forModel($record));
+        }
+
         // Catch lazy loading, silently discarded attributes and missing attributes during development.
         Model::shouldBeStrict(! $this->app->isProduction());
 

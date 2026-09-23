@@ -67,8 +67,6 @@ final class MeetingController
             ],
             'actions' => Task::query()->with('assignee:id,name')->where('meeting_id', $meeting->id)->orderBy('id')->get()
                 ->map(static fn (Task $t): array => ['id' => $t->ulid, 'title' => $t->title, 'owner' => $t->assignee?->name, 'due' => $t->due_date?->toDateString(), 'status' => $t->status->value]),
-            'people' => User::query()->where('company_id', $this->context->id())->where('is_active', true)->orderBy('name')->get(['ulid', 'name'])
-                ->map(static fn (User $u): array => ['key' => $u->ulid, 'label' => $u->name])->values(),
             'canManage' => $request->user()?->can('manage-projects') ?? false,
         ]);
     }

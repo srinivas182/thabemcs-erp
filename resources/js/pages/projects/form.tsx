@@ -2,6 +2,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { Button, Field } from '@thabekhulu/ui';
 import type { FormEvent, ReactNode } from 'react';
 import { PageHeader, SelectField } from '@/components/data';
+import { LookupField } from '@/components/lookup-field';
 import AppLayout from '@/layouts/app-layout';
 
 type Option = { key: string | number; label: string };
@@ -31,13 +32,12 @@ interface Props {
     developmentTypes: Option[];
     provinces: Option[];
     regions: Option[];
-    people: Option[];
     statuses: string[];
 }
 
 const STATUS_LABELS: Record<string, string> = { active: 'Active', on_hold: 'On hold', completed: 'Completed', cancelled: 'Cancelled' };
 
-export default function ProjectForm({ project, suggestedCode, developmentTypes, provinces, regions, people, statuses }: Props) {
+export default function ProjectForm({ project, suggestedCode, developmentTypes, provinces, regions, statuses }: Props) {
     const editing = project !== null;
     const form = useForm({
         code: project?.code ?? '',
@@ -85,7 +85,7 @@ export default function ProjectForm({ project, suggestedCode, developmentTypes, 
 
                 <div className="grid gap-5 sm:grid-cols-2">
                     <SelectField label="Development type" name="development_type" value={form.data.development_type} onChange={(v) => form.setData('development_type', v)} options={developmentTypes} error={form.errors.development_type} placeholder="Choose a type" />
-                    <SelectField label="Project manager" name="project_manager" value={form.data.project_manager} onChange={(v) => form.setData('project_manager', v)} options={people} error={form.errors.project_manager} placeholder="Not assigned yet" />
+                    <LookupField label="Project manager" name="project_manager" value={form.data.project_manager} onChange={(v) => form.setData('project_manager', v)} type="people" error={form.errors.project_manager} placeholder="Not assigned yet" />
                 </div>
 
                 <div className="grid gap-5 sm:grid-cols-3">

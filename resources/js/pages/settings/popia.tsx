@@ -2,22 +2,20 @@ import { Head, router, useForm } from '@inertiajs/react';
 import { Button, cn, Field } from '@thabekhulu/ui';
 import { type FormEvent, type ReactNode, useState } from 'react';
 import { formatDate, formatDateTime, PageHeader, SelectField } from '@/components/data';
+import { LookupField } from '@/components/lookup-field';
 import AppLayout from '@/layouts/app-layout';
 
-type Option = { key: string; label: string };
 interface Props {
     officer: { name: string | null; email: string | null };
     register: { category: string; data: string; purpose: string; basis: string; access: string }[];
     rules: { record: string; label: string; months: number; minimum: number; lastRun: string | null; lastCount: number }[];
     requests: { id: string; number: number; name: string; email: string | null; type: string; subjectType: string; hasSubject: boolean; details: string | null; received: string; due: string; overdue: boolean; status: string; outcome: string | null; handler: string | null }[];
-    employees: Option[];
-    users: Option[];
-}
+    }
 
 const TYPES = [{ key: 'access', label: 'See their information' }, { key: 'correction', label: 'Correct it' }, { key: 'deletion', label: 'Delete it' }, { key: 'objection', label: 'Object to its use' }];
 const SUBJECTS = [{ key: 'employee', label: 'Employee' }, { key: 'user', label: 'System user' }, { key: 'investor', label: 'Investor' }, { key: 'other', label: 'Someone else' }];
 
-export default function Popia({ officer, register, rules, requests, employees, users }: Props) {
+export default function Popia({ officer, register, rules, requests }: Props) {
     const today = new Date().toLocaleDateString('en-CA');
     const form = useForm({ requester_name: '', requester_email: '', type: 'access', subject_type: 'employee', subject: '', details: '', received_on: today });
     function submit(e: FormEvent) {
@@ -42,8 +40,8 @@ export default function Popia({ officer, register, rules, requests, employees, u
                         </div>
                         <div className="grid gap-3 sm:grid-cols-[180px_1fr_1.4fr]">
                             <SelectField label="They are" name="subject_type" value={form.data.subject_type} onChange={(v) => form.setData((d) => ({ ...d, subject_type: v, subject: '' }))} options={SUBJECTS} />
-                            {form.data.subject_type === 'employee' && <SelectField label="Employee" name="subject" value={form.data.subject} onChange={(v) => form.setData('subject', v)} options={employees} placeholder="Choose" />}
-                            {form.data.subject_type === 'user' && <SelectField label="User" name="subject" value={form.data.subject} onChange={(v) => form.setData('subject', v)} options={users} placeholder="Choose" />}
+                            {form.data.subject_type === 'employee' && <LookupField label="Employee" name="subject" value={form.data.subject} onChange={(v) => form.setData('subject', v)} type="employees" params={{ status: 'all' }} placeholder="Choose" />}
+                            {form.data.subject_type === 'user' && <LookupField label="User" name="subject" value={form.data.subject} onChange={(v) => form.setData('subject', v)} type="people" placeholder="Choose" />}
                             {!['employee', 'user'].includes(form.data.subject_type) && <span />}
                             <Field label="Details" name="details" value={form.data.details} onChange={(e) => form.setData('details', e.target.value)} />
                         </div>

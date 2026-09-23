@@ -3,18 +3,17 @@ import { Button } from '@thabekhulu/ui';
 import { FileSpreadsheet } from 'lucide-react';
 import type { FormEvent, ReactNode } from 'react';
 import { formatDateTime, PageHeader, SelectField } from '@/components/data';
+import { LookupMulti } from '@/components/lookup-field';
 import AppLayout from '@/layouts/app-layout';
 
-type Option = { key: string; label: string };
 interface Props {
     reports: { key: string; title: string; description: string }[];
     schedules: { id: number; report: string | null; frequency: string; day: number; format: string; recipients: string[]; lastSent: string | null; by: string }[];
-    people: Option[];
     canSchedule: boolean;
 }
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-export default function Reports({ reports, schedules, people, canSchedule }: Props) {
+export default function Reports({ reports, schedules, canSchedule }: Props) {
     const form = useForm<{ report: string; frequency: string; day: string; format: string; recipients: string[] }>({ report: reports[0]?.key ?? '', frequency: 'weekly', day: '1', format: 'xlsx', recipients: [] });
     function submit(e: FormEvent) {
         e.preventDefault();
@@ -64,12 +63,7 @@ export default function Reports({ reports, schedules, people, canSchedule }: Pro
                             <fieldset>
                                 <legend className="text-sm font-medium">Send to</legend>
                                 <div className="mt-1.5 flex flex-wrap gap-2">
-                                    {people.map((p) => (
-                                        <label key={p.key} className="flex items-center gap-1.5 rounded-full border border-concrete px-2.5 py-1 text-sm">
-                                            <input type="checkbox" className="accent-line" checked={form.data.recipients.includes(p.key)} onChange={(e) => form.setData('recipients', e.target.checked ? [...form.data.recipients, p.key] : form.data.recipients.filter((x) => x !== p.key))} />
-                                            {p.label}
-                                        </label>
-                                    ))}
+                                    <LookupMulti label="" name="recipients" type="people" value={form.data.recipients} onChange={(v) => form.setData('recipients', v)} placeholder="Search people to add" />
                                 </div>
                                 {form.errors.recipients && <p className="mt-1 text-sm text-brick">{form.errors.recipients}</p>}
                             </fieldset>

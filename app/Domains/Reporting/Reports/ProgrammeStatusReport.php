@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Domains\Reporting\Reports;
 
 use App\Domains\Programme\Models\ProgrammeActivity;
-use App\Domains\Programme\Services\ScheduleService;
-use App\Domains\Projects\Models\Project;
 use App\Domains\Reporting\Contracts\Report;
 use App\Domains\Reporting\Services\ReportFilters;
 use App\Domains\Reporting\Services\ReportResult;
@@ -16,8 +14,6 @@ use App\Domains\Reporting\Services\ReportResult;
  */
 final class ProgrammeStatusReport implements Report
 {
-    public function __construct(private readonly ScheduleService $schedule) {}
-
     public function key(): string
     {
         return 'programme-status';
@@ -45,27 +41,27 @@ final class ProgrammeStatusReport implements Report
 
     public function build(ReportFilters $filters): ReportResult
     {
-        $rows = [];
-        $projects = Project::query()->when($filters->project, fn ($q) => $q->whereKey($filters->project?->id))->where('status', 'active')->orderBy('code')->get();
+        $today = now('Africa/Johannesburg')->toDateString();
+        $limit = (int) config('reporting.row_limit', 5000);
+        // Uses the critical path stored on each activity by the metrics refresh; no recalculation here.
+        $query = ProgrammeActivity::query()->with('project:id,code')
+            ->whereHas('project', fn ($q) => $q->where('status', 'active'))
+            ->when($filters->project, fn ($q) => $q->where('project_id', $filters->project?->id))
+            ->where('percent_complete', '<', 100)
+            ->where(fn ($q) => $q->where('is_critical', true)->orWhere('early_finish', '<', $today))
+            ->orderBy('project_id')->orderBy('early_finish');
+        $total = (clone $query)->count();
 
-        foreach ($projects as $project) {
-            $plan = $this->schedule->calculate($project);
-            foreach (ProgrammeActivity::query()->where('project_id', $project->id)->orderBy('sort')->get() as $a) {
-                $d = $plan['activities'][$a->id] ?? null;
-                if ($d === null || $a->percent_complete >= 100 || (! $d['critical'] && ! $d['behind'])) {
-                    continue;
-                }
-                $rows[] = [
-                    'project' => $project->code, 'activity' => trim(($a->wbs ?? '').' '.$a->name), 'start' => $d['earlyStart'], 'finish' => $d['earlyFinish'],
-                    'float' => $d['float'], 'percent' => $a->percent_complete, 'flag' => $d['behind'] ? 'Behind' : 'Critical',
-                ];
-            }
-        }
+        $rows = $query->limit($limit)->get()->map(static fn (ProgrammeActivity $a): array => [
+            'project' => $a->project->code, 'activity' => trim(($a->wbs ?? '').' '.$a->name), 'start' => $a->early_start?->toDateString(),
+            'finish' => $a->early_finish?->toDateString(), 'float' => $a->total_float, 'percent' => $a->percent_complete,
+            'flag' => $a->early_finish !== null && $a->early_finish->toDateString() < $today ? 'Behind' : 'Critical',
+        ])->values()->all();
 
         return new ReportResult($this->title(), $filters->describe(false, false), [
             ['key' => 'project', 'label' => 'Project', 'type' => 'text'], ['key' => 'activity', 'label' => 'Activity', 'type' => 'text'],
             ['key' => 'start', 'label' => 'Start', 'type' => 'date'], ['key' => 'finish', 'label' => 'Forecast finish', 'type' => 'date'],
             ['key' => 'float', 'label' => 'Float (days)', 'type' => 'number'], ['key' => 'percent', 'label' => 'Complete', 'type' => 'percent'], ['key' => 'flag', 'label' => 'Status', 'type' => 'text'],
-        ], $rows, null, 'Shows unfinished activities that are critical (no float) or past their forecast finish.');
+        ], $rows, null, 'Unfinished activities that are critical (no float) or past their forecast finish.'.($total > $limit ? " Showing the first {$limit} of {$total}; filter by project to see the rest." : ''));
     }
 }

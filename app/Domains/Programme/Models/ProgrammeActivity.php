@@ -32,6 +32,10 @@ use Illuminate\Support\Carbon;
  * @property int|null $supplier_id
  * @property string|null $budget_value
  * @property int $sort
+ * @property Carbon|null $early_start
+ * @property Carbon|null $early_finish
+ * @property int|null $total_float
+ * @property bool $is_critical
  * @property-read Project $project
  * @property-read User|null $owner
  * @property-read Supplier|null $supplier
@@ -45,7 +49,7 @@ class ProgrammeActivity extends Model
 
     protected function casts(): array
     {
-        return ['planned_start' => 'date', 'actual_start' => 'date', 'actual_finish' => 'date', 'duration_days' => 'integer', 'percent_complete' => 'integer', 'budget_value' => 'decimal:2', 'sort' => 'integer'];
+        return ['early_start' => 'date', 'early_finish' => 'date', 'total_float' => 'integer', 'is_critical' => 'boolean', 'planned_start' => 'date', 'actual_start' => 'date', 'actual_finish' => 'date', 'duration_days' => 'integer', 'percent_complete' => 'integer', 'budget_value' => 'decimal:2', 'sort' => 'integer'];
     }
 
     /**
