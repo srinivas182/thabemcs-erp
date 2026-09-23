@@ -72,8 +72,8 @@ final class DistributionService
             $positions[] = [
                 'sourceId' => $source->id,
                 'source' => $source->name,
-                'investorId' => $source->investor?->id,
-                'investor' => $source->investor?->name ?? $source->name,
+                'investorId' => $source->investor_id,
+                'investor' => $source->investor_id !== null ? $source->investor->name : $source->name,
                 'contributed' => round($contributed, 2),
                 'capitalOutstanding' => round(max(0, $contributed - $capitalPaid), 2),
                 'preferredRate' => round($rate * 100, 2),
@@ -119,8 +119,13 @@ final class DistributionService
                 // Rounding differences go to the largest share, so the totals always add up.
                 $allocated = array_sum(array_map(static fn (array $l): float => (float) $l['profit'], $lines));
                 $difference = round($left - $allocated, 2);
-                if (abs($difference) >= 0.01 && $lines !== []) {
-                    $largest = array_keys($basis, max($basis), true)[0];
+                if (abs($difference) >= 0.01) {
+                    $largest = 0;
+                    foreach ($basis as $i => $value) {
+                        if ($value > $basis[$largest]) {
+                            $largest = $i;
+                        }
+                    }
                     $lines[$largest]['profit'] = round((float) $lines[$largest]['profit'] + $difference, 2);
                 }
                 $left = 0.0;

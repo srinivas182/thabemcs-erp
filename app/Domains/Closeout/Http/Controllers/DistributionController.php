@@ -41,7 +41,7 @@ final class DistributionController
                     'id' => $d->ulid, 'reference' => $d->reference(), 'declared' => $d->declared_on->toDateString(),
                     'amount' => (float) $d->amount, 'status' => $d->status, 'paid' => $d->paid_on?->toDateString(), 'notes' => $d->notes,
                     'lines' => $d->lines->map(static fn (DistributionLine $l): array => [
-                        'id' => $l->id, 'investor' => $l->investor?->name ?? $l->source->name, 'capital' => (float) $l->capital,
+                        'id' => $l->id, 'investor' => $l->investor_id !== null ? $l->investor->name : $l->source->name, 'capital' => (float) $l->capital,
                         'preferred' => (float) $l->preferred, 'profit' => (float) $l->profit, 'total' => (float) $l->total,
                     ])->values(),
                 ])->values(),
