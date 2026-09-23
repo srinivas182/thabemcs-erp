@@ -69,11 +69,12 @@ final class DistributionService
                 $earned += (float) $movement->amount * $rate * $days / 365;
             }
 
+            $investor = $source->investor;
             $positions[] = [
                 'sourceId' => $source->id,
                 'source' => $source->name,
                 'investorId' => $source->investor_id,
-                'investor' => $source->investor_id !== null ? $source->investor->name : $source->name,
+                'investor' => $investor !== null ? $investor->name : $source->name,
                 'contributed' => round($contributed, 2),
                 'capitalOutstanding' => round(max(0, $contributed - $capitalPaid), 2),
                 'preferredRate' => round($rate * 100, 2),

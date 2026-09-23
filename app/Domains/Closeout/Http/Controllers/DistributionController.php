@@ -40,10 +40,14 @@ final class DistributionController
                 ->map(static fn (Distribution $d): array => [
                     'id' => $d->ulid, 'reference' => $d->reference(), 'declared' => $d->declared_on->toDateString(),
                     'amount' => (float) $d->amount, 'status' => $d->status, 'paid' => $d->paid_on?->toDateString(), 'notes' => $d->notes,
-                    'lines' => $d->lines->map(static fn (DistributionLine $l): array => [
-                        'id' => $l->id, 'investor' => $l->investor_id !== null ? $l->investor->name : $l->source->name, 'capital' => (float) $l->capital,
-                        'preferred' => (float) $l->preferred, 'profit' => (float) $l->profit, 'total' => (float) $l->total,
-                    ])->values(),
+                    'lines' => $d->lines->map(static function (DistributionLine $l): array {
+                        $investor = $l->investor;
+
+                        return [
+                            'id' => $l->id, 'investor' => $investor !== null ? $investor->name : $l->source->name, 'capital' => (float) $l->capital,
+                            'preferred' => (float) $l->preferred, 'profit' => (float) $l->profit, 'total' => (float) $l->total,
+                        ];
+                    })->values(),
                 ])->values(),
             'reinvestments' => Reinvestment::query()->with(['investor:id,name'])->where('from_project_id', $project->id)->orderByDesc('occurred_on')->get()
                 ->map(static fn (Reinvestment $r): array => ['id' => $r->id, 'investor' => $r->investor->name, 'amount' => (float) $r->amount,
