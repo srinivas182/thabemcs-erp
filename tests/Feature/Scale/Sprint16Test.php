@@ -86,6 +86,11 @@ it('costs the same number of queries whatever the size of the portfolio', functi
     foreach (range(1, 3) as $i) {
         projectWithSpend($this, sprintf('P-%04d', $i), 500_000, 100_000 * $i);
     }
+    // Warm up first: permissions and settings are cached, so the readings compare like with like.
+    $this->actingAs($this->director)->get('/dashboard/portfolio')->assertOk();
+    $this->actingAs($this->director)->get('/dashboard/map')->assertOk();
+    $this->actingAs($this->director)->get('/projects')->assertOk();
+
     $dashboard = queryCount(fn () => $this->actingAs($this->director)->get('/dashboard/portfolio')->assertOk());
     $map = queryCount(fn () => $this->actingAs($this->director)->get('/dashboard/map')->assertOk());
     $projects = queryCount(fn () => $this->actingAs($this->director)->get('/projects')->assertOk());
@@ -113,9 +118,9 @@ it('never serves one company figures from another company cache', function (): v
     });
 
     $this->actingAs($this->director)->get('/dashboard/portfolio')
-        ->assertInertia(fn (Assert $page) => $page->where('portfolio.totals.budget', 400000.0)->where('portfolio.projects.0.code', 'A-0001'));
+        ->assertInertia(fn (Assert $page) => $page->where('portfolio.totals.budget', fn ($v): bool => (float) $v === 400000.0)->where('portfolio.projects.0.code', 'A-0001'));
     $this->actingAs($otherDirector)->get('/dashboard/portfolio')
-        ->assertInertia(fn (Assert $page) => $page->where('portfolio.totals.budget', 900000.0)->where('portfolio.projects.0.code', 'B-0001'));
+        ->assertInertia(fn (Assert $page) => $page->where('portfolio.totals.budget', fn ($v): bool => (float) $v === 900000.0)->where('portfolio.projects.0.code', 'B-0001'));
 });
 
 it('answers dropdown lookups with a handful of matches, inside the company only', function (): void {
@@ -131,6 +136,7 @@ it('answers dropdown lookups with a handful of matches, inside the company only'
         ->assertOk()->assertJsonCount(20, 'data')->assertJsonMissing(['label' => 'Concrete Somebody Else']);
     $this->actingAs($this->pm)->getJson('/lookup/suppliers?q=Supplier 07')->assertJsonPath('data.0.label', 'Concrete Supplier 07');
     $this->actingAs($this->pm)->getJson("/lookup/suppliers?key={$this->supplier->ulid}")->assertJsonPath('data.0.label', 'Build It Ballito');
+    auth()->logout();
     $this->getJson('/lookup/suppliers')->assertUnauthorized();
 });
 
@@ -151,7 +157,7 @@ it('filters designed reports in the database, and says when a report is cut shor
     // Both issued orders are found even though they sort after the row limit; the earlier build filtered
     // only the first rows fetched and would have returned nothing.
     $this->actingAs($this->director)->get("/reports/custom-{$report->id}")
-        ->assertInertia(fn (Assert $page) => $page->has('result.rows', 2)->where('result.rows.0.subtotal', 5000.0));
+        ->assertInertia(fn (Assert $page) => $page->has('result.rows', 2)->where('result.rows.0.subtotal', fn ($v): bool => (float) $v === 5000.0));
 });
 
 it('lets the site app re-check lists cheaply with ETags', function (): void {

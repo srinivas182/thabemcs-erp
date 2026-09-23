@@ -31,6 +31,7 @@ final class LookupController
         $q = trim((string) $request->query('q', ''));
         $key = $request->string('key')->toString();
         $like = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $q).'%';
+        $types = $request->string('types')->toString();
 
         [$query, $keyColumn, $label] = match ($type) {
             'projects' => [
@@ -41,7 +42,7 @@ final class LookupController
             ],
             'suppliers' => [
                 Supplier::query()->where('status', 'active')
-                    ->when($request->query('types'), fn (Builder $b, $types) => $b->whereIn('type', explode(',', (string) $types)))
+                    ->when($types !== '', fn (Builder $b) => $b->whereIn('type', explode(',', $types)))
                     ->when($q !== '', fn (Builder $b) => $b->where(fn (Builder $w) => $w->where('name', 'like', $like)->orWhere('trading_name', 'like', $like)))
                     ->orderBy('name'),
                 'ulid', static fn (Supplier $s): string => $s->name,
