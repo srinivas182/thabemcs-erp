@@ -29,7 +29,7 @@ final class LookupController
     public function __invoke(Request $request, string $type): JsonResponse
     {
         $q = trim((string) $request->query('q', ''));
-        $key = $request->query('key');
+        $key = $request->string('key')->toString();
         $like = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $q).'%';
 
         [$query, $keyColumn, $label] = match ($type) {
@@ -63,7 +63,7 @@ final class LookupController
                 'ulid', static fn (Investor $i): string => $i->name,
             ],
             'budget-lines' => [
-                BudgetLine::query()->whereHas('project', fn (Builder $b) => $b->where('ulid', (string) $request->query('project')))
+                BudgetLine::query()->whereHas('project', fn (Builder $b) => $b->where('ulid', $request->string('project')->toString()))
                     ->when($q !== '', fn (Builder $b) => $b->where(fn (Builder $w) => $w->where('code', 'like', $like)->orWhere('description', 'like', $like)))
                     ->orderBy('code'),
                 'id', static fn (BudgetLine $l): string => "{$l->code} {$l->description}",
@@ -71,7 +71,7 @@ final class LookupController
             default => abort(404),
         };
 
-        if (is_string($key) && $key !== '') {
+        if ($key !== '') {
             $query->where($keyColumn, $key);
         }
 

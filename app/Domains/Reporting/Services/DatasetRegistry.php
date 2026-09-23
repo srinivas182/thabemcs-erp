@@ -13,6 +13,8 @@ use App\Domains\Safety\Models\SafetyIncident;
 use App\Domains\Suppliers\Models\Supplier;
 use App\Domains\Suppliers\Services\ComplianceService;
 use App\Domains\Workforce\Models\Employee;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
 
 /**
@@ -80,6 +82,8 @@ final class DatasetRegistry
     {
         $limit ??= (int) config('reporting.row_limit', self::LIMIT);
         $fields = $this->definitions()[$dataset]['fields'] ?? [];
+        /** @var Builder<Model> $query */
+        /** @var callable(mixed): array<string, string|int|float|null> $map */
         [$query, $map] = $this->source($dataset);
 
         if ($projectId !== null && $this->hasProjectFilter($dataset)) {
@@ -129,7 +133,7 @@ final class DatasetRegistry
      * The query and row mapping for a dataset. Related names are joined so they can be filtered and
      * sorted in the database too.
      *
-     * @return array{0: mixed, 1: callable(mixed): array<string, string|int|float|null>}
+     * @return array{0: Builder<covariant \Illuminate\Database\Eloquent\Model>, 1: callable(mixed): array<string, string|int|float|null>}
      */
     private function source(string $dataset): array
     {

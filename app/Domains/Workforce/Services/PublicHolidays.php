@@ -18,6 +18,9 @@ final class PublicHolidays
     /** @var array<int, list<string>> */
     private array $memo = [];
 
+    /**
+     * @return list<string>
+     */
     public function forYear(int $year): array
     {
         if (isset($this->memo[$year])) {

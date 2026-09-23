@@ -57,14 +57,12 @@ return new class extends Migration
         Schema::table('purchase_orders', fn (Blueprint $t) => $t->index(['project_id', 'status']));
         Schema::table('site_attendance', fn (Blueprint $t) => $t->index(['company_id', 'captured_at']));
         Schema::table('crew_attendance', fn (Blueprint $t) => $t->index(['company_id', 'worked_on']));
-        Schema::table('notifications', fn (Blueprint $t) => $t->index(['notifiable_type', 'notifiable_id', 'read_at']));
         Schema::table('activity_log', fn (Blueprint $t) => $t->index('created_at'));
     }
 
     public function down(): void
     {
         Schema::table('activity_log', fn (Blueprint $t) => $t->dropIndex(['created_at']));
-        Schema::table('notifications', fn (Blueprint $t) => $t->dropIndex(['notifiable_type', 'notifiable_id', 'read_at']));
         Schema::table('crew_attendance', fn (Blueprint $t) => $t->dropIndex(['company_id', 'worked_on']));
         Schema::table('site_attendance', fn (Blueprint $t) => $t->dropIndex(['company_id', 'captured_at']));
         Schema::table('purchase_orders', fn (Blueprint $t) => $t->dropIndex(['project_id', 'status']));

@@ -22,7 +22,6 @@ use App\Domains\Projects\Models\Task;
 use App\Domains\Projects\Services\ProjectService;
 use App\Domains\Projects\Services\StageGateService;
 use App\Models\User;
-use App\Support\Tenancy\CurrentCompany;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -34,7 +33,6 @@ final class ProjectController
     public function __construct(
         private readonly ProjectService $projects,
         private readonly StageGateService $gates,
-        private readonly CurrentCompany $context,
     ) {}
 
     public function index(Request $request): Response

@@ -15,6 +15,7 @@ use App\Support\Tenancy\CurrentCompany;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 
@@ -58,10 +59,10 @@ final class RefreshProjectMetrics implements ShouldBeUnique, ShouldQueue
     /**
      * Queue a refresh for whatever project a changed record belongs to.
      */
-    public static function forModel(object $model): void
+    public static function forModel(Model $model): void
     {
         $projectId = match (true) {
-            $model instanceof Project => $model->id,
+            $model instanceof Project => $model->getKey(),
             $model instanceof ActivityDependency => ProgrammeActivity::query()->whereKey($model->successor_id)->value('project_id'),
             default => $model->getAttribute('project_id') ?? ($model->getAttribute('budget_line_id') ? BudgetLine::query()->whereKey($model->getAttribute('budget_line_id'))->value('project_id') : null),
         };
