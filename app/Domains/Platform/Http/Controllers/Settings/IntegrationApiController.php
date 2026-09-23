@@ -89,7 +89,7 @@ final class IntegrationApiController
     {
         Gate::authorize('manage-integrations');
         $data = $request->validate(['active' => ['required', 'boolean']]);
-        $webhook->update(['active' => (bool) $data['active'], 'failures' => 0, 'last_error' => null]);
+        $webhook->forceFill(['active' => (bool) $data['active'], 'failures' => 0, 'last_error' => null])->save();
 
         return back()->with('success', $data['active'] ? 'Webhook switched on.' : 'Webhook switched off.');
     }

@@ -160,10 +160,11 @@ final class ReportController
             return $result;
         }
 
-        $result['columns'] = array_values(array_map(
-            static fn (string $key): array => $all[array_search($key, array_column($all, 'key'), true)],
-            $keep,
-        ));
+        $byKey = [];
+        foreach ($all as $column) {
+            $byKey[$column['key']] = $column;
+        }
+        $result['columns'] = array_values(array_map(static fn (string $key): array => $byKey[$key], $keep));
         /** @var list<array<string, mixed>> $rows */
         $rows = $result['rows'];
         $result['rows'] = array_map(static fn (array $row): array => array_intersect_key($row, array_flip($keep)), $rows);

@@ -111,7 +111,7 @@ it('fires a webhook when a supplier invoice is approved', function (): void {
         return $invoice;
     });
 
-    inCompany($this->company, fn () => app(InvoiceService::class)->approve($invoice, $this->finance, null));
+    inCompany($this->company, fn () => app(InvoiceService::class)->approve($invoice, $this->director, null));
     expect(inCompany($this->company, fn () => WebhookDelivery::query()->where('event', 'invoice.approved')->count()))->toBe(1);
 });
 

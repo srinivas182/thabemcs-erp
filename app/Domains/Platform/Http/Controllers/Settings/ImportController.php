@@ -52,7 +52,7 @@ final class ImportController
         $data = $request->validate([
             'type' => [Rule::in(array_keys($this->imports->types()))],
             'project' => ['nullable', 'string', Rule::exists('projects', 'ulid')],
-            'file' => ['required', 'file', 'mimes:csv,txt', 'max:5120'],
+            'file' => ['required', 'file', 'max:5120'],
             'confirm' => ['boolean'],
         ]);
         /** @var User $user */

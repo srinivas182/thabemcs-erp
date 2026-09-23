@@ -52,23 +52,23 @@ final class DeliverWebhook implements ShouldQueue
                     ->withBody($body, 'application/json')
                     ->post($webhook->url);
 
-                $delivery->update([
+                $delivery->forceFill([
                     'response_status' => $response->status(),
                     'attempts' => $delivery->attempts + 1,
                     'delivered_at' => $response->successful() ? now() : null,
                     'error' => $response->successful() ? null : 'The receiver answered '.$response->status().'.',
-                ]);
-                $webhook->update($response->successful()
+                ])->save();
+                $webhook->forceFill($response->successful()
                     ? ['last_delivered_at' => now(), 'last_error' => null, 'failures' => 0]
-                    : ['last_error' => 'Answered '.$response->status(), 'failures' => $webhook->failures + 1]);
+                    : ['last_error' => 'Answered '.$response->status(), 'failures' => $webhook->failures + 1])->save();
 
                 // Try again shortly, backing off, until the maximum number of attempts.
                 if (! $response->successful() && $delivery->attempts + 1 < (int) config('webhooks.max_attempts', 5)) {
                     self::dispatch($this->companyId, $this->deliveryId)->delay(now()->addMinutes(5 * ($delivery->attempts + 1)));
                 }
             } catch (Throwable $e) {
-                $delivery->update(['attempts' => $delivery->attempts + 1, 'error' => mb_substr($e->getMessage(), 0, 190)]);
-                $webhook->update(['last_error' => mb_substr($e->getMessage(), 0, 190), 'failures' => $webhook->failures + 1]);
+                $delivery->forceFill(['attempts' => $delivery->attempts + 1, 'error' => mb_substr($e->getMessage(), 0, 190)])->save();
+                $webhook->forceFill(['last_error' => mb_substr($e->getMessage(), 0, 190), 'failures' => $webhook->failures + 1])->save();
                 if ($delivery->attempts < (int) config('webhooks.max_attempts', 5)) {
                     self::dispatch($this->companyId, $this->deliveryId)->delay(now()->addMinutes(5 * $delivery->attempts));
                 }
