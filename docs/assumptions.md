@@ -240,6 +240,13 @@ Everything marked **configurable** can be changed in settings without code chang
 | SE5 | Proposed targets: at most 5 minutes of data lost (RPO) and 4 hours to be working again (RTO). Thabekhulu to agree | Yes |
 | SE6 | Dependency vulnerability scanning runs on every push; findings are reported, not silently ignored | No |
 
+## Scale certification (Sprint 23)
+| # | Assumption | Configurable |
+|---|---|---|
+| PC1 | Performance targets: 95% of pages under 500 ms, 99% under 1.5 s, site app API under 800 ms, under 1% failures, queue clear within 5 minutes of a run | Yes |
+| PC2 | "100,000 concurrent users" still needs Thabekhulu's decision: people online at once, or registered users. It drives the hosting cost and the load-test figure | n/a |
+| PC3 | Load and restore results are only valid on staging with full-size data; small-database runs prove nothing | No |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.

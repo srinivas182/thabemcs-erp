@@ -175,3 +175,20 @@ it('lets the site app re-check lists cheaply with ETags', function (): void {
 arch('domain code caches only through CompanyCache, so keys always carry the company')
     ->expect('App\Domains')
     ->not->toUse(['Illuminate\Support\Facades\Cache', 'Illuminate\Cache\CacheManager']);
+
+it('builds full-size test data, scoped to each company', function (): void {
+    $this->artisan('scale:seed', ['--companies' => 2, '--projects' => 6, '--users' => 12, '--chunk' => 3])->assertSuccessful();
+
+    $companies = Company::query()->count();
+    expect($companies)->toBeGreaterThanOrEqual(2);
+
+    // Every generated project belongs to a company and carries the records that hang off it.
+    $projects = DB::table('projects')->where('code', 'like', 'SC-%')->get();
+    expect($projects)->toHaveCount(6)
+        ->and($projects->whereNull('company_id'))->toHaveCount(0)
+        ->and(DB::table('budget_lines')->count())->toBe(24)
+        ->and(DB::table('programme_activities')->count())->toBe(120);
+
+    // And the figures behind the dashboard can be worked out over it.
+    $this->artisan('perf:measure')->assertSuccessful();
+});

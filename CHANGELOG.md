@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.23.0] — Scale certification tooling and acceptance pack (Sprint 23)
+
+### Added
+- `scale:seed`: builds a full-size test database (25,000 projects, 100,000 users and the records that hang off them) with bulk inserts, resumable and refused in production.
+- `perf:measure`: times the work behind the dashboard, command centre, heaviest reports, profitability and critical path, with the query count for each.
+- k6 load tests for people working (`load-tests/browsing.js`) and phones syncing in bursts (`load-tests/site-app.js`), with the agreed thresholds built in.
+- `docs/performance.md`: targets, method, and tables to record server-side timings, load runs and the full-size restore rehearsal.
+- `docs/uat-plan.md`: acceptance scripts for all nine roles, the assumption-confirmation sessions to book, and the sign-off table.
+
 ## [0.22.0] — Security and resilience (Sprint 22)
 
 ### Added
