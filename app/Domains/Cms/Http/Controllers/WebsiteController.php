@@ -159,7 +159,7 @@ final class WebsiteController
                 'primaryMenu' => $menus->get('primary')->items ?? [],
                 'footerMenu' => $menus->get('footer')->items ?? [],
                 'brand' => [
-                    'name' => (string) (config('branding.name') ?: $this->context->require()->name),
+                    'name' => $this->context->require()->name,
                     'owner' => (string) config('branding.owner'),
                     'tagline' => (string) config('branding.tagline'),
                     'email' => (string) config('branding.support_email'),

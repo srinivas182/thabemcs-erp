@@ -35,7 +35,7 @@ it('warns on My Day when an approval is about to lapse or a decision is overdue'
         StatutoryApplication::query()->create(['project_id' => $this->project->id, 'type' => 'environmental', 'status' => 'submitted', 'expected_decision_on' => now()->subDays(5)]);
     });
 
-    $this->actingAs($this->pm)->get('/')->assertInertia(fn (Assert $page) => $page
+    $this->actingAs($this->pm)->get('/my-day')->assertInertia(fn (Assert $page) => $page
         ->where('alerts.0.title', 'Town planning (rezoning, subdivision, consent) lapses in 10 days')
         ->where('alerts.0.level', 'danger')
         ->where('alerts.1.title', '1 application decision is overdue'));

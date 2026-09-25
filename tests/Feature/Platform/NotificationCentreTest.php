@@ -14,7 +14,7 @@ beforeEach(function (): void {
 });
 
 it('shares the unread count with every page', function (): void {
-    $this->actingAs($this->user)->get('/')->assertInertia(fn (Assert $page) => $page->where('notifications.unread', 2));
+    $this->actingAs($this->user)->get('/my-day')->assertInertia(fn (Assert $page) => $page->where('notifications.unread', 2));
 });
 
 it('lists notifications newest first', function (): void {

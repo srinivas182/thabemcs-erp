@@ -6,21 +6,21 @@ use App\Domains\Platform\Models\Company;
 use App\Models\User;
 
 it('sends guests to the sign-in page', function (): void {
-    $this->get('/')->assertRedirect('/login');
+    $this->get('/my-day')->assertRedirect('/login');
 });
 
 it('blocks users of a suspended company', function (): void {
     $company = Company::factory()->suspended()->create();
     $user = User::factory()->forCompany($company)->create();
 
-    $this->actingAs($user)->get('/')->assertForbidden();
+    $this->actingAs($user)->get('/my-day')->assertForbidden();
 });
 
 it('blocks deactivated users', function (): void {
     $company = Company::factory()->create();
     $user = User::factory()->forCompany($company)->inactive()->create();
 
-    $this->actingAs($user)->get('/')->assertForbidden();
+    $this->actingAs($user)->get('/my-day')->assertForbidden();
 });
 
 it('lets a Super Admin act as a company and return to the platform view', function (): void {
@@ -34,7 +34,7 @@ it('lets a Super Admin act as a company and return to the platform view', functi
 
     $this->actingAs($admin)
         ->withSession(['acting_company_id' => $company->id])
-        ->get('/')
+        ->get('/my-day')
         ->assertInertia(fn ($page) => $page->where('company.name', 'Gamma Homes'));
 
     $this->actingAs($admin)
@@ -43,7 +43,7 @@ it('lets a Super Admin act as a company and return to the platform view', functi
         ->assertRedirect(route('my-day'))
         ->assertSessionMissing('acting_company_id');
 
-    $this->actingAs($admin)->get('/')->assertInertia(fn ($page) => $page->where('company', null));
+    $this->actingAs($admin)->get('/my-day')->assertInertia(fn ($page) => $page->where('company', null));
 });
 
 it('does not let company users act as another company', function (): void {

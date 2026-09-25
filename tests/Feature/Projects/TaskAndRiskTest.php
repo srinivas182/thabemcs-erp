@@ -29,7 +29,7 @@ it('assigns a task, notifies the assignee and shows it on their My Day', functio
 
     Notification::assertSentTo($this->site, SystemMessage::class);
 
-    $this->actingAs($this->site)->get('/')
+    $this->actingAs($this->site)->get('/my-day')
         ->assertInertia(fn ($page) => $page->where('tasks.0.title', 'Book geotechnical engineer')
             ->where('tasks.0.overdue', true)
             ->where('alerts.0.title', '1 overdue task'));
@@ -52,7 +52,7 @@ it('scores risks on a 5 by 5 matrix', function (): void {
     $risk = inCompany($this->company, fn () => Risk::query()->firstOrFail());
     expect($risk->score())->toBe(20)->and($risk->rating())->toBe('critical');
 
-    $this->actingAs($this->pm)->get('/')->assertInertia(fn ($page) => $page->where('alerts.0.title', 'Critical risk: Rezoning objection from neighbours'));
+    $this->actingAs($this->pm)->get('/my-day')->assertInertia(fn ($page) => $page->where('alerts.0.title', 'Critical risk: Rezoning objection from neighbours'));
 });
 
 it('hides tasks and risks from other companies', function (): void {

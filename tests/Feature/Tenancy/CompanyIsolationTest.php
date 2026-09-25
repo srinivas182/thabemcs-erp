@@ -55,7 +55,7 @@ it('shows each user only their own company on My Day', function (): void {
     $user = User::factory()->forCompany($this->beta)->create();
 
     $this->actingAs($user)
-        ->get('/')
+        ->get('/my-day')
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('my-day')

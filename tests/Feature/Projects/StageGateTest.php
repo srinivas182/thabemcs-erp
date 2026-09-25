@@ -72,6 +72,6 @@ it('locks checklists of stages other than the current one', function (): void {
 it('lists a completed gate under the approver\'s approvals on My Day', function (): void {
     planItems($this->project)->each(fn ($i) => $i->forceFill(['completed_at' => now()])->save());
 
-    $this->actingAs($this->director)->get('/')
+    $this->actingAs($this->director)->get('/my-day')
         ->assertInertia(fn ($page) => $page->has('approvals', 1)->where('approvals.0.title', 'Umhlanga Ridge: Plan gate'));
 });

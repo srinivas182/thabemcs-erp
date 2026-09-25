@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Inertia\Testing\AssertableInertia as Assert;
 
 it('sends visitors who are not signed in to the sign-in page', function (): void {
-    $this->get('/')->assertRedirect('/login');
+    $this->get('/my-day')->assertRedirect('/login');
 });
 
 it('shows the configured branding and support contact on the sign-in page', function (): void {

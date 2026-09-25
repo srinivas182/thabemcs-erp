@@ -91,7 +91,7 @@ it('suspends a company, which locks its users out', function (): void {
         ->assertSessionHas('success');
 
     expect($company->fresh()->status)->toBe(CompanyStatus::Suspended);
-    $this->actingAs($member)->get('/')->assertForbidden();
+    $this->actingAs($member)->get('/my-day')->assertForbidden();
 });
 
 it('keeps platform administration away from company users', function (): void {
