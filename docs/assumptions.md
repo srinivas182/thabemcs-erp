@@ -259,6 +259,18 @@ Everything marked **configurable** can be changed in settings without code chang
 | CM7 | An enquiry form creates a buyer or tenant record with source "Website", so the sales team works it as a normal lead | Yes |
 | CM8 | Marketing may write, edit and publish content and see nothing else in the system | Yes |
 
+## Security (Sprint 26)
+| # | Assumption | Configurable |
+|---|---|---|
+| SC1 | Two-factor authentication required for everyone who signs in, not only sensitive roles | Yes |
+| SC2 | Passwords at least 12 characters and checked against the public breach list | Yes |
+| SC3 | Sessions last one hour idle; cookies secure and strict outside development | Yes |
+| SC4 | Sign-in limited to 5 attempts a minute per account and 20 per address | Yes |
+| SC5 | Website forms limited to 5 a minute and 40 a day per address | Yes |
+| SC6 | SVG uploads refused; images re-encoded on upload so hidden payloads and camera location data do not survive | Yes |
+| SC7 | Virus scanning runs where a scanner is installed at the hosting layer; absence is logged, not silent | Yes |
+| SC8 | An independent penetration test is required before go-live, engaged by Thabekhulu directly, with all critical and high findings fixed and retested | No |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.

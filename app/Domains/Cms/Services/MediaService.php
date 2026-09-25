@@ -17,6 +17,8 @@ use Illuminate\Support\Str;
  */
 final class MediaService
 {
+    public function __construct(private readonly UploadGuard $guard) {}
+
     public function upload(UploadedFile $file, ?string $alt, User $by): CmsMedia
     {
         /** @var list<string> $accepted */
@@ -30,7 +32,12 @@ final class MediaService
             throw new CmsException('That file is too large. Please keep uploads under 10 MB.');
         }
 
-        // SVGs can carry scripts, so they are stored but served with a content type that cannot run.
+        // Refuse anything dangerous, and re-encode images so only the picture survives.
+        $cleaned = $this->guard->check($file);
+        if ($cleaned !== null) {
+            $file = new UploadedFile($cleaned, $file->getClientOriginalName(), $mime, null, true);
+        }
+
         $name = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)).'-'.Str::lower(Str::random(6));
         $extension = $file->extension() ?: 'bin';
         $path = $file->storeAs('website/'.now()->format('Y/m'), "{$name}.{$extension}", (string) config('cms.disk', 'public'));

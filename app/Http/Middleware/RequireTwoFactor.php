@@ -38,6 +38,10 @@ final class RequireTwoFactor
 
     private function mustHaveIt(User $user): bool
     {
+        if ((bool) config('platform.two_factor_required_for_all', true)) {
+            return true;
+        }
+
         /** @var list<string> $roles */
         $roles = (array) config('platform.two_factor_required_roles', []);
 

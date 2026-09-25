@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.26.0] — Security hardening (Sprint 26)
+
+### Added
+- Two-factor authentication now required for everyone who signs in.
+- Passwords must be at least 12 characters and are checked against the public breach list.
+- Sessions shortened to one hour idle, with secure and strict cookies outside development.
+- Rate limits per surface: sign-in by account and address, the website, and website forms by minute and by day.
+- Upload guard: SVG refused, images re-encoded so hidden payloads and camera location data do not survive, and virus scanning where a scanner is installed.
+- A test that walks every route and fails the build if one is reachable without signing in.
+- `docs/security.md`: what is in place, what is deliberately left to hosting, the penetration test brief and rules of engagement, the incident response steps, and what the retainer must carry afterwards.
+
 ## [0.25.0] — The public website (Sprint 25)
 
 ### Added

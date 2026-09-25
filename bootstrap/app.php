@@ -26,6 +26,19 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function (): void {
+            // Signing in: slow down guessing, by account and by address.
+            RateLimiter::for('login', fn (Request $request) => [
+                Limit::perMinute(5)->by((string) $request->input('email')),
+                Limit::perMinute(20)->by((string) $request->ip()),
+            ]);
+
+            // The public website: generous for reading, tight for sending.
+            RateLimiter::for('website', fn (Request $request) => Limit::perMinute(120)->by((string) $request->ip()));
+            RateLimiter::for('website-forms', fn (Request $request) => [
+                Limit::perMinute(5)->by((string) $request->ip()),
+                Limit::perDay(40)->by((string) $request->ip()),
+            ]);
+
             RateLimiter::for('api', fn (Request $request) => Limit::perMinute(120)->by($request->user()?->getAuthIdentifier() ?: $request->ip()));
         },
     )

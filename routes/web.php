@@ -465,14 +465,14 @@ Route::middleware(['auth'])->group(function (): void {
 | The public website. No sign-in: these pages are what visitors see. The company they belong to comes
 | from configuration, pages are cached, and forms are rate-limited.
 */
-Route::middleware([ResolvePublicCompany::class])->group(function (): void {
+Route::middleware([ResolvePublicCompany::class, 'throttle:website'])->group(function (): void {
     Route::get('/', [WebsiteController::class, 'home'])->name('website.home');
     Route::get('/developments', [WebsiteController::class, 'developments'])->name('website.developments');
     Route::get('/developments/{code}', [WebsiteController::class, 'development'])->name('website.development');
     Route::get('/news', [WebsiteController::class, 'articles'])->name('website.articles');
     Route::get('/news/{slug}', [WebsiteController::class, 'article'])->name('website.article');
     Route::get('/sitemap.xml', [WebsiteController::class, 'sitemap'])->name('website.sitemap');
-    Route::post('/forms/{slug}', [WebsiteController::class, 'submit'])->middleware('throttle:10,1')->name('website.forms.submit');
+    Route::post('/forms/{slug}', [WebsiteController::class, 'submit'])->middleware('throttle:website-forms')->name('website.forms.submit');
 });
 
 /*
@@ -509,7 +509,7 @@ Route::get('/site/{path?}', function () {
 | Any other address is looked up as a page in the content management system. This must stay the last
 | route in the file, so it can never take an address the application itself uses.
 */
-Route::middleware([ResolvePublicCompany::class])
+Route::middleware([ResolvePublicCompany::class, 'throttle:website'])
     ->get('/{slug}', [WebsiteController::class, 'page'])
     ->where('slug', '[a-z0-9][a-z0-9-]{0,120}')
     ->name('website.page');

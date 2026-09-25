@@ -172,6 +172,12 @@ return [
 
     'uploads' => [
         'max_bytes' => 10 * 1024 * 1024,
-        'accepted' => ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'application/pdf'],
+        'accepted' => ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+
+        // SVG is XML that browsers execute. Off unless somebody deliberately turns it on.
+        'allow_svg' => (bool) env('CMS_ALLOW_SVG', false),
+
+        // Command used to scan uploads, e.g. 'clamscan'. Empty means no scanning is available here.
+        'scanner' => env('UPLOAD_SCANNER', ''),
     ],
 ];

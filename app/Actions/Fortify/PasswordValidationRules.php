@@ -16,6 +16,16 @@ trait PasswordValidationRules
      */
     protected function passwordRules(): array
     {
-        return ['required', 'string', Password::default(), 'confirmed'];
+        return [
+            'required',
+            'string',
+            Password::min(12)
+                ->letters()
+                ->numbers()
+                // Checked against the public list of passwords known to have been breached. No password
+                // leaves the machine: only the first five characters of its hash are sent.
+                ->uncompromised(),
+            'confirmed',
+        ];
     }
 }
