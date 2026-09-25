@@ -16,16 +16,15 @@ trait PasswordValidationRules
      */
     protected function passwordRules(): array
     {
-        return [
-            'required',
-            'string',
-            Password::min(12)
-                ->letters()
-                ->numbers()
-                // Checked against the public list of passwords known to have been breached. No password
-                // leaves the machine: only the first five characters of its hash are sent.
-                ->uncompromised(),
-            'confirmed',
-        ];
+        $password = Password::min(12)->letters()->numbers();
+
+        // Checked against the public list of passwords known to have been breached. No password leaves
+        // the machine: only the first five characters of its hash are sent. Skipped in tests, which
+        // should not depend on an outside service being reachable.
+        if (! app()->environment('testing')) {
+            $password = $password->uncompromised();
+        }
+
+        return ['required', 'string', $password, 'confirmed'];
     }
 }

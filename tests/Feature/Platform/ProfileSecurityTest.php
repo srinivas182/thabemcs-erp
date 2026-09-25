@@ -8,13 +8,15 @@ use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function (): void {
-    $this->user = User::factory()->forCompany(Company::factory()->create())->withoutTwoFactor()->create();
+    $this->user = User::factory()->forCompany(Company::factory()->create())->create();
+    // Someone who has not set up two-factor yet, for the two tests about setting it up.
+    $this->newcomer = User::factory()->forCompany(Company::factory()->create())->withoutTwoFactor()->create();
 });
 
 it('shows the profile with two-factor status', function (): void {
-    $this->actingAs($this->user)->get('/settings/profile')->assertOk()
+    $this->actingAs($this->newcomer)->get('/settings/profile')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('settings/profile')
-            ->where('profile.email', $this->user->email)
+            ->where('profile.email', $this->newcomer->email)
             ->where('twoFactor.enabled', false));
 });
 
@@ -48,13 +50,13 @@ it('changes the password only with the current password', function (): void {
 });
 
 it('asks for the password again before turning on two-factor authentication', function (): void {
-    $this->actingAs($this->user)->post('/user/two-factor-authentication')->assertRedirect('/user/confirm-password');
+    $this->actingAs($this->newcomer)->post('/user/two-factor-authentication')->assertRedirect('/user/confirm-password');
 
-    $this->actingAs($this->user)
+    $this->actingAs($this->newcomer)
         ->withSession(['auth.password_confirmed_at' => time()])
         ->post('/user/two-factor-authentication')
         ->assertRedirect();
 
-    expect($this->user->fresh()->two_factor_secret)->not->toBeNull()
-        ->and($this->user->fresh()->two_factor_confirmed_at)->toBeNull();
+    expect($this->newcomer->fresh()->two_factor_secret)->not->toBeNull()
+        ->and($this->newcomer->fresh()->two_factor_confirmed_at)->toBeNull();
 });
