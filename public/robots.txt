@@ -1,3 +1,19 @@
-# Private business system: keep it out of search engines.
 User-agent: *
-Disallow: /
+Allow: /
+
+# The back office is not for search engines.
+Disallow: /login
+Disallow: /my-day
+Disallow: /dashboard
+Disallow: /projects
+Disallow: /settings
+Disallow: /reports
+Disallow: /sales
+Disallow: /rentals
+Disallow: /website
+Disallow: /inbox
+Disallow: /quote
+Disallow: /tenant
+Disallow: /site
+
+Sitemap: /sitemap.xml

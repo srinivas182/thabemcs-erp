@@ -11,6 +11,12 @@ declare(strict_types=1);
 */
 
 return [
+    // Whose website this is. Leave empty to use the first active company.
+    'company' => env('WEBSITE_COMPANY', ''),
+
+    // Whether asking prices appear publicly on available units.
+    'show_prices' => (bool) env('WEBSITE_SHOW_PRICES', true),
+
     // Where website images live. Public, unlike the private documents disk.
     'disk' => env('CMS_DISK', 'public'),
 

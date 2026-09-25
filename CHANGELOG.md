@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.25.0] — The public website (Sprint 25)
+
+### Added
+- The landing page now answers `/`; the back office moved to `/my-day` and stays behind sign-in and two-factor.
+- Server-rendered public pages built from the content management system, mobile-first on the platform's design system, with page caching, Open Graph tags for sharing, a sitemap and a robots file that keeps the back office out of search engines.
+- Developments and availability come straight from the stock schedule: sold units are never advertised, and prices can be shown or hidden with one setting.
+- Website forms with POPIA consent, rate limiting and a hidden field that quietly absorbs robots; enquiries become buyer or tenant records.
+- News and insight articles.
+- `DemoWebsiteSeeder`: a complete starter site — five pages, menus, two forms and two articles, written for a South African developer and meant to be replaced.
+
 ## [0.24.0] — Website content management (Sprint 24)
 
 ### Added

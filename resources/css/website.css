@@ -1,0 +1,33 @@
+@import 'tailwindcss';
+
+/* Blade templates are scanned so the classes used on the public site are built. */
+@source '../views';
+
+@theme {
+    --font-sans: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+
+    --color-ink: #1F2328;
+    --color-ink-soft: #5B6169;
+    --color-plaster: #F6F6F3;
+    --color-concrete: #D9D9D2;
+    --color-line: #0E6B63;
+    --color-line-deep: #0A524C;
+    --color-line-wash: #E6F1EF;
+    --color-hivis: #E3A008;
+    --color-brick: #B4412C;
+    --color-brick-wash: #FBEDEA;
+}
+
+/* Sections rise gently into view; nothing moves for people who would rather it did not. */
+@media (prefers-reduced-motion: no-preference) {
+    .reveal {
+        animation: reveal 0.6s ease both;
+        animation-timeline: view();
+        animation-range: entry 10% cover 25%;
+    }
+
+    @keyframes reveal {
+        from { opacity: 0; transform: translateY(18px); }
+        to { opacity: 1; transform: none; }
+    }
+}

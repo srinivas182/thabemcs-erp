@@ -7,6 +7,7 @@ use App\Domains\Closeout\Http\Controllers\CloseoutController;
 use App\Domains\Closeout\Http\Controllers\DistributionController;
 use App\Domains\Cms\Http\Controllers\CmsController;
 use App\Domains\Cms\Http\Controllers\PageController;
+use App\Domains\Cms\Http\Controllers\WebsiteController;
 use App\Domains\Compliance\Http\Controllers\PopiaController;
 use App\Domains\Contracts\Http\Controllers\ContractController;
 use App\Domains\Documents\Http\Controllers\DocumentController;
@@ -62,6 +63,7 @@ use App\Domains\Suppliers\Http\Controllers\SupplierController;
 use App\Domains\Team\Http\Controllers\TeamController;
 use App\Domains\Workflow\Http\Controllers\InboxController;
 use App\Domains\Workforce\Http\Controllers\WorkforceController;
+use App\Http\Middleware\ResolvePublicCompany;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -72,7 +74,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/health', HealthController::class)->middleware('throttle:60,1')->name('health');
 
 Route::middleware(['auth'])->group(function (): void {
-    Route::get('/', MyDayController::class)->name('my-day');
+    Route::get('/my-day', MyDayController::class)->name('my-day');
     Route::get('/search', SearchController::class)->middleware('throttle:60,1')->name('search');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
@@ -460,6 +462,20 @@ Route::middleware(['auth'])->group(function (): void {
 });
 
 /*
+| The public website. No sign-in: these pages are what visitors see. The company they belong to comes
+| from configuration, pages are cached, and forms are rate-limited.
+*/
+Route::middleware([ResolvePublicCompany::class])->group(function (): void {
+    Route::get('/', [WebsiteController::class, 'home'])->name('website.home');
+    Route::get('/developments', [WebsiteController::class, 'developments'])->name('website.developments');
+    Route::get('/developments/{code}', [WebsiteController::class, 'development'])->name('website.development');
+    Route::get('/news', [WebsiteController::class, 'articles'])->name('website.articles');
+    Route::get('/news/{slug}', [WebsiteController::class, 'article'])->name('website.article');
+    Route::get('/sitemap.xml', [WebsiteController::class, 'sitemap'])->name('website.sitemap');
+    Route::post('/forms/{slug}', [WebsiteController::class, 'submit'])->middleware('throttle:10,1')->name('website.forms.submit');
+});
+
+/*
 | The tenant's own page, reached from the link given with their lease. No sign-in: the random token is
 | the key, requests are rate-limited, and the page is not indexed.
 */
@@ -488,3 +504,12 @@ Route::get('/site/{path?}', function () {
 
     return response()->file($shell, ['Cache-Control' => 'no-cache']);
 })->where('path', '.*')->name('site-app');
+
+/*
+| Any other address is looked up as a page in the content management system. This must stay the last
+| route in the file, so it can never take an address the application itself uses.
+*/
+Route::middleware([ResolvePublicCompany::class])
+    ->get('/{slug}', [WebsiteController::class, 'page'])
+    ->where('slug', '[a-z0-9][a-z0-9-]{0,120}')
+    ->name('website.page');
