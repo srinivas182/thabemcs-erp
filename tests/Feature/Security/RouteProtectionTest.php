@@ -11,9 +11,13 @@ use Illuminate\Support\Facades\Route;
  */
 it('keeps every route behind sign-in except the ones the public is meant to reach', function (): void {
     // The public website, the two token links, sign-in itself, and the health check.
+    // Each of these is public on purpose, and each is protected another way: the website shows only
+    // published content, the two token links carry a 48-character token stored only as a hash and are
+    // rate-limited, and the site app shell holds no data until its API is called with a token.
     $publicNames = ['website.home', 'website.page', 'website.developments', 'website.development',
         'website.articles', 'website.article', 'website.sitemap', 'website.forms.submit',
-        'quote.show', 'quote.submit', 'tenant.show', 'tenant.maintenance', 'health'];
+        'rfq.respond', 'rfq.submit', 'rfq.decline', 'tenant.portal', 'tenant.requests',
+        'site-app', 'health'];
     $publicPrefixes = ['login', 'logout', 'register', 'forgot-password', 'reset-password', 'two-factor',
         'user/confirm-password', 'up', 'storage', '_ignition', 'sanctum'];
 
@@ -56,7 +60,8 @@ it('rate-limits the things people attack: sign-in, the website and its forms', f
         }
     }
 
-    expect($limits)->toBe(['website' => true, 'search' => true, 'forms' => true]);
+    ksort($limits);
+    expect($limits)->toBe(['forms' => true, 'search' => true, 'website' => true]);
 });
 
 it('sends the security headers a browser needs, on public pages as well as the back office', function (): void {
