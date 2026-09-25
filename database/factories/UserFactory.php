@@ -39,9 +39,11 @@ class UserFactory extends Factory
             'is_super_admin' => false,
             'is_active' => true,
             'last_login_at' => null,
-            'two_factor_secret' => null,
+            // Two-factor is required of everyone, so test users have it set up already. A test that is
+            // checking the requirement itself clears these with forceFill.
+            'two_factor_secret' => encrypt('test-secret'),
             'two_factor_recovery_codes' => null,
-            'two_factor_confirmed_at' => null,
+            'two_factor_confirmed_at' => now(),
         ];
     }
 
