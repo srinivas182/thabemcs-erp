@@ -143,7 +143,11 @@ it('turns a website enquiry into a buyer and tells the right people', function (
 it('lets marketing manage content but nothing else, and keeps others out', function (): void {
     $this->actingAs($this->marketing)->get('/website/pages')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('cms/pages'));
-    $this->actingAs($this->marketing)->get('/projects')->assertForbidden();
+    // Marketing can see the project register, which is what the website is about, but may not change
+    // anything, and may not see money or people.
+    $this->actingAs($this->marketing)->post('/projects', ['name' => 'Theirs', 'code' => 'X-1'])->assertForbidden();
+    $this->actingAs($this->marketing)->get('/reports/cost-report')->assertForbidden();
+    $this->actingAs($this->marketing)->get('/workforce')->assertForbidden();
 
     $this->actingAs($this->siteManager)->get('/website/pages')->assertForbidden();
     $this->actingAs($this->siteManager)->post('/website/pages', ['title' => 'Sneaky', 'template' => 'page'])->assertForbidden();

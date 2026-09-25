@@ -224,7 +224,7 @@ final class CmsController
                 ->when($status !== 'all', fn ($q) => $q->where('status', $status))
                 ->latest('id')->paginate(30)
                 ->through(static fn (CmsFormSubmission $s): array => [
-                    'id' => $s->ulid, 'form' => $s->form?->name ?? 'Form', 'name' => $s->name, 'email' => $s->email, 'phone' => $s->phone,
+                    'id' => $s->ulid, 'form' => $s->form->name, 'name' => $s->name, 'email' => $s->email, 'phone' => $s->phone,
                     'answers' => $s->answers, 'page' => $s->page, 'status' => $s->status,
                     'becameBuyer' => $s->buyer_id !== null, 'becameTenant' => $s->tenant_id !== null,
                     'at' => $s->created_at?->toIso8601String(),
