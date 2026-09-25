@@ -61,6 +61,12 @@ class UserFactory extends Factory
         ]);
     }
 
+    /** For tests about signing in or setting two-factor up in the first place. */
+    public function withoutTwoFactor(): static
+    {
+        return $this->state(fn (array $attributes) => ['two_factor_secret' => null, 'two_factor_confirmed_at' => null]);
+    }
+
     public function inactive(): static
     {
         return $this->state(fn (array $attributes) => ['is_active' => false]);
