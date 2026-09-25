@@ -13,6 +13,7 @@ use App\Domains\Cms\Services\FormSubmissionService;
 use App\Domains\Projects\Models\Project;
 use App\Domains\Sales\Models\SaleUnit;
 use App\Support\Cache\CompanyCache;
+use App\Support\Tenancy\CurrentCompany;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -25,7 +26,11 @@ use Illuminate\View\View;
  */
 final class WebsiteController
 {
-    public function __construct(private readonly CompanyCache $cache, private readonly FormSubmissionService $forms) {}
+    public function __construct(
+        private readonly CompanyCache $cache,
+        private readonly FormSubmissionService $forms,
+        private readonly CurrentCompany $context,
+    ) {}
 
     public function home(): View
     {
@@ -154,7 +159,7 @@ final class WebsiteController
                 'primaryMenu' => $menus->get('primary')->items ?? [],
                 'footerMenu' => $menus->get('footer')->items ?? [],
                 'brand' => [
-                    'name' => (string) config('branding.name'),
+                    'name' => (string) (config('branding.name') ?: $this->context->require()->name),
                     'owner' => (string) config('branding.owner'),
                     'tagline' => (string) config('branding.tagline'),
                     'email' => (string) config('branding.support_email'),
@@ -182,7 +187,8 @@ final class WebsiteController
      */
     private function developmentList(int $limit): array
     {
-        return Project::query()->whereIn('status', ['active', 'completed'])->orderByDesc('id')->limit($limit)->get()
+        /** @var list<array<string, mixed>> $developments */
+        $developments = Project::query()->whereIn('status', ['active', 'completed'])->orderByDesc('id')->limit($limit)->get()
             ->map(static function (Project $project): array {
                 $units = SaleUnit::query()->where('project_id', $project->id)->whereIn('tenure', ['sale', 'both'])->get();
 
@@ -197,6 +203,8 @@ final class WebsiteController
                         : null,
                 ];
             })->values()->all();
+
+        return $developments;
     }
 
     private function enquiryForm(): ?CmsForm

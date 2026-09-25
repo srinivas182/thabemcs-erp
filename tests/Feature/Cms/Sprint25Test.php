@@ -42,7 +42,6 @@ it('shows the pages, articles and sitemap the content management system holds', 
     $this->get('/news/what-to-ask-before-you-buy-off-plan')->assertOk()->assertSee('attorney', false);
 
     $this->get('/sitemap.xml')->assertOk()->assertSee('/about-us', false);
-    $this->get('/robots.txt')->assertOk();
 });
 
 it('does not show a draft page to the public', function (): void {

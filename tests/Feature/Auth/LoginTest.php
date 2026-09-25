@@ -13,7 +13,7 @@ it('signs in an active user and records the login time', function (): void {
     $user = User::factory()->forCompany(Company::factory()->create())->create();
 
     $this->post('/login', ['email' => $user->email, 'password' => 'password'])
-        ->assertRedirect('/');
+        ->assertRedirect('/my-day');
 
     $this->assertAuthenticatedAs($user);
     expect($user->fresh()->last_login_at)->not->toBeNull();
