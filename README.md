@@ -10,6 +10,7 @@ sell/rent, close out** — across companies, regions and projects nationwide.
 
 | Document | What it covers |
 |---|---|
+| [docs/installation.md](docs/installation.md) | Step-by-step install on a developer's machine and on cPanel, with checks and troubleshooting |
 | [docs/developer-guide.md](docs/developer-guide.md) | How the codebase is organised, the shared machinery, conventions and traps |
 | [docs/modules.md](docs/modules.md) | Every module: purpose, tables, business rules and permissions |
 | [docs/deployment.md](docs/deployment.md) | Hosting, queues, and packages installed at deployment |
