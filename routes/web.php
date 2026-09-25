@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Domains\Approvals\Http\Controllers\ApprovalController;
 use App\Domains\Closeout\Http\Controllers\CloseoutController;
 use App\Domains\Closeout\Http\Controllers\DistributionController;
+use App\Domains\Cms\Http\Controllers\CmsController;
+use App\Domains\Cms\Http\Controllers\PageController;
 use App\Domains\Compliance\Http\Controllers\PopiaController;
 use App\Domains\Contracts\Http\Controllers\ContractController;
 use App\Domains\Documents\Http\Controllers\DocumentController;
@@ -265,6 +267,36 @@ Route::middleware(['auth'])->group(function (): void {
         Route::post('distributions/{distribution}/approve', [DistributionController::class, 'approve'])->name('distributions.approve');
         Route::post('distributions/{distribution}/pay', [DistributionController::class, 'pay'])->name('distributions.pay');
         Route::post('projects/{project}/reinvestments', [DistributionController::class, 'reinvest'])->name('projects.reinvestments');
+    });
+
+    // The website: pages, media, menus, articles, forms and what visitors send.
+    Route::prefix('website')->name('cms.')->group(function (): void {
+        Route::get('pages', [PageController::class, 'index'])->name('pages');
+        Route::post('pages', [PageController::class, 'store'])->name('pages.store');
+        Route::get('pages/{page}', [PageController::class, 'edit'])->name('pages.edit');
+        Route::put('pages/{page}', [PageController::class, 'update'])->name('pages.update');
+        Route::post('pages/{page}/publish', [PageController::class, 'publish'])->name('pages.publish');
+        Route::post('pages/{page}/unpublish', [PageController::class, 'unpublish'])->name('pages.unpublish');
+        Route::post('pages/{page}/home', [PageController::class, 'makeHome'])->name('pages.home');
+        Route::post('pages/{page}/restore/{version}', [PageController::class, 'restore'])->name('pages.restore');
+        Route::delete('pages/{page}', [PageController::class, 'destroy'])->name('pages.destroy');
+
+        Route::get('media', [CmsController::class, 'mediaIndex'])->name('media');
+        Route::post('media', [CmsController::class, 'mediaStore'])->name('media.store');
+        Route::patch('media/{media}', [CmsController::class, 'mediaUpdate'])->name('media.update');
+        Route::delete('media/{media}', [CmsController::class, 'mediaDestroy'])->name('media.destroy');
+
+        Route::get('menus', [CmsController::class, 'menus'])->name('menus');
+        Route::put('menus/{location}', [CmsController::class, 'saveMenu'])->name('menus.save');
+
+        Route::get('articles', [CmsController::class, 'posts'])->name('posts');
+        Route::post('articles', [CmsController::class, 'storePost'])->name('posts.store');
+        Route::post('categories', [CmsController::class, 'storeCategory'])->name('categories.store');
+
+        Route::get('forms', [CmsController::class, 'forms'])->name('forms');
+        Route::post('forms', [CmsController::class, 'storeForm'])->name('forms.store');
+        Route::get('enquiries', [CmsController::class, 'submissions'])->name('submissions');
+        Route::patch('enquiries/{submission}', [CmsController::class, 'updateSubmission'])->name('submissions.update');
     });
 
     // Rentals: leases, tenants, billing, deposits, inspections and maintenance.

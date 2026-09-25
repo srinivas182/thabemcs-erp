@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.24.0] — Website content management (Sprint 24)
+
+### Added
+- Pages built from 13 block types (hero, services, developments, track record, process, team, testimonials, gallery, questions, text and image, forms, call to action, introduction), edited in the back office.
+- Draft, publish, schedule and take down, with a version history of the last 20 saves and one-click restore.
+- Media library for website images and PDFs, with alt text for screen readers and search engines.
+- Navigation and footer menus built from published pages.
+- Articles with categories and authors.
+- Form builder whose entries become buyer or tenant records with source "Website", with POPIA consent recorded and notifications to chosen people.
+- A Marketing role that can manage content and nothing else.
+- Unknown blocks and fields are stripped on save, and application addresses cannot be taken by a page.
+
 ## [0.23.0] — Scale certification tooling and acceptance pack (Sprint 23)
 
 ### Added

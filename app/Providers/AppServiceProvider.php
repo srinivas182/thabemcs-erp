@@ -170,6 +170,14 @@ class AppServiceProvider extends ServiceProvider
             Role::CompanyAdmin->value, Role::Director->value,
         ]));
 
+        // The website's content. Marketing may write and edit; publishing to the public site is narrower.
+        Gate::define('manage-content', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::Marketing->value, Role::SalesAndLeasing->value,
+        ]));
+        Gate::define('publish-content', static fn (User $user): bool => $user->hasAnyRole([
+            Role::CompanyAdmin->value, Role::Director->value, Role::Marketing->value,
+        ]));
+
         // Sales.
         Gate::define('view-sales', static fn (User $user): bool => $user->hasAnyRole([
             Role::CompanyAdmin->value, Role::Director->value, Role::DevelopmentManager->value, Role::SalesAndLeasing->value, Role::Finance->value,

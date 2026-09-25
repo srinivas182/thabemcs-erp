@@ -247,6 +247,18 @@ Everything marked **configurable** can be changed in settings without code chang
 | PC2 | "100,000 concurrent users" still needs Thabekhulu's decision: people online at once, or registered users. It drives the hosting cost and the load-test figure | n/a |
 | PC3 | Load and restore results are only valid on staging with full-size data; small-database runs prove nothing | No |
 
+## Website content management (Sprint 24)
+| # | Assumption | Configurable |
+|---|---|---|
+| CM1 | Pages are built from 13 block types; unknown blocks and fields are stripped on save, so only known content reaches the website | Yes |
+| CM2 | Every save keeps a version; the last 20 versions of a page are kept and any can be restored | Yes |
+| CM3 | Nothing is public until published; pages can be scheduled, and the home page cannot be unpublished or deleted | No |
+| CM4 | Web addresses the application uses (login, dashboard, projects...) cannot be taken by a page | Yes |
+| CM5 | The media library is public and accepts images and PDFs only, up to 10 MB, checked by file type not file name | Yes |
+| CM6 | Website forms require POPIA consent before sending, and the consent is stored with the entry | No |
+| CM7 | An enquiry form creates a buyer or tenant record with source "Website", so the sales team works it as a normal lead | Yes |
+| CM8 | Marketing may write, edit and publish content and see nothing else in the system | Yes |
+
 ## To be added as each module is built
 Projects, feasibility, funding, land, approvals, procurement and finance assumptions are appended
 here in the sprint that builds them.

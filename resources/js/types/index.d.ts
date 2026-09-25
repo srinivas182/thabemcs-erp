@@ -30,7 +30,7 @@ export interface SharedProps {
     };
     auth: { user: AuthUser | null };
     help: HelpEntry | null;
-    can: { manageCompanies: boolean; viewPortfolio: boolean; manageMasterData: boolean; managePopia: boolean; viewSales: boolean; manageSales: boolean; viewRentals: boolean; manageRentals: boolean; manageForms: boolean; manageIntegrations: boolean; manageUsers: boolean; viewAuditLog: boolean };
+    can: { manageCompanies: boolean; viewPortfolio: boolean; manageMasterData: boolean; managePopia: boolean; manageContent: boolean; publishContent: boolean; viewSales: boolean; manageSales: boolean; viewRentals: boolean; manageRentals: boolean; manageForms: boolean; manageIntegrations: boolean; manageUsers: boolean; viewAuditLog: boolean };
     notifications: { unread: number };
     company: CurrentCompany | null;
     flash: { success: string | null; error: string | null };

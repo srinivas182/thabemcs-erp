@@ -1,7 +1,7 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { cn } from '@thabekhulu/ui';
 import { HelpDrawer } from '@/components/help-drawer';
-import { Bell, Building2, CalendarCheck, ClipboardList, Handshake, KeyRound, Gauge, History, Inbox, ListTree, LogOut, Map as MapIcon, Menu, Plug, Search, ShieldCheck, Users, X } from 'lucide-react';
+import { Globe, Bell, Building2, CalendarCheck, ClipboardList, Handshake, KeyRound, Gauge, History, Inbox, ListTree, LogOut, Map as MapIcon, Menu, Plug, Search, ShieldCheck, Users, X } from 'lucide-react';
 import CommandPalette from '@/components/command-palette';
 import { type ReactNode, useEffect, useState } from 'react';
 import { MODULE_ROUTES, NAV_GROUPS } from '@/components/navigation';
@@ -54,6 +54,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 {company && can.viewRentals && (
                     <NavLink href="/rentals" active={url.startsWith('/rentals')} icon={<KeyRound className="size-4" aria-hidden />}>
                         Rentals
+                    </NavLink>
+                )}
+                {company && can.manageContent && (
+                    <NavLink href="/website/pages" active={url.startsWith('/website')} icon={<Globe className="size-4" aria-hidden />}>
+                        Website
                     </NavLink>
                 )}
                 {company && can.manageForms && (

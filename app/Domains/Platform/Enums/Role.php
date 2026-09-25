@@ -19,6 +19,7 @@ enum Role: string
     case Procurement = 'procurement';
     case Finance = 'finance';
     case SalesAndLeasing = 'sales-leasing';
+    case Marketing = 'marketing';
     case Contractor = 'contractor';
 
     public function label(): string
@@ -34,6 +35,7 @@ enum Role: string
             self::Procurement => 'Procurement',
             self::Finance => 'Finance',
             self::SalesAndLeasing => 'Sales & Leasing',
+            self::Marketing => 'Marketing',
             self::Contractor => 'Contractor (external)',
         };
     }
