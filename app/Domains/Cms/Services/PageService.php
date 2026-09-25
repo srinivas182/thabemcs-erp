@@ -36,7 +36,6 @@ final class PageService
                 'version' => 1,
                 'created_by' => $by->id,
             ]);
-            $this->keepVersion($page, $by, 'Created');
 
             return $page;
         });

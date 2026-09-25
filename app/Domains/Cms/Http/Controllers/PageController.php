@@ -36,7 +36,7 @@ final class PageController
                     'id' => $p->ulid, 'title' => $p->title, 'slug' => $p->slug, 'path' => $p->path(),
                     'template' => $p->template, 'status' => $p->status, 'isHome' => $p->is_home,
                     'live' => $p->isLive(), 'publishFrom' => $p->publish_from?->toIso8601String(),
-                    'published' => $p->published_at?->toIso8601String(), 'updated' => $p->updated_at->toIso8601String(),
+                    'published' => $p->published_at?->toIso8601String(), 'updated' => $p->updated_at?->toIso8601String(),
                     'versions' => (int) $p->getAttribute('versions_count'),
                 ]),
             'templates' => collect((array) config('cms.templates'))->map(static fn (string $l, string $k): array => ['key' => $k, 'label' => $l])->values(),
@@ -54,7 +54,7 @@ final class PageController
                 'status' => $page->status, 'isHome' => $page->is_home, 'showInSearch' => $page->show_in_search,
                 'version' => $page->version, 'live' => $page->isLive(),
             ],
-            'blockTypes' => collect((array) config('cms.blocks'))->map(static fn (array $b, string $k): array => [
+            'blockTypes' => collect($this->blockTypes())->map(static fn (array $b, string $k): array => [
                 'key' => $k, 'label' => $b['label'], 'help' => $b['help'] ?? null,
                 'fields' => collect($b['fields'])->map(static fn (array $f, string $name): array => ['name' => $name, ...$f])->values(),
             ])->values(),
@@ -65,7 +65,7 @@ final class PageController
                 ->map(static fn (CmsForm $f): array => ['key' => $f->slug, 'label' => $f->name])->values(),
             'versions' => $page->versions()->with('savedBy:id,name')->limit(20)->get()
                 ->map(static fn (CmsPageVersion $v): array => ['id' => $v->id, 'version' => $v->version, 'note' => $v->note,
-                    'at' => $v->created_at->toIso8601String()])->values(),
+                    'at' => $v->created_at?->toIso8601String()])->values(),
         ]);
     }
 
@@ -169,5 +169,16 @@ final class PageController
         $page->delete();
 
         return redirect()->route('cms.pages')->with('success', 'Page deleted.');
+    }
+
+    /**
+     * @return array<string, array{label: string, help?: string, fields: array<string, array<string, mixed>>}>
+     */
+    private function blockTypes(): array
+    {
+        /** @var array<string, array{label: string, help?: string, fields: array<string, array<string, mixed>>}> $blocks */
+        $blocks = (array) config('cms.blocks');
+
+        return $blocks;
     }
 }

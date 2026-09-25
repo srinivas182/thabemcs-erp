@@ -13,7 +13,6 @@ use App\Domains\Cms\Models\CmsPage;
 use App\Domains\Cms\Models\CmsPost;
 use App\Domains\Cms\Services\CmsException;
 use App\Domains\Cms\Services\MediaService;
-use App\Domains\Cms\Services\PageService;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,7 +27,7 @@ use Inertia\Response;
  */
 final class CmsController
 {
-    public function __construct(private readonly MediaService $media, private readonly PageService $pages) {}
+    public function __construct(private readonly MediaService $media) {}
 
     public function mediaIndex(): Response
     {
@@ -39,7 +38,7 @@ final class CmsController
                 ->through(static fn (CmsMedia $m): array => [
                     'id' => $m->ulid, 'url' => $m->url(), 'name' => $m->file_name, 'alt' => $m->alt,
                     'size' => round($m->bytes / 1024).' KB', 'dimensions' => $m->width ? "{$m->width} x {$m->height}" : null,
-                    'uploaded' => $m->created_at->toIso8601String(),
+                    'uploaded' => $m->created_at?->toIso8601String(),
                 ]),
         ]);
     }
@@ -89,8 +88,8 @@ final class CmsController
 
         return Inertia::render('cms/menus', [
             'menus' => [
-                'primary' => $menus->get('primary')?->items ?? [],
-                'footer' => $menus->get('footer')?->items ?? [],
+                'primary' => $menus->get('primary')->items ?? [],
+                'footer' => $menus->get('footer')->items ?? [],
             ],
             'pages' => CmsPage::query()->where('status', 'published')->orderBy('title')->get()
                 ->map(static fn (CmsPage $p): array => ['key' => $p->path(), 'label' => $p->title])->values(),
@@ -225,10 +224,10 @@ final class CmsController
                 ->when($status !== 'all', fn ($q) => $q->where('status', $status))
                 ->latest('id')->paginate(30)
                 ->through(static fn (CmsFormSubmission $s): array => [
-                    'id' => $s->ulid, 'form' => $s->form->name, 'name' => $s->name, 'email' => $s->email, 'phone' => $s->phone,
+                    'id' => $s->ulid, 'form' => $s->form?->name ?? 'Form', 'name' => $s->name, 'email' => $s->email, 'phone' => $s->phone,
                     'answers' => $s->answers, 'page' => $s->page, 'status' => $s->status,
                     'becameBuyer' => $s->buyer_id !== null, 'becameTenant' => $s->tenant_id !== null,
-                    'at' => $s->created_at->toIso8601String(),
+                    'at' => $s->created_at?->toIso8601String(),
                 ]),
             'filters' => ['status' => $status],
         ]);
