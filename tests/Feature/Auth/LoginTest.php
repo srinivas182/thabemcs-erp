@@ -10,7 +10,7 @@ it('shows the sign-in screen', function (): void {
 });
 
 it('signs in an active user and records the login time', function (): void {
-    $user = User::factory()->forCompany(Company::factory()->withoutTwoFactor()->create())->create();
+    $user = User::factory()->forCompany(Company::factory()->create())->withoutTwoFactor()->create();
 
     $this->post('/login', ['email' => $user->email, 'password' => 'password'])
         ->assertRedirect('/my-day');
@@ -20,7 +20,7 @@ it('signs in an active user and records the login time', function (): void {
 });
 
 it('refuses to sign in a deactivated user', function (): void {
-    $user = User::factory()->forCompany(Company::factory()->withoutTwoFactor()->create())->inactive()->create();
+    $user = User::factory()->forCompany(Company::factory()->create())->inactive()->create();
 
     $this->post('/login', ['email' => $user->email, 'password' => 'password']);
 

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function (): void {
-    $this->user = User::factory()->forCompany(Company::factory()->withoutTwoFactor()->create())->create();
+    $this->user = User::factory()->forCompany(Company::factory()->create())->withoutTwoFactor()->create();
 });
 
 it('shows the profile with two-factor status', function (): void {
