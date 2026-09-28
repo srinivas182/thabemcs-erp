@@ -7,6 +7,21 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { MODULE_ROUTES, NAV_GROUPS } from '@/components/navigation';
 import type { SharedProps } from '@/types';
 
+/** Signs out with a real form post, so the browser leaves the app and loads the public site. */
+function signOut(): void {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/logout';
+    const token = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
+    const field = document.createElement('input');
+    field.type = 'hidden';
+    field.name = '_token';
+    field.value = token;
+    form.appendChild(field);
+    document.body.appendChild(form);
+    form.submit();
+}
+
 export default function AppLayout({ children }: { children: ReactNode }) {
     const { auth, company, flash, app, can, notifications } = usePage<SharedProps>().props;
     const [searching, setSearching] = useState(false);
@@ -180,7 +195,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                             <p className="text-xs text-ink-soft">{auth.user?.jobTitle ?? (auth.user?.isSuperAdmin ? 'Super Admin' : '')}</p>
                         </Link>
                         <button
-                            onClick={() => router.post('/logout')}
+                            onClick={() => signOut()}
                             className="rounded-[var(--radius-control)] p-2 text-ink-soft hover:bg-concrete-soft hover:text-ink"
                             aria-label="Sign out"
                             title="Sign out"

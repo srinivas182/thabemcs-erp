@@ -135,3 +135,10 @@ it('fills the website with demonstration developments and their stock', function
     $this->artisan('demo:developments')->assertSuccessful();
     inCompany($this->company, fn () => expect(Project::query()->count())->toBe(4));
 });
+
+it('sends someone who signs out to the public website', function (): void {
+    $this->actingAs($this->marketing)->post('/logout')->assertRedirect('/');
+
+    // And that address is a real page, not a sign-in redirect.
+    $this->get('/')->assertOk()->assertSee('Staff sign in', false);
+});
