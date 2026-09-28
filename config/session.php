@@ -75,7 +75,12 @@ return [
     |
     */
 
-    'connection' => env('SESSION_CONNECTION', 'sessions'),
+    /*
+    | Which connection stores sessions. Left empty it uses the default connection, which is what a
+    | deployment with database sessions and no Redis needs. With Redis, REDIS_SESSION_DB keeps sessions
+    | on their own Redis database (see docs/deployment.md).
+    */
+    'connection' => env('SESSION_CONNECTION'),
 
     /*
     |--------------------------------------------------------------------------

@@ -128,9 +128,10 @@ SESSION_DRIVER=redis
 QUEUE_CONNECTION=redis
 REDIS_HOST=127.0.0.1
 
-# Without Redis, use these three instead:
+# Without Redis, use these instead:
 # CACHE_STORE=database
 # SESSION_DRIVER=database
+# SESSION_CONNECTION=mysql
 # QUEUE_CONNECTION=sync
 
 # Where email goes while developing. log writes it to storage/logs.
@@ -320,6 +321,7 @@ DB_PASSWORD=the-password-from-B1
 # No Redis on shared hosting: the database does this work instead.
 CACHE_STORE=database
 SESSION_DRIVER=database
+SESSION_CONNECTION=mysql
 QUEUE_CONNECTION=database
 
 # Email through the cPanel mail account you created.
@@ -468,6 +470,7 @@ mysqldump -u myacct_thabe -p myacct_thabekhulu | gzip > ~/backup-$(date +%F).sql
 | 403 or a directory listing | The document root is not pointing at `public/` | Fix the document root (B3). |
 | "SQLSTATE[HY000] [1045]" | Wrong database user, password, or the user is not attached to the database | Re-check B1; use the cPanel-prefixed names. |
 | "SQLSTATE[HY000] [2002]" | Wrong database host | `127.0.0.1` on cPanel, not `localhost`, on most hosts. |
+| "Database connection [sessions] not configured" | Database sessions with no `SESSION_CONNECTION` set | Add `SESSION_CONNECTION=mysql` to `.env`, then `php artisan config:cache`. |
 | 419 Page Expired on every form | Sessions are not being stored, or `APP_URL` does not match the address used | Check `SESSION_DRIVER` and the sessions table; make `APP_URL` exact. |
 | Emails never arrive | SMTP details or port wrong | Test with `php artisan tinker`: `Mail::raw('test', fn($m) => $m->to('you@example.com')->subject('Test'));` |
 | Notifications and reports never happen | Cron is not running | Check both entries in B8, and the PHP path. |
