@@ -48,7 +48,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             </div>
 
             <div className="grid gap-0.5">
-                <NavLink href="/" active={url === '/'} icon={<CalendarCheck className="size-4" aria-hidden />}>
+                <NavLink href="/my-day" active={url === '/my-day'} icon={<CalendarCheck className="size-4" aria-hidden />}>
                     My day
                 </NavLink>
                 {can.viewPortfolio && (

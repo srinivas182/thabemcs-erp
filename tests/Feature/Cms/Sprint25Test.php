@@ -142,3 +142,12 @@ it('sends someone who signs out to the public website', function (): void {
     // And that address is a real page, not a sign-in redirect.
     $this->get('/')->assertOk()->assertSee('Staff sign in', false);
 });
+
+it('does not leave any app link pointing at the public site', function (): void {
+    // The ERP moved off "/" when the website took it. A sidebar or button still pointing there would
+    // fetch a plain page into the app, which Inertia cannot render.
+    $layout = (string) file_get_contents(resource_path('js/layouts/app-layout.tsx'));
+
+    expect($layout)->not->toContain('href="/"')
+        ->and($layout)->toContain('href="/my-day"');
+});
