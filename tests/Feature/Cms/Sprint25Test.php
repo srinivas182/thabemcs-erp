@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domains\Cms\Models\CmsForm;
+use App\Domains\Cms\Models\CmsMedia;
 use App\Domains\Cms\Models\CmsPage;
 use App\Domains\Platform\Enums\Role;
 use App\Domains\Platform\Models\Company;
@@ -112,4 +113,25 @@ it('keeps the website out of the way of the application', function (): void {
     // Signed-in staff still reach the back office; the public pages stay public.
     $this->actingAs($this->marketing)->get('/website/pages')->assertOk();
     $this->get('/')->assertOk();
+});
+
+it('fills the website with demonstration developments and their stock', function (): void {
+    config(['cms.company' => $this->company->ulid]);
+
+    $this->artisan('demo:developments')->assertSuccessful();
+
+    inCompany($this->company, function (): void {
+        expect(Project::query()->count())->toBe(4)
+            ->and(SaleUnit::query()->count())->toBe(146)
+            ->and(SaleUnit::query()->where('status', 'available')->count())->toBeGreaterThan(0)
+            ->and(CmsMedia::query()->count())->toBe(4);
+    });
+
+    // And the public pages now show them, with what is actually still for sale.
+    $this->get('/developments')->assertOk()->assertSee('Ballito Heights', false)->assertSee('available', false);
+    $this->get('/')->assertOk()->assertSee('Ballito Heights', false);
+
+    // Running it again changes nothing.
+    $this->artisan('demo:developments')->assertSuccessful();
+    inCompany($this->company, fn () => expect(Project::query()->count())->toBe(4));
 });
