@@ -120,7 +120,7 @@ final class SeedDemoDevelopmentsCommand extends Command
         $page = CmsPage::query()->withoutGlobalScopes()->where('is_home', true)->first();
 
         return $page !== null
-            ? Company::query()->findOrFail($page->getAttribute('company_id'))
+            ? Company::query()->whereKey($page->getAttribute('company_id'))->firstOrFail()
             : Company::query()->where('status', 'active')->orderBy('id')->firstOrFail();
     }
 
@@ -134,21 +134,21 @@ final class SeedDemoDevelopmentsCommand extends Command
         $width = 1600;
         $height = 900;
         $image = imagecreatetruecolor($width, $height);
+        $colourOf = static fn (\GdImage $on, int $r, int $g, int $b): int => (int) imagecolorallocate(
+            $on, max(0, min(255, $r)), max(0, min(255, $g)), max(0, min(255, $b)),
+        );
 
         [$r, $g, $b] = $colour;
         for ($y = 0; $y < $height; $y++) {
-            $shade = imagecolorallocate($image,
-                (int) max(0, min(255, $r + ($y / $height) * 45)),
-                (int) max(0, min(255, $g + ($y / $height) * 45)),
-                (int) max(0, min(255, $b + ($y / $height) * 45)));
-            imageline($image, 0, $y, $width, $y, $shade);
+            $lift = (int) (($y / $height) * 45);
+            imageline($image, 0, $y, $width, $y, $colourOf($image, $r + $lift, $g + $lift, $b + $lift));
         }
 
-        $white = imagecolorallocate($image, 255, 255, 255);
-        $label = imagecreatetruecolor(imagefontwidth(5) * mb_strlen($name) + 4, imagefontheight(5) + 4);
-        imagefill($label, 0, 0, imagecolorallocatealpha($label, 0, 0, 0, 127));
+        $white = $colourOf($image, 255, 255, 255);
+        $label = imagecreatetruecolor(max(1, imagefontwidth(5) * mb_strlen($name) + 4), max(1, imagefontheight(5) + 4));
+        imagefill($label, 0, 0, (int) imagecolorallocatealpha($label, 0, 0, 0, 127));
         imagesavealpha($label, true);
-        imagestring($label, 5, 2, 2, $name, imagecolorallocate($label, 255, 255, 255));
+        imagestring($label, 5, 2, 2, $name, $colourOf($label, 255, 255, 255));
         $scaled = imagescale($label, (int) (imagesx($label) * 4.5));
         if ($scaled !== false) {
             imagecopy($image, $scaled, 70, $height - 170, 0, 0, imagesx($scaled), imagesy($scaled));
