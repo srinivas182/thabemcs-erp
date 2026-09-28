@@ -9,13 +9,11 @@ use App\Http\Middleware\AddRequestId;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RequireTwoFactor;
 use App\Http\Middleware\SecurityHeaders;
-use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
-use Illuminate\Support\Facades\RateLimiter;
 
 return Application::configure(basePath: dirname(__DIR__))
     // Commands live with the domain they belong to, not in app/Console.
@@ -25,22 +23,6 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
-        then: function (): void {
-            // Signing in: slow down guessing, by account and by address.
-            RateLimiter::for('login', fn (Request $request) => [
-                Limit::perMinute(5)->by((string) $request->input('email')),
-                Limit::perMinute(20)->by((string) $request->ip()),
-            ]);
-
-            // The public website: generous for reading, tight for sending.
-            RateLimiter::for('website', fn (Request $request) => Limit::perMinute(120)->by((string) $request->ip()));
-            RateLimiter::for('website-forms', fn (Request $request) => [
-                Limit::perMinute(5)->by((string) $request->ip()),
-                Limit::perDay(40)->by((string) $request->ip()),
-            ]);
-
-            RateLimiter::for('api', fn (Request $request) => Limit::perMinute(120)->by($request->user()?->getAuthIdentifier() ?: $request->ip()));
-        },
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();

@@ -20,8 +20,11 @@ use App\Domains\Site\Models\Snag;
 use App\Domains\Workforce\Services\PublicHolidays;
 use App\Models\User;
 use App\Support\Tenancy\CurrentCompany;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Spatie\Activitylog\Models\Activity;
@@ -55,6 +58,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->rateLimiters();
         // Keep precomputed project figures current without recalculating them on every page view.
         foreach (self::METRIC_SOURCES as $model) {
             $model::saved(static fn ($record) => RefreshProjectMetrics::forModel($record));
@@ -246,5 +250,29 @@ class AppServiceProvider extends ServiceProvider
         Password::defaults(fn () => $this->app->isProduction()
             ? Password::min(12)->mixedCase()->numbers()->symbols()->uncompromised()
             : Password::min(8));
+    }
+
+    /**
+     * Rate limits, named per surface so one cannot starve another.
+     *
+     * These live here rather than in the routing closure, because that closure does not run when routes
+     * are cached - which is exactly what a production deployment does.
+     */
+    private function rateLimiters(): void
+    {
+        // Signing in: slow down guessing, by account and by address.
+        RateLimiter::for('login', fn (Request $request) => [
+            Limit::perMinute(5)->by((string) $request->input('email')),
+            Limit::perMinute(20)->by((string) $request->ip()),
+        ]);
+
+        // The public website: generous for reading, tight for sending.
+        RateLimiter::for('website', fn (Request $request) => Limit::perMinute(120)->by((string) $request->ip()));
+        RateLimiter::for('website-forms', fn (Request $request) => [
+            Limit::perMinute(5)->by((string) $request->ip()),
+            Limit::perDay(40)->by((string) $request->ip()),
+        ]);
+
+        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(120)->by($request->user()?->getAuthIdentifier() ?: $request->ip()));
     }
 }

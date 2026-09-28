@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Cache\RateLimiter;
 use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Route;
 
@@ -71,4 +72,13 @@ it('sends the security headers a browser needs, on public pages as well as the b
     expect($policy)->toContain("script-src 'self'")->toContain("object-src 'none'")->toContain("frame-ancestors 'none'")
         ->and($response->headers->get('X-Content-Type-Options'))->toBe('nosniff')
         ->and($response->headers->get('X-Frame-Options'))->toBe('DENY');
+});
+
+it('defines its rate limiters even when routes are cached', function (): void {
+    // The limiters used to live in the routing closure, which Laravel skips when routes are cached, so a
+    // production deployment lost them and every public page failed. They now live in a service provider.
+    foreach (['login', 'website', 'website-forms', 'api'] as $limiter) {
+        expect(app(RateLimiter::class)->limiter($limiter))
+            ->not->toBeNull("The [{$limiter}] rate limiter is not defined.");
+    }
 });
