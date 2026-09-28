@@ -84,7 +84,10 @@ it('sends a company its own maintenance work only', function (): void {
 });
 
 it('keeps cache, sessions and queues in separate places', function (): void {
-    expect(config('session.connection'))->toBe('sessions')
+    // With Redis, SESSION_CONNECTION puts sessions on their own Redis database. Left unset, sessions use
+    // the default connection, which is what a deployment without Redis needs.
+    config(['session.connection' => env('SESSION_CONNECTION')]);
+    expect(config('session.connection'))->toBeNull()
         ->and(config('database.redis.queue.database'))->toBe('3')
         ->and(config('database.redis.sessions.database'))->toBe('2')
         ->and(config('queue.connections.redis.connection'))->toBe('queue')
