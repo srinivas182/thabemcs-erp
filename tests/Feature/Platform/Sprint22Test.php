@@ -11,6 +11,7 @@ use App\Domains\Rentals\Models\Lease;
 use App\Domains\Rentals\Models\LeaseInvoice;
 use App\Domains\Rentals\Models\Tenant;
 use App\Domains\Sales\Models\SaleUnit;
+use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Http\Client\Request as HttpRequest;
 use Illuminate\Support\Facades\Http;
@@ -107,4 +108,19 @@ it('sends rental invoices to Sage once, against the tenant customer account', fu
     // Running it again sends nothing new.
     $second = inCompany($this->company, fn () => app(SageZaConnector::class)->pushRentalInvoices($integration));
     expect($second['sent'])->toBe(0);
+});
+
+it('lets a super admin into a module the company has not bought, but still checks permissions', function (): void {
+    $company = inCompany($this->company, function () {
+        $this->company->update(['modules' => ['finance']]);   // projects deliberately not enabled
+
+        return $this->company;
+    });
+
+    $superAdmin = User::factory()->superAdmin()->create();
+    $this->actingAs($superAdmin)->withSession(['acting_company_id' => $company->id])
+        ->get('/projects')->assertOk();
+
+    // Everyone else is held to what the company actually has.
+    $this->actingAs($this->siteManager)->get('/projects')->assertForbidden();
 });
