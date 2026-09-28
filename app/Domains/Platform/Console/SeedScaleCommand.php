@@ -144,7 +144,7 @@ final class SeedScaleCommand extends Command
                     $start = Carbon::today()->subDays(random_int(30, 1200));
                     $projects[] = [
                         'ulid' => (string) Str::ulid(), 'company_id' => $company, 'code' => 'SC-'.str_pad((string) $n, 6, '0', STR_PAD_LEFT),
-                        'name' => 'Scale Project '.$n, 'stage' => 'construction', 'status' => $n % 9 === 0 ? 'on_hold' : 'active',
+                        'name' => 'Scale Project '.$n, 'stage' => ['build', 'build', 'build', 'sell_rent', 'approve'][$n % 5], 'status' => $n % 9 === 0 ? 'on_hold' : 'active',
                         'town' => ['Ballito', 'Umhlanga', 'Richards Bay', 'Pietermaritzburg', 'Durban'][$n % 5],
                         'latitude' => -29.5 - ($n % 100) / 100, 'longitude' => 31.0 + ($n % 100) / 100,
                         'planned_start_date' => $start->toDateString(), 'planned_completion_date' => $start->copy()->addDays(random_int(200, 900))->toDateString(),

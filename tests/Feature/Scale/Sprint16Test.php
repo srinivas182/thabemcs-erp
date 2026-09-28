@@ -192,3 +192,16 @@ it('builds full-size test data, scoped to each company', function (): void {
     // And the figures behind the dashboard can be worked out over it.
     $this->artisan('perf:measure')->assertSuccessful();
 });
+
+it('generates projects whose stage and status the models accept', function (): void {
+    $this->artisan('scale:seed', ['--companies' => 1, '--projects' => 5, '--users' => 2, '--chunk' => 5])->assertSuccessful();
+
+    // Reading them back casts stage and status to their enums; an invalid value throws here.
+    Company::query()->each(function (Company $company): void {
+        inCompany($company, function (): void {
+            Project::query()->get()->each(
+                fn (Project $p) => expect($p->stage->label())->toBeString(),
+            );
+        });
+    });
+});
