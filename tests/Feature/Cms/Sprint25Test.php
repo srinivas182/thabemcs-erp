@@ -151,3 +151,25 @@ it('does not leave any app link pointing at the public site', function (): void 
     expect($layout)->not->toContain('href="/"')
         ->and($layout)->toContain('href="/my-day"');
 });
+
+it('draws a cover illustration for each development, and can redraw them', function (): void {
+    config(['cms.company' => $this->company->ulid]);
+    $this->artisan('demo:developments')->assertSuccessful();
+
+    $covers = inCompany($this->company, fn () => CmsMedia::query()->get());
+    expect($covers)->toHaveCount(4);
+
+    foreach ($covers as $cover) {
+        expect($cover->width)->toBe(1600)->and($cover->height)->toBe(900)
+            ->and($cover->mime_type)->toBe('image/jpeg')
+            ->and($cover->bytes)->toBeGreaterThan(10_000);
+        Storage::disk('public')->assertExists($cover->path);
+    }
+
+    // Redrawing adds new artwork without creating the developments again.
+    $this->artisan('demo:developments', ['--images' => true])->assertSuccessful();
+    inCompany($this->company, function (): void {
+        expect(Project::query()->count())->toBe(4)
+            ->and(CmsMedia::query()->count())->toBe(8);
+    });
+});
