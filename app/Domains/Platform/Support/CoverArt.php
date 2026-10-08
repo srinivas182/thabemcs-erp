@@ -38,7 +38,9 @@ final class CoverArt
         $colours = self::PALETTES[$palette] ?? self::PALETTES['dawn'];
         [$skyTop, $skyLow, $sun, $sea, $headland, $frontWall, $backWall, $roof, $dune] = $colours;
 
-        $pen = static fn (array $rgb): int => (int) imagecolorallocate($image, $rgb[0], $rgb[1], $rgb[2]);
+        $pen = function (array $rgb) use ($image): int {
+            return (int) imagecolorallocate($image, $this->channel($rgb[0]), $this->channel($rgb[1]), $this->channel($rgb[2]));
+        };
         $horizon = (int) ($height * 0.52);
 
         $this->sky($image, $pen, $skyTop, $skyLow, $width, $horizon);
@@ -80,7 +82,11 @@ final class CoverArt
     private function sun(\GdImage $image, callable $pen, array $sun, int $x, int $y): void
     {
         for ($r = 170; $r > 0; $r -= 2) {
-            $glow = imagecolorallocatealpha($image, $sun[0], $sun[1], $sun[2], (int) (120 - 120 * ($r / 170)));
+            $glow = imagecolorallocatealpha(
+                $image,
+                $this->channel($sun[0]), $this->channel($sun[1]), $this->channel($sun[2]),
+                $this->alpha((int) (120 - 120 * ($r / 170))),
+            );
             imagefilledellipse($image, $x, $y, $r * 2, $r * 2, (int) $glow);
         }
         imagefilledellipse($image, $x, $y, 118, 118, $pen($sun));
@@ -104,9 +110,25 @@ final class CoverArt
         // The sun's path on the water.
         for ($y = $horizon + 4; $y < $bottom - 4; $y += 7) {
             $spread = (int) (40 + ($y - $horizon) * 1.6);
-            $shimmer = imagecolorallocatealpha($image, $sun[0], $sun[1], $sun[2], 60 + mt_rand(0, 30));
+            $shimmer = imagecolorallocatealpha(
+                $image,
+                $this->channel($sun[0]), $this->channel($sun[1]), $this->channel($sun[2]),
+                $this->alpha(60 + mt_rand(0, 30)),
+            );
             imagefilledrectangle($image, $sunX - $spread, $y, $sunX + $spread, $y + 2, (int) $shimmer);
         }
+    }
+
+    /** @return int<0, 255> */
+    private function channel(int $value): int
+    {
+        return max(0, min(255, $value));
+    }
+
+    /** @return int<0, 127> */
+    private function alpha(int $value): int
+    {
+        return max(0, min(127, $value));
     }
 
     /**
