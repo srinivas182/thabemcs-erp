@@ -134,14 +134,7 @@ export default function Profile({ profile, twoFactor }: Props) {
                             <Button variant="secondary" size="sm" onClick={async () => setCodes(await getJson<string[]>('/user/two-factor-recovery-codes'))}>
                                 Show recovery codes
                             </Button>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-brick"
-                                onClick={() => window.confirm('Turn off two-factor authentication?') && router.delete('/user/two-factor-authentication', { preserveScroll: true })}
-                            >
-                                Turn off
-                            </Button>
+                            <TurnOffTwoFactor />
                         </div>
                     )}
                 </Section>
@@ -151,3 +144,46 @@ export default function Profile({ profile, twoFactor }: Props) {
 }
 
 Profile.layout = (page: ReactNode) => <AppLayout>{page}</AppLayout>;
+
+/** Turning two-factor off needs the password, asked for here so it goes with the request. */
+function TurnOffTwoFactor() {
+    const form = useForm({ password: '' });
+    const [asking, setAsking] = useState(false);
+
+    if (!asking) {
+        return (
+            <Button variant="ghost" size="sm" className="text-brick" onClick={() => setAsking(true)}>
+                Turn off
+            </Button>
+        );
+    }
+
+    return (
+        <form
+            onSubmit={(e) => {
+                e.preventDefault();
+                form.post('/settings/profile/two-factor/disable', {
+                    preserveScroll: true,
+                    onSuccess: () => { form.reset(); setAsking(false); },
+                });
+            }}
+            className="flex flex-wrap items-end gap-2"
+        >
+            <Field
+                label="Your password"
+                name="current_password_for_2fa"
+                type="password"
+                autoComplete="current-password"
+                value={form.data.password}
+                onChange={(e) => form.setData('password', e.target.value)}
+                error={form.errors.password}
+            />
+            <Button type="submit" variant="ghost" size="sm" className="mb-2 text-brick" disabled={form.processing}>
+                Turn it off
+            </Button>
+            <Button type="button" variant="ghost" size="sm" className="mb-2" onClick={() => setAsking(false)}>
+                Cancel
+            </Button>
+        </form>
+    );
+}

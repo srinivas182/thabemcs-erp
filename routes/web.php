@@ -458,6 +458,7 @@ Route::middleware(['auth'])->group(function (): void {
     Route::prefix('settings')->name('settings.')->group(function (): void {
         Route::get('profile', [ProfileController::class, 'show'])->name('profile');
         Route::post('profile/sign-out-others', [ProfileController::class, 'signOutOthers'])->name('profile.sign-out-others');
+        Route::post('profile/two-factor/disable', [ProfileController::class, 'disableTwoFactor'])->name('profile.two-factor.disable');
         Route::get('activity', [ActivityLogController::class, 'index'])->name('activity');
         Route::get('users', [CompanyUserController::class, 'index'])->name('users.index');
         Route::post('users', [CompanyUserController::class, 'store'])->name('users.store');

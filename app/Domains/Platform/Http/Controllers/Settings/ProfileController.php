@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
+use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
 
 /**
  * The signed-in user's own profile, password and two-factor authentication.
@@ -52,5 +53,31 @@ final class ProfileController
         activity('security')->causedBy($user)->log('Signed out of all other devices');
 
         return back()->with('success', 'You are signed out everywhere else.');
+    }
+
+    /**
+     * Turn two-factor authentication off, confirming the password in the same request.
+     *
+     * Fortify's own route asks for a password confirmation first, which redirects the browser and loses
+     * the original request, so the control appeared to do nothing. This does both steps at once.
+     */
+    public function disableTwoFactor(Request $request, DisableTwoFactorAuthentication $disable): RedirectResponse
+    {
+        $data = $request->validate(['password' => ['required', 'string']]);
+        /** @var User $user */
+        $user = $request->user();
+
+        if (! Hash::check((string) $data['password'], (string) $user->password)) {
+            return back()->withErrors(['password' => 'That password is not right.']);
+        }
+
+        if (PlatformSetting::requiresTwoFactor()) {
+            return back()->with('error', 'Two-factor authentication is required on this instance, so it cannot be turned off.');
+        }
+
+        $disable($user);
+        activity('security')->causedBy($user)->log('Two-factor authentication turned off');
+
+        return back()->with('success', 'Two-factor authentication is off.');
     }
 }

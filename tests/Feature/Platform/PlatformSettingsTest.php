@@ -75,3 +75,27 @@ it('records who changed it', function (): void {
     expect(PlatformSetting::current()->updated_by)->toBe($this->superAdmin->id)
         ->and(DB::table('activity_log')->where('log_name', 'platform')->count())->toBe(1);
 });
+
+it('turns two-factor off for one person in a single request, with their password', function (): void {
+    $this->director->forceFill(['two_factor_secret' => encrypt('s'), 'two_factor_confirmed_at' => now()])->save();
+
+    // The wrong password changes nothing.
+    $this->actingAs($this->director)->post('/settings/profile/two-factor/disable', ['password' => 'not-the-password'])
+        ->assertSessionHasErrors('password');
+    expect($this->director->fresh()->two_factor_confirmed_at)->not->toBeNull();
+
+    $this->actingAs($this->director)->post('/settings/profile/two-factor/disable', ['password' => 'password'])
+        ->assertSessionHas('success');
+    expect($this->director->fresh()->two_factor_secret)->toBeNull()
+        ->and($this->director->fresh()->two_factor_confirmed_at)->toBeNull();
+});
+
+it('refuses to turn two-factor off while the instance requires it', function (): void {
+    PlatformSetting::current()->update(['two_factor_required' => true]);
+    $this->director->forceFill(['two_factor_secret' => encrypt('s'), 'two_factor_confirmed_at' => now()])->save();
+
+    $this->actingAs($this->director)->post('/settings/profile/two-factor/disable', ['password' => 'password'])
+        ->assertSessionHas('error');
+
+    expect($this->director->fresh()->two_factor_confirmed_at)->not->toBeNull();
+});
