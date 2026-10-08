@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Cms\Http\Controllers;
 
 use App\Domains\Cms\Models\CmsForm;
+use App\Domains\Cms\Models\CmsMedia;
 use App\Domains\Cms\Models\CmsMenu;
 use App\Domains\Cms\Models\CmsPage;
 use App\Domains\Cms\Models\CmsPost;
@@ -76,7 +77,8 @@ final class WebsiteController
             ...$this->chrome(),
             'title' => $project->name,
             'project' => ['name' => $project->name, 'code' => $project->code, 'town' => $project->town,
-                'stage' => $project->stage->label(), 'description' => $project->description],
+                'stage' => $project->stage->label(), 'description' => $project->description,
+                'image' => $project->website_media_id === null ? null : CmsMedia::query()->find($project->website_media_id)?->url()],
             'units' => $units,
             'available' => count(array_filter($units, static fn (array $u): bool => $u['status'] === 'available')),
             'enquiryForm' => $this->enquiryForm(),
@@ -191,9 +193,12 @@ final class WebsiteController
         $developments = Project::query()->whereIn('status', ['active', 'completed'])->orderByDesc('id')->limit($limit)->get()
             ->map(static function (Project $project): array {
                 $units = SaleUnit::query()->where('project_id', $project->id)->whereIn('tenure', ['sale', 'both'])->get();
+                $image = $project->website_media_id === null
+                    ? null
+                    : CmsMedia::query()->find($project->website_media_id)?->url();
 
                 return [
-                    'name' => $project->name, 'code' => $project->code, 'town' => $project->town,
+                    'name' => $project->name, 'code' => $project->code, 'town' => $project->town, 'image' => $image,
                     'stage' => $project->stage->label(), 'status' => $project->status->value,
                     'description' => $project->description,
                     'units' => $units->count(),

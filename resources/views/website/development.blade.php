@@ -1,6 +1,10 @@
 @extends('website.layout')
 
 @section('content')
+    @if (! empty($project['image']))
+        <img src="{{ $project['image'] }}" alt="{{ $project['name'] }}" class="h-[46vh] w-full object-cover">
+    @endif
+
     <section class="mx-auto max-w-6xl px-5 pb-8 pt-16">
         <p class="text-sm uppercase tracking-wide text-ink-soft">{{ $project['town'] }} &middot; {{ $project['stage'] }}</p>
         <h1 class="mt-2 text-4xl font-bold tracking-tight sm:text-5xl">{{ $project['name'] }}</h1>

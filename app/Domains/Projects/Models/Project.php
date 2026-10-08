@@ -54,7 +54,7 @@ class Project extends Model
     protected $fillable = [
         'region_id', 'code', 'name', 'development_type', 'stage', 'status', 'province', 'town',
         'latitude', 'longitude', 'geofence_radius_m', 'estimated_value', 'planned_start_date', 'planned_completion_date',
-        'description', 'project_manager_id',
+        'description', 'project_manager_id', 'website_media_id',
     ];
 
     protected $attributes = [

@@ -13,7 +13,12 @@
         <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             @forelse ($developments as $development)
                 <li class="group overflow-hidden rounded-2xl border border-concrete bg-white transition hover:-translate-y-1 hover:shadow-lg">
-                    <a href="/developments/{{ $development['code'] }}" class="block p-6">
+                    <a href="/developments/{{ $development['code'] }}" class="block">
+                        @if (! empty($development['image']))
+                            <img src="{{ $development['image'] }}" alt="{{ $development['name'] }}" loading="lazy"
+                                 class="aspect-[16/10] w-full object-cover">
+                        @endif
+                        <span class="block p-6">
                         <p class="text-xs uppercase tracking-wide text-ink-soft">{{ $development['town'] }} &middot; {{ $development['stage'] }}</p>
                         <h2 class="mt-1 text-xl font-bold group-hover:text-line">{{ $development['name'] }}</h2>
                         <p class="mt-2 line-clamp-3 text-sm text-ink-soft">{{ $development['description'] }}</p>
@@ -27,6 +32,7 @@
                                 <span class="text-ink-soft">Sold out</span>
                             @endif
                         </p>
+                        </span>
                     </a>
                 </li>
             @empty

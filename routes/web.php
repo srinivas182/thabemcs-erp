@@ -6,6 +6,7 @@ use App\Domains\Approvals\Http\Controllers\ApprovalController;
 use App\Domains\Closeout\Http\Controllers\CloseoutController;
 use App\Domains\Closeout\Http\Controllers\DistributionController;
 use App\Domains\Cms\Http\Controllers\CmsController;
+use App\Domains\Cms\Http\Controllers\DevelopmentImageController;
 use App\Domains\Cms\Http\Controllers\PageController;
 use App\Domains\Cms\Http\Controllers\WebsiteController;
 use App\Domains\Compliance\Http\Controllers\PopiaController;
@@ -286,6 +287,9 @@ Route::middleware(['auth'])->group(function (): void {
         Route::post('pages/{page}/home', [PageController::class, 'makeHome'])->name('pages.home');
         Route::post('pages/{page}/restore/{version}', [PageController::class, 'restore'])->name('pages.restore');
         Route::delete('pages/{page}', [PageController::class, 'destroy'])->name('pages.destroy');
+
+        Route::get('developments', [DevelopmentImageController::class, 'index'])->name('developments');
+        Route::put('developments/{project}', [DevelopmentImageController::class, 'update'])->name('developments.update');
 
         Route::get('media', [CmsController::class, 'mediaIndex'])->name('media');
         Route::post('media', [CmsController::class, 'mediaStore'])->name('media.store');

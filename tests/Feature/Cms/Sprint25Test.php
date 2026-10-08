@@ -173,3 +173,35 @@ it('draws a cover illustration for each development, and can redraw them', funct
             ->and(CmsMedia::query()->count())->toBe(8);
     });
 });
+
+it('shows a chosen photograph for a development, and the illustration when there is none', function (): void {
+    config(['cms.company' => $this->company->ulid]);
+    $this->artisan('demo:developments')->assertSuccessful();
+
+    $project = inCompany($this->company, fn () => Project::query()->where('name', 'Ballito Heights')->sole());
+    $image = inCompany($this->company, fn () => CmsMedia::query()->latest('id')->first());
+
+    // Nothing chosen yet: the page works and shows no photograph.
+    $this->get('/developments/'.$project->code)->assertOk()->assertDontSee($image->url(), false);
+
+    $this->actingAs($this->marketing)->put("/website/developments/{$project->ulid}", ['media' => $image->ulid])
+        ->assertSessionHas('success');
+
+    $this->get('/developments/'.$project->code)->assertOk()->assertSee($image->url(), false);
+    $this->get('/developments')->assertOk()->assertSee($image->url(), false);
+
+    // And it can be taken off again.
+    $this->actingAs($this->marketing)->put("/website/developments/{$project->ulid}", ['media' => null])
+        ->assertSessionHas('success');
+    $this->get('/developments/'.$project->code)->assertOk()->assertDontSee($image->url(), false);
+});
+
+it('keeps development photographs to people who manage content', function (): void {
+    config(['cms.company' => $this->company->ulid]);
+    $this->artisan('demo:developments')->assertSuccessful();
+    $project = inCompany($this->company, fn () => Project::query()->first());
+
+    $siteManager = userWithRole($this->company, Role::SiteManager);
+    $this->actingAs($siteManager)->get('/website/developments')->assertForbidden();
+    $this->actingAs($siteManager)->put("/website/developments/{$project->ulid}", ['media' => null])->assertForbidden();
+});

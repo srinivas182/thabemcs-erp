@@ -19,6 +19,7 @@ export default function Pages({ pages, templates }: { pages: Row[]; templates: {
             <div className="mx-auto grid max-w-5xl gap-5">
                 <PageHeader title="Website" description="The pages the public sees. Changes go live only when you publish them."
                     action={<div className="flex gap-2">
+                        <Button variant="ghost" asChild><Link href="/website/developments">Photographs</Link></Button>
                         <Button variant="ghost" asChild><Link href="/website/media">Media</Link></Button>
                         <Button variant="ghost" asChild><Link href="/website/menus">Menus</Link></Button>
                         <Button onClick={() => setAdding(!adding)}>New page</Button>
