@@ -10,7 +10,16 @@ return [
     | Roles that must have two-factor authentication switched on: anyone who can approve work,
     | move money or change what other people may do.
     */
-    'two_factor_required_roles' => ['company-admin', 'director', 'finance', 'development-manager'],
+    /*
+    | Roles that must have two-factor even when it is not required of everyone. Set
+    | TWO_FACTOR_ROLES to a comma-separated list, or to "none" to require it of nobody - which is only
+    | sensible on a test or demonstration instance.
+    */
+    'two_factor_required_roles' => match (env('TWO_FACTOR_ROLES')) {
+        null, '' => ['company-admin', 'director', 'finance', 'development-manager'],
+        'none' => [],
+        default => array_map('trim', explode(',', (string) env('TWO_FACTOR_ROLES'))),
+    },
 
     // Once the website is public, everyone who signs in needs a second factor. Set to false only for a
     // deployment where that is genuinely impossible, and record why.
