@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Domains\Platform\Models\PlatformSetting;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * People who can move money, change permissions or approve work must have two-factor authentication
- * switched on. They can still reach their own security settings to set it up, and nothing else.
+ * When the instance requires two-factor authentication, everyone who signs in must set it up before they
+ * can do anything else - Super Admins included. They can still reach their own profile to do it.
+ *
+ * The switch lives under Platform settings and is off by default, so a fresh or demonstration instance is
+ * usable immediately. Turn it on before anybody's real data goes in.
  */
 final class RequireTwoFactor
 {
@@ -36,15 +40,12 @@ final class RequireTwoFactor
             : redirect()->to(route('settings.profile'))->with('error', $message);
     }
 
+    /**
+     * Required of everybody, or of nobody: a Super Admin decides under Platform settings. One rule is
+     * easier to reason about than a flag plus a role list, which is what this replaced.
+     */
     private function mustHaveIt(User $user): bool
     {
-        if ((bool) config('platform.two_factor_required_for_all', true)) {
-            return true;
-        }
-
-        /** @var list<string> $roles */
-        $roles = (array) config('platform.two_factor_required_roles', []);
-
-        return $user->is_super_admin || $user->hasAnyRole($roles);
+        return PlatformSetting::requiresTwoFactor();
     }
 }

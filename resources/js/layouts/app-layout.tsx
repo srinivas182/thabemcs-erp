@@ -1,7 +1,7 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { cn } from '@thabekhulu/ui';
 import { HelpDrawer } from '@/components/help-drawer';
-import { Globe, Bell, Building2, CalendarCheck, ClipboardList, Handshake, KeyRound, Gauge, History, Inbox, ListTree, LogOut, Map as MapIcon, Menu, Plug, Search, ShieldCheck, Users, X } from 'lucide-react';
+import { Globe, Shield, Bell, Building2, CalendarCheck, ClipboardList, Handshake, KeyRound, Gauge, History, Inbox, ListTree, LogOut, Map as MapIcon, Menu, Plug, Search, ShieldCheck, Users, X } from 'lucide-react';
 import CommandPalette from '@/components/command-palette';
 import { type ReactNode, useEffect, useState } from 'react';
 import { MODULE_ROUTES, NAV_GROUPS } from '@/components/navigation';
@@ -102,9 +102,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                     </NavLink>
                 )}
                 {can.manageCompanies && (
-                    <NavLink href="/platform/companies" active={url.startsWith('/platform')} icon={<Building2 className="size-4" aria-hidden />}>
-                        Companies
-                    </NavLink>
+                    <>
+                        <NavLink href="/platform/companies" active={url.startsWith('/platform/companies')} icon={<Building2 className="size-4" aria-hidden />}>
+                            Companies
+                        </NavLink>
+                        <NavLink href="/platform/settings" active={url.startsWith('/platform/settings')} icon={<Shield className="size-4" aria-hidden />}>
+                            Platform settings
+                        </NavLink>
+                    </>
                 )}
                 {can.viewAuditLog && (
                     <NavLink href="/settings/activity" active={url.startsWith('/settings/activity')} icon={<History className="size-4" aria-hidden />}>

@@ -30,6 +30,7 @@ use App\Domains\Platform\Http\Controllers\HealthController;
 use App\Domains\Platform\Http\Controllers\LookupController;
 use App\Domains\Platform\Http\Controllers\MyDayController;
 use App\Domains\Platform\Http\Controllers\NotificationController;
+use App\Domains\Platform\Http\Controllers\PlatformSettingController;
 use App\Domains\Platform\Http\Controllers\SearchController;
 use App\Domains\Platform\Http\Controllers\Settings\ActivityLogController;
 use App\Domains\Platform\Http\Controllers\Settings\CompanyUserController;
@@ -85,6 +86,9 @@ Route::middleware(['auth'])->group(function (): void {
     Route::middleware('super-admin')->prefix('platform')->name('platform.')->group(function (): void {
         Route::resource('companies', CompanyController::class)->except(['show', 'destroy']);
         Route::patch('companies/{company}/status', [CompanyController::class, 'updateStatus'])->name('companies.status');
+
+        Route::get('settings', [PlatformSettingController::class, 'edit'])->name('settings');
+        Route::put('settings', [PlatformSettingController::class, 'update'])->name('settings.update');
 
         Route::post('acting-company/{company}', [ActingCompanyController::class, 'store'])->name('acting-company.store');
         Route::delete('acting-company', [ActingCompanyController::class, 'destroy'])->name('acting-company.destroy');

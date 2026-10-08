@@ -7,6 +7,7 @@ use App\Domains\Cms\Services\CmsException;
 use App\Domains\Cms\Services\UploadGuard;
 use App\Domains\Platform\Enums\Role;
 use App\Domains\Platform\Models\Company;
+use App\Domains\Platform\Models\PlatformSetting;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -41,15 +42,14 @@ it('re-encodes an uploaded image so only the picture survives', function (): voi
         ->and(getimagesize((string) $cleaned))->not->toBeFalse();
 });
 
-it('asks everyone for two-factor authentication once the website is public', function (): void {
-    // Even a role that is not otherwise sensitive.
+it('asks everyone for two-factor authentication once a Super Admin requires it', function (): void {
     $this->marketing->forceFill(['two_factor_secret' => null, 'two_factor_confirmed_at' => null])->save();
 
-    $this->actingAs($this->marketing->fresh())->get('/website/pages')->assertRedirect('/settings/profile');
-
-    // And it can be turned off deliberately, for a deployment where it is impossible.
-    config(['platform.two_factor_required_for_all' => false]);
+    // Off by default, so a fresh instance is usable straight away.
     $this->actingAs($this->marketing->fresh())->get('/website/pages')->assertOk();
+
+    PlatformSetting::current()->update(['two_factor_required' => true]);
+    $this->actingAs($this->marketing->fresh())->get('/website/pages')->assertRedirect('/settings/profile');
 });
 
 it('insists on a long password that has not appeared in a breach', function (): void {

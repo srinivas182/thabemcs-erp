@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Platform\Http\Controllers\Settings;
 
+use App\Domains\Platform\Models\PlatformSetting;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,7 +29,7 @@ final class ProfileController
             'twoFactor' => [
                 'enabled' => $user->two_factor_secret !== null,
                 'confirmed' => $user->two_factor_confirmed_at !== null,
-                'required' => $user->is_super_admin || $user->hasAnyRole((array) config('platform.two_factor_required_roles', [])),
+                'required' => PlatformSetting::requiresTwoFactor(),
             ],
             'lastSignedIn' => $user->getAttribute('last_login_at')?->toIso8601String(),
         ]);

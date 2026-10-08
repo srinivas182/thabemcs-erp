@@ -40,13 +40,6 @@ function userWithRole(Company $company, Role $role = Role::CompanyAdmin): User
     $user->assignRole($role->value);
     setPermissionsTeamId($previous);
 
-    // Roles that approve work or move money must have two-factor authentication; tests get it already
-    // set up so they exercise the feature under test, not the sign-in requirement. Clear
-    // two_factor_confirmed_at in a test that is checking the requirement itself.
-    if (in_array($role->value, (array) config('platform.two_factor_required_roles', []), true)) {
-        $user->forceFill(['two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
-    }
-
     return $user;
 }
 

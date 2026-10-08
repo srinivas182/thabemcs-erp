@@ -7,16 +7,6 @@ return [
     'backup_disk' => env('BACKUP_DISK', 'backups'),
 
     /*
-    | Roles that must have two-factor authentication switched on: anyone who can approve work,
-    | move money or change what other people may do.
-    */
-    'two_factor_required_roles' => ['company-admin', 'director', 'finance', 'development-manager'],
-
-    // Once the website is public, everyone who signs in needs a second factor. Set to false only for a
-    // deployment where that is genuinely impossible, and record why.
-    'two_factor_required_for_all' => (bool) env('REQUIRE_TWO_FACTOR', true),
-
-    /*
      | Initial Super Admin, created by the PlatformSeeder on first install.
      | Change the password immediately after the first sign-in.
      */

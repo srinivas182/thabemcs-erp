@@ -6,6 +6,7 @@ use App\Domains\Integrations\Models\Integration;
 use App\Domains\Integrations\Services\SageZaConnector;
 use App\Domains\Platform\Enums\Role;
 use App\Domains\Platform\Models\Company;
+use App\Domains\Platform\Models\PlatformSetting;
 use App\Domains\Projects\Models\Project;
 use App\Domains\Rentals\Models\Lease;
 use App\Domains\Rentals\Models\LeaseInvoice;
@@ -41,16 +42,19 @@ it('sets security headers and a request id on every response', function (): void
         ->assertHeader('X-Request-Id', 'trace-me-123');
 });
 
-it('makes people who approve work and move money set up two-factor authentication', function (): void {
-    // A Director who has not set it up yet is sent to their profile, whatever they try to open.
+it('makes everyone set up two-factor authentication once the instance requires it', function (): void {
+    PlatformSetting::current()->update(['two_factor_required' => true]);
+
+    // Someone who has not set it up yet is sent to their profile, whatever they try to open.
     $this->director->forceFill(['two_factor_secret' => null, 'two_factor_confirmed_at' => null])->save();
     $this->director->refresh();
     $this->actingAs($this->director)->get('/projects')->assertRedirect('/settings/profile');
     $this->actingAs($this->director)->get('/settings/profile')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('twoFactor.required', true)->where('twoFactor.confirmed', false));
 
-    // A Site Manager is not affected.
-    $this->actingAs($this->siteManager)->get('/projects')->assertOk();
+    // Nobody is exempt: a Site Manager without it is stopped too.
+    $this->siteManager->forceFill(['two_factor_secret' => null, 'two_factor_confirmed_at' => null])->save();
+    $this->actingAs($this->siteManager->fresh())->get('/projects')->assertRedirect('/settings/profile');
 
     // Once it is set up, the Director works normally again.
     $this->director->forceFill(['two_factor_secret' => encrypt('secret'), 'two_factor_confirmed_at' => now()])->save();
