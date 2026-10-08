@@ -73,13 +73,3 @@ it('insists on a long password that has not appeared in a breach', function (): 
     );
     expect($validator->fails())->toBeTrue();
 });
-
-it('can have two-factor switched off entirely for a demonstration instance', function (): void {
-    // Both rules have to be off: the everyone rule, and the role list underneath it.
-    config(['platform.two_factor_required_for_all' => false, 'platform.two_factor_required_roles' => []]);
-
-    $director = userWithRole($this->company, Role::Director);
-    $director->forceFill(['two_factor_secret' => null, 'two_factor_confirmed_at' => null])->save();
-
-    $this->actingAs($director->fresh())->get('/projects')->assertOk();
-});

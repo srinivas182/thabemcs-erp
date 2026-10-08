@@ -7,14 +7,10 @@ return [
     'backup_disk' => env('BACKUP_DISK', 'backups'),
 
     /*
-    | Roles that must have two-factor even when it is not required of everyone. Set TWO_FACTOR_ROLES to a
-    | comma-separated list, or to "none" to require it of nobody, which is only sensible on a test or
-    | demonstration instance.
+    | Roles that must have two-factor authentication switched on: anyone who can approve work,
+    | move money or change what other people may do.
     */
-    'two_factor_required_roles' => env('TWO_FACTOR_ROLES') === 'none' ? [] : array_values(array_filter(array_map(
-        'trim',
-        explode(',', (string) env('TWO_FACTOR_ROLES', 'company-admin,director,finance,development-manager')),
-    ))),
+    'two_factor_required_roles' => ['company-admin', 'director', 'finance', 'development-manager'],
 
     // Once the website is public, everyone who signs in needs a second factor. Set to false only for a
     // deployment where that is genuinely impossible, and record why.
