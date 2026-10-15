@@ -205,3 +205,13 @@ it('keeps development photographs to people who manage content', function (): vo
     $this->actingAs($siteManager)->get('/website/developments')->assertForbidden();
     $this->actingAs($siteManager)->put("/website/developments/{$project->ulid}", ['media' => null])->assertForbidden();
 });
+
+it('credits the people who built it, in the footer of every page', function (): void {
+    config(['cms.company' => $this->company->ulid]);
+
+    foreach (['/', '/about-us', '/news'] as $path) {
+        $this->get($path)->assertOk()
+            ->assertSee('Mayura Consultancy Services', false)
+            ->assertSee('https://www.mayuraconsultancy.com', false);
+    }
+});
