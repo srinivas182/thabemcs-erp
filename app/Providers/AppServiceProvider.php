@@ -27,12 +27,15 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Fortify\Contracts\LoginResponse;
 use Spatie\Activitylog\Models\Activity;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // Signing in must land inside the back office, never on a public website page.
+        $this->app->singleton(LoginResponse::class, \App\Domains\Platform\Http\Responses\LoginResponse::class);
         $this->app->singleton(PublicHolidays::class);
         // Scoped (not singleton) so the company context resets between requests under Octane.
         $this->app->scoped(CurrentCompany::class);
